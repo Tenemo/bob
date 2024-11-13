@@ -1,0 +1,7 @@
+# temp
+temp/
+temp.*
+concatenated.txt
+
+# env
+env.h

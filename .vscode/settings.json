@@ -1,3 +1,33 @@
 {
-  "cSpell.words": ["FILEHANDLER", "SCREENLOGGER"]
+  "editor.formatOnSave": true,
+  "editor.linkedEditing": true,
+  "files.autoSave": "off",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.tabSize": 4,
+  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 80}",
+  "cSpell.words": ["FILEHANDLER", "msvc", "SCREENLOGGER"],
+  "files.associations": {
+    "*.rmd": "markdown",
+    "xstring": "cpp",
+    "array": "cpp",
+    "chrono": "cpp",
+    "deque": "cpp",
+    "format": "cpp",
+    "forward_list": "cpp",
+    "initializer_list": "cpp",
+    "list": "cpp",
+    "ranges": "cpp",
+    "regex": "cpp",
+    "span": "cpp",
+    "vector": "cpp",
+    "xhash": "cpp",
+    "xtree": "cpp",
+    "xutility": "cpp",
+    "string": "cpp",
+    "unordered_map": "cpp",
+    "unordered_set": "cpp",
+    "string_view": "cpp",
+    "set": "cpp"
+  }
 }

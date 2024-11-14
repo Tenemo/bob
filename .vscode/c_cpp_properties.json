@@ -3,8 +3,9 @@
     {
       "name": "bob",
       "includePath": [
-        "C:/Users/Piotr/Documents/Arduino/libraries/**",
-        "C:/Users/Piotr/AppData/Local/Arduino15/packages/**"
+        "${workspaceFolder}/**",
+        "C:/Users/Piotr/AppData/Local/Arduino15/packages/esp32/**",
+        "C:/Users/Piotr/Documents/Arduino/libraries/**"
       ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
       "windowsSdkVersion": "10.0.22621.0",

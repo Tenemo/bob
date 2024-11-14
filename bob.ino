@@ -62,7 +62,6 @@ void setup() {
     screen.println(ipStr);
     screen.println("");
 
-    // Register POST handler for /rotate
     server.on(
         "/rotate", HTTP_POST,
         [](AsyncWebServerRequest *request) {
@@ -79,6 +78,4 @@ void setup() {
     screen.println("Server started");
 }
 
-void loop() {
-    // No actions needed in loop
-}
+void loop() {}

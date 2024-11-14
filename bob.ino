@@ -1,4 +1,5 @@
 #include "Globals.h"
+#include "RequestHandler.h"
 #include "ScreenLogger.h"
 #include "env.h"
 #include <Arduino.h>
@@ -8,6 +9,30 @@
 
 AsyncWebServer server(80);
 ScreenLogger screen;
+
+// Core processing function for /rotate endpoint
+void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
+    const char *direction = doc["direction"];
+    int degrees = doc["degrees"];
+
+    // Validate direction
+    if (!direction || (strcmp(direction, "clockwise") != 0 &&
+                       strcmp(direction, "counterclockwise") != 0)) {
+        req->send(400, "application/json", "{\"error\":\"Invalid direction\"}");
+        return;
+    }
+
+    // TODO: Implement rotation logic based on direction and degrees
+
+    // Send success response
+    DynamicJsonDocument responseDoc(200);
+    responseDoc["status"] = "success";
+    responseDoc["direction"] = direction;
+    responseDoc["degrees"] = degrees;
+    String response;
+    serializeJson(responseDoc, response);
+    req->send(200, "application/json", response);
+}
 
 void setup() {
     Serial.begin(115200);
@@ -27,70 +52,27 @@ void setup() {
         screen.print(".");
     }
 
-    screen.println("\nWiFi connected! ");
+    screen.println("");
+    screen.println("WiFi connected!");
     screen.print("IP Address: ");
-    screen.println(WiFi.localIP().toString());
+
+    IPAddress ip = WiFi.localIP();
+    String ipStr = String(ip[0]) + "." + String(ip[1]) + "." + String(ip[2]) +
+                   "." + String(ip[3]);
+    screen.println(ipStr);
     screen.println("");
 
+    // Register POST handler for /rotate
     server.on(
         "/rotate", HTTP_POST,
         [](AsyncWebServerRequest *request) {
-            // Empty handler
+            // Empty onRequest handler
         },
         NULL,
-        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
-           size_t index, size_t total) {
-            static String body;
-            if (index == 0) {
-                body = "";
-                digitalWrite(LED_PIN,
-                             HIGH); // Turn on LED when processing starts
-            }
-
-            body += String((char *)data).substring(0, len);
-
-            if ((index + len) == total) {
-                // Parse JSON
-                DynamicJsonDocument doc(256);
-                DeserializationError error = deserializeJson(doc, body);
-                if (error) {
-                    request->send(400, "application/json",
-                                  "{\"error\":\"Invalid JSON\"}");
-                    digitalWrite(LED_PIN, LOW);
-                    return;
-                }
-
-                const char *direction = doc["direction"];
-                int degrees = doc["degrees"];
-
-                // Validate direction
-                if (!direction ||
-                    (strcmp(direction, "clockwise") != 0 &&
-                     strcmp(direction, "counterclockwise") != 0)) {
-                    request->send(400, "application/json",
-                                  "{\"error\":\"Invalid direction\"}");
-                    digitalWrite(LED_PIN, LOW);
-                    return;
-                }
-
-                // Display request on screen
-                String displayMsg = "Direction: " + String(direction) +
-                                    ", Degrees: " + String(degrees);
-                screen.println(displayMsg);
-
-                // TODO: Implement rotation logic based on direction and degrees
-
-                // Send success response
-                DynamicJsonDocument responseDoc(200);
-                responseDoc["status"] = "success";
-                responseDoc["direction"] = direction;
-                responseDoc["degrees"] = degrees;
-                String response;
-                serializeJson(responseDoc, response);
-                request->send(200, "application/json", response);
-
-                digitalWrite(LED_PIN, LOW); // Turn off LED after processing
-            }
+        [&](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+            size_t index, size_t total) {
+            handleRequest(request, data, len, index, total,
+                          processRotateRequest, screen);
         });
 
     server.begin();

@@ -10,12 +10,10 @@
 AsyncWebServer server(80);
 ScreenLogger screen;
 
-// Core processing function for /rotate endpoint
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
     const char *direction = doc["direction"];
     int degrees = doc["degrees"];
 
-    // Validate direction
     if (!direction || (strcmp(direction, "clockwise") != 0 &&
                        strcmp(direction, "counterclockwise") != 0)) {
         req->send(400, "application/json", "{\"error\":\"Invalid direction\"}");
@@ -24,7 +22,6 @@ void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
 
     // TODO: Implement rotation logic based on direction and degrees
 
-    // Send success response
     DynamicJsonDocument responseDoc(200);
     responseDoc["status"] = "success";
     responseDoc["direction"] = direction;

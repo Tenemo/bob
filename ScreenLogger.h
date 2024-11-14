@@ -24,13 +24,16 @@ class ScreenLogger {
     const int textSize;   // Text size multiplier
     const int lineHeight; // Height of each text line in pixels
     const int maxLines;   // Maximum number of lines that can be displayed
-    std::vector<String> logBuffer; // Buffer to store log messages
+    std::vector<String> logBuffer; // Buffer to store log lines
 
-    // Add a line to the buffer and handle scrolling
-    void addLine(const String &message);
+    // Add a message to the buffer and handle scrolling
+    void addMessage(const String &message);
 
     // Redraw the entire screen based on the buffer
     void redrawScreen();
+
+    // Split a message into lines that fit the screen width
+    std::vector<String> splitMessageIntoLines(const String &message);
 };
 
 #endif // SCREENLOGGER_H

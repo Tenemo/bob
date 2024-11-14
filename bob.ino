@@ -27,9 +27,10 @@ void setup() {
         screen.print(".");
     }
 
-    screen.println("\nWiFi connected!");
+    screen.println("\nWiFi connected! ");
     screen.print("IP Address: ");
     screen.println(WiFi.localIP().toString());
+    screen.println("");
 
     server.on(
         "/rotate", HTTP_POST,

@@ -2,7 +2,6 @@
 #define REQUESTHANDLER_H
 
 #include "Globals.h"
-#include "ScreenLogger.h"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <functional>
@@ -11,8 +10,7 @@ typedef std::function<void(AsyncWebServerRequest *, const JsonDocument &)>
     RequestProcessor;
 
 void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
-                   size_t index, size_t total, RequestProcessor processor,
-                   ScreenLogger &screen) {
+                   size_t index, size_t total, RequestProcessor processor) {
     static String body;
 
     if (index == 0) {
@@ -49,7 +47,7 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
                 value = "Unsupported Type";
             }
 
-            screen.println(key + ": " + value);
+            Serial.println(key + ": " + value);
         }
 
         // Process the request with the provided processor function

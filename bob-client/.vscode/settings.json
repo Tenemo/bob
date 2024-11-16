@@ -1,0 +1,68 @@
+{
+    "editor.formatOnSave": true,
+    "editor.linkedEditing": true,
+    "files.autoSave": "off",
+    "editor.tabSize": 4,
+    "javascript.updateImportsOnFileMove.enabled": "prompt",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+
+    "css.validate": false,
+    "scss.validate": false,
+    "javascript.validate.enable": false,
+    "eslint.format.enable": true,
+    "eslint.useFlatConfig": true,
+    "[javascript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[javascriptreact]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "[scss]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "prettier.htmlWhitespaceSensitivity": "ignore",
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "never"
+    },
+    "workbench.iconTheme": "vscode-icons",
+    "cSpell.ignorePaths": ["node_modules", ".git"],
+    "cSpell.words": [
+        "asvetliakov",
+        "autoinstaller",
+        "camelcase",
+        "coenraad",
+        "dbaeumer",
+        "eamodio",
+        "esbenp",
+        "formulahendry",
+        "gitlens",
+        "jpoissonnier",
+        "jvitor",
+        "kohler",
+        "msjsdiag",
+        "pmmmwh",
+        "reduxjs",
+        "sourcemap",
+        "spaceflightnewsapi",
+        "streetsidesoftware",
+        "teamsupercell",
+        "wojtekmaj"
+    ]
+}

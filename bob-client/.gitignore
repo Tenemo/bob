@@ -1,10 +1,10 @@
 # NPM
-*node_modules/
+node_modules/
 *.tgz
 npm-debug.log
 .tmp/
 sh.exe.stackdump
-*debug.log
+debug.log
 
 # Build
 dist/
@@ -12,10 +12,11 @@ dist/
 # Testing
 coverage/
 
-# temp
+# Miscellaneous
+.DS_Store
 temp/
 temp.*
 *concatenated.txt
 
 # env
-env.h
+.env

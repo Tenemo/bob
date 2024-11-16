@@ -1,12 +1,11 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "Globals.h" // For logger
+#include "Globals.h"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <esp_camera.h>
 
-// Camera GPIO pin definitions
 #define PWDN_GPIO_NUM -1
 #define RESET_GPIO_NUM -1
 #define XCLK_GPIO_NUM 45

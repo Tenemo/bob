@@ -12,7 +12,7 @@ typedef std::function<void(AsyncWebServerRequest *, const JsonDocument &)>
 class LEDTimer {
   private:
     static unsigned long ledOnTime;
-    static const unsigned long MIN_LED_DURATION = 200; // 200ms minimum on time
+    static const unsigned long MIN_LED_DURATION = 200; // 200ms minimum ON time
 
   public:
     static void startProcessing() {

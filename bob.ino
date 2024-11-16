@@ -37,12 +37,10 @@ void setup() {
     // Initialize logger, camera, and Wi-Fi
     initializeStartup();
 
-    // Define the /capture endpoint
     server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request) {
         handleRequest(request, nullptr, 0, 0, 0, processCaptureRequest);
     });
 
-    // Define the /rotate endpoint
     server.on(
         "/rotate", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
         [](AsyncWebServerRequest *request, uint8_t *data, size_t len,

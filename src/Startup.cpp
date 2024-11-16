@@ -1,4 +1,5 @@
 #include "Startup.h"
+#include "Camera.h"
 #include "Globals.h"
 #include "ScreenLogger.h"
 #include "env.h"
@@ -13,6 +14,9 @@ void initializeStartup() {
 
     // Initialize Wi-Fi connection
     connectToWiFi();
+
+    // Initialize the camera
+    initializeCamera();
 }
 
 void connectToWiFi() {

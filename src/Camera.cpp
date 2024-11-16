@@ -27,9 +27,10 @@ void initializeCamera() {
     // Set the frame size and buffer count
     if (psramFound()) {
         config.frame_size = FRAMESIZE_UXGA;
-        config.jpeg_quality = 10;
+        config.jpeg_quality = 10; // 0-63 lower number means higher quality
         config.fb_count = 2;
         config.grab_mode = CAMERA_GRAB_LATEST;
+        logger.println("PSRAM found, using PSRAM for frame buffer.");
     } else {
         logger.println("PSRAM not found, aborting camera initialization.");
         return;
@@ -38,15 +39,41 @@ void initializeCamera() {
     // Camera init
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK) {
-        logger.println("Camera init failed");
+        logger.println("Camera init failed.");
         return;
     }
+    logger.println("Camera initialized successfully.");
 }
 
 camera_fb_t *capturePhoto() {
     camera_fb_t *fb = esp_camera_fb_get();
     if (!fb) {
-        logger.println("Camera capture failed");
+        logger.println("Camera capture failed.");
     }
     return fb;
+}
+
+void processCaptureRequest(AsyncWebServerRequest *request,
+                           const JsonDocument &doc) {
+    camera_fb_t *fb = capturePhoto();
+    if (!fb) {
+        request->send(500, "text/plain", "Camera capture failed.");
+        return;
+    }
+
+    AsyncWebServerResponse *response = request->beginResponse(
+        "image/jpeg", fb->len,
+        [fb](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+            size_t len = fb->len - index;
+            if (len > maxLen) {
+                len = maxLen;
+            }
+            memcpy(buffer, fb->buf + index, len);
+            if (len + index == fb->len) {
+                esp_camera_fb_return(fb);
+            }
+            return len;
+        });
+    response->addHeader("Content-Disposition", "inline; filename=capture.jpg");
+    request->send(response);
 }

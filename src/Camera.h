@@ -2,6 +2,8 @@
 #define CAMERA_H
 
 #include "Globals.h" // For logger
+#include <ArduinoJson.h>
+#include <ESPAsyncWebServer.h>
 #include <esp_camera.h>
 
 // Camera GPIO pin definitions
@@ -25,5 +27,7 @@
 
 void initializeCamera();
 camera_fb_t *capturePhoto();
+void processCaptureRequest(AsyncWebServerRequest *request,
+                           const JsonDocument &doc);
 
 #endif // CAMERA_H

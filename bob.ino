@@ -12,31 +12,6 @@
 ScreenLogger logger;
 AsyncWebServer server(80);
 
-void processCaptureRequest(AsyncWebServerRequest *request,
-                           const JsonDocument &doc) {
-    camera_fb_t *fb = capturePhoto();
-    if (!fb) {
-        request->send(500, "text/plain", "Camera capture failed");
-        return;
-    }
-
-    AsyncWebServerResponse *response = request->beginResponse(
-        "image/jpeg", fb->len,
-        [fb](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
-            size_t len = fb->len - index;
-            if (len > maxLen) {
-                len = maxLen;
-            }
-            memcpy(buffer, fb->buf + index, len);
-            if (len + index == fb->len) {
-                esp_camera_fb_return(fb);
-            }
-            return len;
-        });
-    response->addHeader("Content-Disposition", "inline; filename=capture.jpg");
-    request->send(response);
-}
-
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
     const char *direction = doc["direction"];
     int degrees = doc["degrees"];
@@ -59,22 +34,17 @@ void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
 }
 
 void setup() {
-    // Initialize logger, processing pin, and connect to Wi-Fi
+    // Initialize logger, camera, and Wi-Fi
     initializeStartup();
 
-    // Initialize the camera
-    initializeCamera();
-
-    // Define the /capture endpoint - simplified for GET
+    // Define the /capture endpoint
     server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request) {
         handleRequest(request, nullptr, 0, 0, 0, processCaptureRequest);
     });
 
-    // Define the /rotate endpoint - remains the same for POST
+    // Define the /rotate endpoint
     server.on(
-        "/rotate", HTTP_POST,
-        [](AsyncWebServerRequest *request) {}, // Empty handler
-        NULL,
+        "/rotate", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
         [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
            size_t index, size_t total) {
             handleRequest(request, data, len, index, total,

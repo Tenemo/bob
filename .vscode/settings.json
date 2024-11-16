@@ -47,6 +47,7 @@
     "xclk",
     "xhash",
     "xstring",
+    "xtensa",
     "xtree",
     "xutility"
   ],

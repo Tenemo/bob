@@ -10,12 +10,12 @@
       "forcedInclude": [
         "C:/Users/Piotr/AppData/Local/Arduino15/packages/esp32/hardware/esp32/3.0.5/cores/esp32/Arduino.h"
       ],
+      "compilerPath": "C:/Users/Piotr/AppData/Local/Arduino15/packages/esp32/tools/esp-xs3/2302/bin/xtensa-esp32s3-elf-gcc.exe",
       "defines": ["_DEBUG", "UNICODE", "_UNICODE", "USBCON", "ARDUINO=10813"],
       "windowsSdkVersion": "10.0.22621.0",
-      "compilerPath": "cl.exe",
       "cStandard": "c17",
       "cppStandard": "c++17",
-      "intelliSenseMode": "windows-msvc-x64"
+      "intelliSenseMode": "gcc-x64"
     }
   ],
   "version": 4

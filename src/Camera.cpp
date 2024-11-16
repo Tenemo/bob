@@ -1,6 +1,14 @@
 #include "Camera.h"
+#include "DFRobot_AXP313A.h"
+#include <Arduino.h>
+
+DFRobot_AXP313A axp;
 
 void initializeCamera() {
+    while (axp.begin() != 0) {
+        Serial.println("init error");
+        delay(1000);
+    }
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
     config.ledc_timer = LEDC_TIMER_0;
@@ -24,22 +32,25 @@ void initializeCamera() {
     config.pixel_format = PIXFORMAT_JPEG;
     config.fb_location = CAMERA_FB_IN_PSRAM;
 
-    // Set the frame size and buffer count
     if (psramFound()) {
+        logger.println("PSRAM found.");
+        Serial.printf("Total PSRAM Size: %u bytes\n", ESP.getPsramSize());
+        Serial.printf("Free PSRAM: %u bytes\n", ESP.getFreePsram());
         config.frame_size = FRAMESIZE_UXGA;
         config.jpeg_quality = 10; // 0-63 lower number means higher quality
         config.fb_count = 2;
         config.grab_mode = CAMERA_GRAB_LATEST;
-        logger.println("PSRAM found, using PSRAM for frame buffer.");
     } else {
         logger.println("PSRAM not found, aborting camera initialization.");
         return;
     }
 
-    // Camera init
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK) {
-        logger.println("Camera init failed.");
+        logger.println("Camera initialization failed with error:");
+        logger.println(esp_err_to_name(err));
+        Serial.print("Camera initialization failed with error: 0x");
+        Serial.println(err, HEX);
         return;
     }
     logger.println("Camera initialized successfully.");

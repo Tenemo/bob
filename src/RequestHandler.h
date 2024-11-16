@@ -9,14 +9,45 @@
 typedef std::function<void(AsyncWebServerRequest *, const JsonDocument &)>
     RequestProcessor;
 
+class LEDTimer {
+  private:
+    static unsigned long ledOnTime;
+    static const unsigned long MIN_LED_DURATION = 200; // 200ms minimum on time
+
+  public:
+    static void startProcessing() {
+        digitalWrite(PROCESSING_LED_PIN, HIGH);
+        ledOnTime = millis();
+    }
+
+    static void endProcessing() {
+        // Only turn off LED if minimum duration has passed
+        unsigned long currentTime = millis();
+        if (currentTime - ledOnTime >= MIN_LED_DURATION) {
+            digitalWrite(PROCESSING_LED_PIN, LOW);
+        }
+        // Otherwise, let loop() handle it
+    }
+
+    static void update() {
+        if (digitalRead(PROCESSING_LED_PIN) == HIGH) {
+            unsigned long currentTime = millis();
+            if (currentTime - ledOnTime >= MIN_LED_DURATION) {
+                digitalWrite(PROCESSING_LED_PIN, LOW);
+            }
+        }
+    }
+};
+
+unsigned long LEDTimer::ledOnTime = 0;
+
 void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
                    size_t index, size_t total, RequestProcessor processor) {
     static String body;
 
     if (index == 0) {
         body = ""; // Reset the body at the start of a new request
-        digitalWrite(PROCESSING_LED_PIN,
-                     HIGH); // Turn on LED when processing starts
+        LEDTimer::startProcessing(); // Start LED timing
 
         // Log the request method and endpoint
         String method;
@@ -43,7 +74,7 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
         if (request->method() == HTTP_GET) {
             DynamicJsonDocument doc(512); // Empty JSON doc for GET requests
             processor(request, doc);
-            digitalWrite(PROCESSING_LED_PIN, LOW);
+            LEDTimer::endProcessing(); // End LED timing
             return;
         }
     }
@@ -63,14 +94,14 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
                 if (error) {
                     request->send(400, "application/json",
                                   "{\"error\":\"Invalid JSON\"}");
-                    digitalWrite(PROCESSING_LED_PIN, LOW);
+                    LEDTimer::endProcessing(); // End LED timing
                     return;
                 }
             }
 
             // Process the request with the provided processor function
             processor(request, doc);
-            digitalWrite(PROCESSING_LED_PIN, LOW);
+            LEDTimer::endProcessing(); // End LED timing
         }
     }
 }

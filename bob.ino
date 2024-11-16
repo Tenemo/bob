@@ -4,8 +4,8 @@
 #include <WiFi.h>
 
 #include "Globals.h"
-#include "RequestHandler.h"
 #include "env.h"
+#include "src/RequestHandler.h"
 
 ScreenLogger logger;
 
@@ -40,17 +40,17 @@ void setup() {
 
     // Connect to Wi-Fi
     WiFi.mode(WIFI_STA);
-    logger.println("Connecting to WiFi: " + String(WIFI_SSID) + "...");
+    logger.print("Connecting to WiFi: " + String(WIFI_SSID) + "...");
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     // Wait for connection
     while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
+        delay(250);
         logger.print(".");
     }
 
     logger.println("");
-    logger.println("WiFi connected.");
+    logger.println("Connected to " + String(WIFI_SSID) + ".");
     logger.print("IP Address: ");
 
     IPAddress ip = WiFi.localIP();

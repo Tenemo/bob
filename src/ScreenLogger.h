@@ -22,6 +22,7 @@ class ScreenLogger {
     void clearScreen();
     void setTextSize(uint8_t size);
     void setTextColor(uint16_t color);
+    void update(); // handle delayed refresh
 
   private:
     DFRobot_ST7735_128x160_HW_SPI _screen;
@@ -36,6 +37,10 @@ class ScreenLogger {
     String _lines[MAX_BUFFER_LINES];
     int _lineCount;
     String _currentLine;
+
+    unsigned long _lastRefreshRequest;
+    bool _refreshPending;
+    const unsigned long _refreshDelay = 5; // 5 milliseconds
 };
 
 #endif // SCREENLOGGER_H

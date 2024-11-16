@@ -50,4 +50,7 @@ void setup() {
     logger.println("Server started");
 }
 
-void loop() {}
+void loop() {
+    delay(5);
+    logger.update();
+}

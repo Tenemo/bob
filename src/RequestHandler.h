@@ -17,45 +17,61 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
         body = ""; // Reset the body at the start of a new request
         digitalWrite(PROCESSING_LED_PIN,
                      HIGH); // Turn on LED when processing starts
-    }
 
-    // Append incoming data to the body
-    body += String((char *)data).substring(0, len);
+        // Log the request method and endpoint
+        String method;
+        switch (request->method()) {
+        case HTTP_GET:
+            method = "GET";
+            break;
+        case HTTP_POST:
+            method = "POST";
+            break;
+        case HTTP_PUT:
+            method = "PUT";
+            break;
+        case HTTP_DELETE:
+            method = "DELETE";
+            break;
+        default:
+            method = "UNKNOWN";
+            break;
+        }
+        logger.println(method + " " + request->url());
 
-    if ((index + len) == total) { // Check if all data has been received
-        DynamicJsonDocument doc(512);
-        DeserializationError error = deserializeJson(doc, body);
-        if (error) {
-            request->send(400, "application/json",
-                          "{\"error\":\"Invalid JSON\"}");
-            digitalWrite(PROCESSING_LED_PIN, LOW); // Turn off LED on error
+        // For GET requests, process immediately without waiting for body
+        if (request->method() == HTTP_GET) {
+            DynamicJsonDocument doc(512); // Empty JSON doc for GET requests
+            processor(request, doc);
+            digitalWrite(PROCESSING_LED_PIN, LOW);
             return;
         }
+    }
 
-        // Log each property, one per line
-        JsonObject obj = doc.as<JsonObject>();
-        for (JsonPair kv : obj) {
-            String key = kv.key().c_str();
-            String value;
-
-            if (kv.value().is<String>()) {
-                value = kv.value().as<String>();
-            } else if (kv.value().is<double>()) {
-                value = String(kv.value().as<double>());
-            } else if (kv.value().is<bool>()) {
-                value = kv.value().as<bool>() ? "true" : "false";
-            } else {
-                value = "Unsupported Type";
-            }
-
-            // Use logger to print key-value pairs
-            logger.println(key + ": " + value);
+    // Only handle body for non-GET requests
+    if (request->method() != HTTP_GET) {
+        // Append incoming data to the body
+        if (data) {
+            body += String((char *)data).substring(0, len);
         }
 
-        // Process the request with the provided processor function
-        processor(request, doc);
+        if (index + len == total) { // Check if all data has been received
+            DynamicJsonDocument doc(512);
 
-        digitalWrite(PROCESSING_LED_PIN, LOW); // Turn off LED after processing
+            if (data && len > 0) {
+                DeserializationError error = deserializeJson(doc, body);
+                if (error) {
+                    request->send(400, "application/json",
+                                  "{\"error\":\"Invalid JSON\"}");
+                    digitalWrite(PROCESSING_LED_PIN, LOW);
+                    return;
+                }
+            }
+
+            // Process the request with the provided processor function
+            processor(request, doc);
+            digitalWrite(PROCESSING_LED_PIN, LOW);
+        }
     }
 }
 

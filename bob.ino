@@ -12,7 +12,8 @@
 ScreenLogger logger;
 AsyncWebServer server(80);
 
-void captureHandler(AsyncWebServerRequest *request) {
+void processCaptureRequest(AsyncWebServerRequest *request,
+                           const JsonDocument &doc) {
     camera_fb_t *fb = capturePhoto();
     if (!fb) {
         request->send(500, "text/plain", "Camera capture failed");
@@ -64,20 +65,21 @@ void setup() {
     // Initialize the camera
     initializeCamera();
 
-    // Define the /rotate endpoint
+    // Define the /capture endpoint - simplified for GET
+    server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request) {
+        handleRequest(request, nullptr, 0, 0, 0, processCaptureRequest);
+    });
+
+    // Define the /rotate endpoint - remains the same for POST
     server.on(
         "/rotate", HTTP_POST,
-        [](AsyncWebServerRequest *request) {
-            // Empty onRequest handler
-        },
+        [](AsyncWebServerRequest *request) {}, // Empty handler
         NULL,
-        [&](AsyncWebServerRequest *request, uint8_t *data, size_t len,
-            size_t index, size_t total) {
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+           size_t index, size_t total) {
             handleRequest(request, data, len, index, total,
                           processRotateRequest);
         });
-    // Add the new GET endpoint for capturing images
-    server.on("/capture", HTTP_GET, captureHandler);
 
     server.begin();
     logger.println("Server started");

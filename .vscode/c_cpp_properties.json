@@ -7,6 +7,9 @@
         "C:/Users/Piotr/AppData/Local/Arduino15/packages/esp32/**",
         "C:/Users/Piotr/Documents/Arduino/libraries/**"
       ],
+      "forcedInclude": [
+        "C:/Users/Piotr/AppData/Local/Arduino15/packages/esp32/hardware/esp32/3.0.5/cores/esp32/Arduino.h"
+      ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE", "USBCON", "ARDUINO=10813"],
       "windowsSdkVersion": "10.0.22621.0",
       "compilerPath": "cl.exe",

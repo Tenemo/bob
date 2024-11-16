@@ -1,0 +1,37 @@
+#include "Startup.h"
+#include "Globals.h"
+#include "ScreenLogger.h"
+#include "env.h"
+
+extern ScreenLogger logger;
+
+void initializeStartup() {
+    logger.begin();
+    logger.println("Starting...");
+    pinMode(PROCESSING_LED_PIN, OUTPUT);
+    digitalWrite(PROCESSING_LED_PIN, LOW);
+
+    // Initialize Wi-Fi connection
+    connectToWiFi();
+}
+
+void connectToWiFi() {
+    WiFi.mode(WIFI_STA);
+    logger.print("Connecting to WiFi: " + String(WIFI_SSID) + "...");
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+    // Wait for connection
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(250);
+        logger.print(".");
+    }
+
+    logger.println("");
+    logger.println("Connected to " + String(WIFI_SSID) + ".");
+    logger.print("IP Address: ");
+
+    IPAddress ip = WiFi.localIP();
+    String ipStr = ip.toString();
+    logger.println(ipStr);
+    logger.println("");
+}

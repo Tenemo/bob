@@ -1,6 +1,12 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-const int LED_PIN = 21;
+#include <Arduino.h>
+
+#include "ScreenLogger.h"
+
+extern ScreenLogger logger;
+
+#define PROCESSING_LED_PIN 9 // D7
 
 #endif // GLOBALS_H

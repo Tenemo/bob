@@ -1,10 +1,11 @@
 #ifndef REQUESTHANDLER_H
 #define REQUESTHANDLER_H
 
-#include "Globals.h"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <functional>
+
+#include "Globals.h" // Include Globals.h to access logger
 
 typedef std::function<void(AsyncWebServerRequest *, const JsonDocument &)>
     RequestProcessor;
@@ -15,7 +16,8 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
 
     if (index == 0) {
         body = ""; // Reset the body at the start of a new request
-        digitalWrite(LED_PIN, HIGH); // Turn on LED when processing starts
+        digitalWrite(PROCESSING_LED_PIN,
+                     HIGH); // Turn on LED when processing starts
     }
 
     // Append incoming data to the body
@@ -27,7 +29,7 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
         if (error) {
             request->send(400, "application/json",
                           "{\"error\":\"Invalid JSON\"}");
-            digitalWrite(LED_PIN, LOW); // Turn off LED on error
+            digitalWrite(PROCESSING_LED_PIN, LOW); // Turn off LED on error
             return;
         }
 
@@ -47,13 +49,14 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
                 value = "Unsupported Type";
             }
 
-            Serial.println(key + ": " + value);
+            // Use logger to print key-value pairs
+            logger.println(key + ": " + value);
         }
 
         // Process the request with the provided processor function
         processor(request, doc);
 
-        digitalWrite(LED_PIN, LOW); // Turn off LED after processing
+        digitalWrite(PROCESSING_LED_PIN, LOW); // Turn off LED after processing
     }
 }
 

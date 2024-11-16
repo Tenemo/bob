@@ -1,10 +1,13 @@
-#include "Globals.h"
-#include "RequestHandler.h"
-#include "env.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <WiFi.h>
+
+#include "Globals.h"
+#include "RequestHandler.h"
+#include "env.h"
+
+ScreenLogger logger;
 
 AsyncWebServer server(80);
 
@@ -30,32 +33,30 @@ void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
 }
 
 void setup() {
-    Serial.begin(115200);
-    Serial.println("Starting...");
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, LOW);
-    Serial.println("LED initialized to OFF");
+    logger.begin();
+    logger.println("Starting...");
+    pinMode(PROCESSING_LED_PIN, OUTPUT);
+    digitalWrite(PROCESSING_LED_PIN, LOW);
 
     // Connect to Wi-Fi
     WiFi.mode(WIFI_STA);
-    Serial.println("Connecting to WiFi: " + String(WIFI_SSID) + "...");
+    logger.println("Connecting to WiFi: " + String(WIFI_SSID) + "...");
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     // Wait for connection
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
-        Serial.print(".");
+        logger.print(".");
     }
 
-    Serial.println("");
-    Serial.println("WiFi connected!");
-    Serial.print("IP Address: ");
+    logger.println("");
+    logger.println("WiFi connected.");
+    logger.print("IP Address: ");
 
     IPAddress ip = WiFi.localIP();
-    String ipStr = String(ip[0]) + "." + String(ip[1]) + "." + String(ip[2]) +
-                   "." + String(ip[3]);
-    Serial.println(ipStr);
-    Serial.println("");
+    String ipStr = ip.toString();
+    logger.println(ipStr);
+    logger.println("");
 
     server.on(
         "/rotate", HTTP_POST,
@@ -70,12 +71,7 @@ void setup() {
         });
 
     server.begin();
-    Serial.println("Server started");
+    logger.println("Server started");
 }
 
-void loop() {
-    digitalWrite(LED_PIN, HIGH);
-    delay(1000);
-    digitalWrite(LED_PIN, LOW);
-    delay(1000);
-}
+void loop() {}

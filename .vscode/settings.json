@@ -6,7 +6,13 @@
   "editor.guides.bracketPairs": true,
   "editor.tabSize": 4,
   "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 80}",
-  "cSpell.words": ["FILEHANDLER", "msvc", "REQUESTHANDLER", "SCREENLOGGER"],
+  "cSpell.words": [
+    "FILEHANDLER",
+    "msvc",
+    "REQUESTHANDLER",
+    "SCREENLOGGER",
+    "USBCON"
+  ],
   "workbench.iconTheme": "vscode-icons",
   "files.associations": {
     "*.rmd": "markdown",
@@ -29,6 +35,7 @@
     "unordered_map": "cpp",
     "unordered_set": "cpp",
     "string_view": "cpp",
-    "set": "cpp"
+    "set": "cpp",
+    "ostream": "cpp"
   }
 }

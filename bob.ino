@@ -1,11 +1,10 @@
+#include "Globals.h"
+#include "env.h"
+#include "src/RequestHandler.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <WiFi.h>
-
-#include "Globals.h"
-#include "env.h"
-#include "src/RequestHandler.h"
 
 ScreenLogger logger;
 

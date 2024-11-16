@@ -1,11 +1,10 @@
 #ifndef REQUESTHANDLER_H
 #define REQUESTHANDLER_H
 
+#include "Globals.h"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <functional>
-
-#include "Globals.h" // Include Globals.h to access logger
 
 typedef std::function<void(AsyncWebServerRequest *, const JsonDocument &)>
     RequestProcessor;

@@ -2,8 +2,7 @@
 
 ScreenLogger::ScreenLogger()
     : _screen(TFT_DC, TFT_CS, TFT_RST), _textSize(1),
-      _textColor(COLOR_RGB565_WHITE), _lineCount(0), _currentLine(""),
-      _lastRefreshRequest(0), _refreshPending(false) {}
+      _textColor(COLOR_RGB565_WHITE), _lineCount(0), _currentLine("") {}
 
 void ScreenLogger::begin() {
     Serial.begin(115200);
@@ -20,15 +19,13 @@ void ScreenLogger::begin() {
 void ScreenLogger::print(const String &message) {
     Serial.print(message);
     processMessage(message);
-    _refreshPending = true;
-    _lastRefreshRequest = millis();
+    refreshScreen();
 }
 
 void ScreenLogger::println(const String &message) {
     Serial.println(message);
     processMessage(message + "\n");
-    _refreshPending = true;
-    _lastRefreshRequest = millis();
+    refreshScreen();
 }
 
 void ScreenLogger::processMessage(const String &message) {
@@ -111,15 +108,5 @@ void ScreenLogger::refreshScreen() {
     // Draw only the lines that fit on the screen
     for (int i = startLine; i < _lineCount; i++) {
         _screen.println(_lines[i]);
-    }
-}
-
-void ScreenLogger::update() {
-    if (_refreshPending) {
-        unsigned long currentTime = millis();
-        if (currentTime - _lastRefreshRequest >= _refreshDelay) {
-            refreshScreen();
-            _refreshPending = false;
-        }
     }
 }

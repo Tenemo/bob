@@ -17,14 +17,12 @@ class ScreenLogger {
   public:
     ScreenLogger();
     void begin();
-    void update(); // handle delayed refresh
 
     void print(const String &message);
     void println(const String &message);
 
     // Template methods for other types
     template <typename T> void print(T message);
-
     template <typename T> void println(T message);
 
   private:
@@ -40,24 +38,18 @@ class ScreenLogger {
     String _lines[MAX_BUFFER_LINES];
     int _lineCount;
     String _currentLine;
-
-    unsigned long _lastRefreshRequest;
-    bool _refreshPending;
-    const unsigned long _refreshDelay = 5; // 5 milliseconds
 };
 
 template <typename T> void ScreenLogger::print(T message) {
     Serial.print(message);
     processMessage(String(message));
-    _refreshPending = true;
-    _lastRefreshRequest = millis();
+    refreshScreen();
 }
 
 template <typename T> void ScreenLogger::println(T message) {
     Serial.println(message);
     processMessage(String(message) + "\n");
-    _refreshPending = true;
-    _lastRefreshRequest = millis();
+    refreshScreen();
 }
 
 #endif // SCREENLOGGER_H

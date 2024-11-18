@@ -55,6 +55,5 @@ void setup() {
 
 void loop() {
     delay(5);
-    logger.update();
     LEDTimer::update();
 }

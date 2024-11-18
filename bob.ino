@@ -1,96 +1,17 @@
 #include "env.h"
-#include "esp_camera.h"
-#include "esp_timer.h"
-#include "img_converters.h"
 #include "src/Camera.h"
 #include "src/Globals.h"
 #include "src/RequestHandler.h"
+#include "src/Servos.h"
 #include "src/Startup.h"
-#include <Adafruit_PWMServoDriver.h>
 #include <ArduinoJson.h>
-#include <ESPAsyncWebServer.h>
-#include <Wire.h>
-
-int servoPositions[16];
-
-#define SERVOMIN 150 // This is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX 600 // This is the 'maximum' pulse length count (out of 4096)
-#define USMIN                                                                  \
-    600 // This is the rounded 'minimum' microsecond length based on the minimum
-        // pulse of 150
-#define USMAX                                                                  \
-    2400 // This is the rounded 'maximum' microsecond length based on the
-         // maximum pulse of 600
-#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 ScreenLogger logger;
 AsyncWebServer server(80);
 
-void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
-    // Extract motorIndex and degrees from the JSON document
-    int motorIndex = doc["motorIndex"];
-    int degrees = doc["degrees"];
-
-    // Validate motorIndex
-    if (motorIndex < 0 || motorIndex > 15) {
-        req->send(
-            400, "application/json",
-            "{\"error\":\"Invalid motorIndex. Must be between 0 and 15.\"}");
-        return;
-    }
-
-    // Validate degrees
-    if (degrees < 1 || degrees > 180) {
-        req->send(
-            400, "application/json",
-            "{\"error\":\"Invalid degrees. Must be between 1 and 180.\"}");
-        return;
-    }
-
-    // Move servo to the desired position
-    int pwmValue = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
-    pwm.setPWM(motorIndex, 0, pwmValue);
-
-    // Log the action
-    logger.println("Moved servo " + String(motorIndex) + " to " +
-                   String(degrees) + " degrees");
-
-    // move servo back to 0 degrees
-    pwmValue = map(0, 0, 180, SERVOMIN, SERVOMAX);
-    pwm.setPWM(motorIndex, 0, pwmValue);
-
-    // Send success response
-    DynamicJsonDocument responseDoc(200);
-    responseDoc["status"] = "success";
-    responseDoc["motorIndex"] = motorIndex;
-    responseDoc["degrees"] = degrees;
-    String response;
-    serializeJson(responseDoc, response);
-    req->send(200, "application/json", response);
-}
-
 void setup() {
-    // Initialize logger, camera, and Wi-Fi
+    // Initialize camera, Wi-Fi, and servos
     initializeStartup();
-
-    if (!pwm.begin()) {
-        logger.println("Failed to initialize PCA9685!");
-        while (1)
-            ;
-    }
-    pwm.setOscillatorFrequency(27000000);
-    pwm.setPWMFreq(SERVO_FREQ); // Analog servos run at ~50 Hz updates
-
-    int pwm0;
-    int SER0 = 0;
-    for (int posDegrees = 0; posDegrees <= 180; posDegrees++) {
-        // Determine PWM pulse width
-        pwm0 = map(posDegrees, 0, 180, SERVOMIN, SERVOMAX);
-        // Write to PCA9685
-        pwm.setPWM(SER0, 0, pwm0);
-        delay(30);
-    }
 
     server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request) {
         handleRequest(request, nullptr, 0, 0, 0, processCaptureRequest);

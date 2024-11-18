@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "Globals.h"
 #include "ScreenLogger.h"
+#include "Servos.h"
 #include "env.h"
 
 extern ScreenLogger logger;
@@ -14,6 +15,9 @@ void initializeStartup() {
 
     // Initialize Wi-Fi connection
     connectToWiFi();
+
+    // Initialize servos
+    initializeServos();
 
     // Initialize the camera
     // initializeCamera();

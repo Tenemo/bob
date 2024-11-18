@@ -1,14 +1,33 @@
 #include "Camera.h"
 #include "DFRobot_AXP313A.h"
+#include "utils/I2CScanner.h"
 #include <Arduino.h>
 
-DFRobot_AXP313A axp;
+// Use I2C port 0 for the camera
+TwoWire cameraWire = TwoWire(0);
+
+DFRobot_AXP313A axp(0x36, &cameraWire);
 
 void initializeCamera() {
+    // Initialize the I2C bus for the camera
+    cameraWire.begin(SIOD_GPIO_NUM, SIOC_GPIO_NUM,
+                     400000); // SDA, SCL, Frequency 400kHz
+
+    // Scan the I2C bus and get the address
+    int cameraAddress = scanI2CBus(cameraWire);
+
+    if (cameraAddress == -1) {
+        logger.println("Camera initialization WARNING: No I2C devices found on "
+                       "the camera bus.");
+    }
+
+    // Initialize the AXP313A power management chip
     while (axp.begin() != 0) {
-        Serial.println("init error");
+        Serial.println("AXP313A init error");
         delay(1000);
     }
+
+    axp.enableCameraPower(axp.eOV2640); // Enable the power for camera
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
     config.ledc_timer = LEDC_TIMER_0;
@@ -32,6 +51,11 @@ void initializeCamera() {
     config.pixel_format = PIXFORMAT_JPEG;
     config.fb_location = CAMERA_FB_IN_PSRAM;
 
+    // Set the I2C port for the camera to use I2C_NUM_0
+    config.sccb_i2c_port = 0;
+    config.pin_sccb_sda = SIOD_GPIO_NUM;
+    config.pin_sccb_scl = SIOC_GPIO_NUM;
+
     if (psramFound()) {
         Serial.println("PSRAM found.");
         Serial.printf("Total PSRAM Size: %u bytes\n", ESP.getPsramSize());
@@ -41,13 +65,14 @@ void initializeCamera() {
         config.fb_count = 2;
         config.grab_mode = CAMERA_GRAB_LATEST;
     } else {
-        logger.println("PSRAM not found, aborting camera initialization.");
+        logger.println("Camera initialization FAILURE. PSRAM not found, "
+                       "aborting camera initialization.");
         return;
     }
 
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK) {
-        logger.println("Camera initialization FAILED with error:");
+        logger.println("Camera initialization FAILURE with error:");
         logger.println(esp_err_to_name(err));
         Serial.print("Camera initialization failed with error: 0x");
         Serial.println(err, HEX);

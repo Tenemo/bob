@@ -1,69 +1,34 @@
-// Contents of: "src/Servos.cpp"
 #include "Servos.h"
-#include <Wire.h> // Include Wire.h
+#include "utils/I2CScanner.h"
+#include <Wire.h>
 
 #define SERVOMIN 150  // Minimum pulse length count (out of 4096)
 #define SERVOMAX 600  // Maximum pulse length count (out of 4096)
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
-// Create a new TwoWire instance for the servo driver
+// Use I2C port 1 for the servo driver
 TwoWire servoWire = TwoWire(1); // Use I2C bus number 1
 
 // Global pointer to the servo driver
 Adafruit_PWMServoDriver *pwm;
 
-// I2C Scanner Function
-int scanI2CBus(TwoWire &wire) {
-    byte error, address;
-    int nDevices = 0;
-    int foundAddress = -1;
-
-    Serial.println("Scanning I2C bus...");
-
-    for (address = 1; address < 127; address++) {
-        wire.beginTransmission(address);
-        error = wire.endTransmission();
-
-        if (error == 0) {
-            Serial.print("I2C device found at address 0x");
-            if (address < 16) {
-                logger.print("0");
-            }
-            logger.println(String(address, HEX));
-            nDevices++;
-            if (foundAddress == -1) {
-                foundAddress = address; // Grab the first found address
-            }
-        } else if (error == 4) {
-            Serial.print("Unknown error at address 0x");
-            if (address < 16) {
-                Serial.print("0");
-            }
-            Serial.println(String(address, HEX));
-        }
-    }
-    Serial.println("I2C scan done.\n");
-    return foundAddress; // Return the found address or -1 if none
-}
-
 void initializeServos() {
-    // Initialize the new I2C bus for the servo driver
-    servoWire.begin(SDA_PIN, SCL_PIN);
+    // Initialize the I2C bus for the servo driver with frequency
+    servoWire.begin(SDA_PIN, SCL_PIN, 400000); // SDA, SCL, Frequency 400kHz
 
-    // Scan the new I2C bus and get the address
     int servoAddress = scanI2CBus(servoWire);
 
-    // Check if a device was found
     if (servoAddress == -1) {
-        logger.println("PCA9685 initialization FAILURE. No I2C devices found "
-                       "on the servo I2C bus.");
+        logger.println(
+            "PCA9685 initialization FAILURE. No I2C devices found on "
+            "the servo bus.");
         while (1)
             ; // Halt execution
     }
 
     Serial.print("Using servo driver at address 0x");
     if (servoAddress < 16) {
-        logger.print("0");
+        Serial.print("0");
     }
     Serial.println(String(servoAddress, HEX));
 
@@ -71,9 +36,8 @@ void initializeServos() {
     pwm = new Adafruit_PWMServoDriver(servoAddress, servoWire);
 
     if (!pwm->begin()) {
-        logger.println("PCA9685 initialization FAILURE.");
-        while (1)
-            ; // Halt execution
+        logger.println("PCA9685 initialization FAILURE. Aborting.");
+        return;
     }
     logger.println("PCA9685 initialized.");
     pwm->setOscillatorFrequency(27000000);

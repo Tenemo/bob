@@ -1,9 +1,11 @@
+// Contents of: "src/Camera.h"
 #ifndef CAMERA_H
 #define CAMERA_H
 
 #include "Globals.h"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
+#include <Wire.h>
 #include <esp_camera.h>
 
 #define PWDN_GPIO_NUM -1
@@ -23,6 +25,8 @@
 #define VSYNC_GPIO_NUM 6
 #define HREF_GPIO_NUM 42
 #define PCLK_GPIO_NUM 5
+
+extern TwoWire cameraWire;
 
 void initializeCamera();
 camera_fb_t *capturePhoto();

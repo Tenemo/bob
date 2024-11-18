@@ -8,6 +8,9 @@
   "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 80}",
   "cSpell.words": [
     "Adafruit",
+    "Ardu",
+    "ARDUCAM",
+    "ARDUCHIP",
     "asvetliakov",
     "autoinstaller",
     "camelcase",
@@ -24,6 +27,7 @@
     "jpoissonnier",
     "jvitor",
     "kohler",
+    "MOSI",
     "msjsdiag",
     "msvc",
     "ostream",

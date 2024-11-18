@@ -1,36 +1,41 @@
-// Contents of: "src/Camera.h"
 #ifndef CAMERA_H
 #define CAMERA_H
 
 #include "Globals.h"
+// #include "memorysaver.h"
+#include <ArduCAM.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <Wire.h>
-#include <esp_camera.h>
 
-#define PWDN_GPIO_NUM -1
-#define RESET_GPIO_NUM -1
-#define XCLK_GPIO_NUM 45
-#define SIOD_GPIO_NUM 1
-#define SIOC_GPIO_NUM 2
+#define CS_CAMERA 14 // D10
+#define SPI_SCK 17
+#define SPI_MISO 16
+#define SPI_MOSI 15
+#define SDA_PIN 1
+#define SCL_PIN 2
 
-#define Y9_GPIO_NUM 48
-#define Y8_GPIO_NUM 46
-#define Y7_GPIO_NUM 8
-#define Y6_GPIO_NUM 7
-#define Y5_GPIO_NUM 4
-#define Y4_GPIO_NUM 41
-#define Y3_GPIO_NUM 40
-#define Y2_GPIO_NUM 39
-#define VSYNC_GPIO_NUM 6
-#define HREF_GPIO_NUM 42
-#define PCLK_GPIO_NUM 5
+ArduCAM myCAM;
 
-extern TwoWire cameraWire;
+void initializeCamera() {
+    logger.println("Initializing ArduCAM...");
 
-void initializeCamera();
-camera_fb_t *capturePhoto();
+    // ???
+}
+
 void processCaptureRequest(AsyncWebServerRequest *request,
-                           const JsonDocument &doc);
+                           const JsonDocument &doc) {
+    // ???
+
+    AsyncWebServerResponse *response = request->beginResponse(
+        "image/jpeg", len,
+        [len](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+            // ???
+        });
+
+    response->addHeader("Content-Disposition", "inline; filename=capture.jpg");
+    request->send(response);
+    logger.println("Capture complete");
+}
 
 #endif // CAMERA_H

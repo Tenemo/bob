@@ -18,9 +18,8 @@ void initializeStartup() {
 
     // Initialize servos
     initializeServos();
-    delay(100);
 
-    // Initialize the camera
+    // Initialize camera
     // initializeCamera();
 }
 

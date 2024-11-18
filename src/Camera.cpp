@@ -47,13 +47,13 @@ void initializeCamera() {
 
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK) {
-        logger.println("Camera initialization failed with error:");
+        logger.println("Camera initialization FAILED with error:");
         logger.println(esp_err_to_name(err));
         Serial.print("Camera initialization failed with error: 0x");
         Serial.println(err, HEX);
         return;
     }
-    logger.println("Camera initialized successfully.");
+    logger.println("Camera initialization SUCCESSFUL.");
 }
 
 camera_fb_t *capturePhoto() {

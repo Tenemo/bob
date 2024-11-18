@@ -116,25 +116,6 @@ void ScreenLogger::refreshScreen() {
     }
 }
 
-void ScreenLogger::clearScreen() {
-    _screen.fillScreen(COLOR_RGB565_BLACK);
-    _screen.setCursor(0, 0);
-
-    // Clear the lines buffer
-    _lineCount = 0;
-    _currentLine = "";
-}
-
-void ScreenLogger::setTextSize(uint8_t size) {
-    _textSize = size;
-    _screen.setTextSize(_textSize);
-}
-
-void ScreenLogger::setTextColor(uint16_t color) {
-    _textColor = color;
-    _screen.setTextColor(_textColor);
-}
-
 void ScreenLogger::update() {
     if (_refreshPending) {
         unsigned long currentTime = millis();

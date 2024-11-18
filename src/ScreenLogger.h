@@ -19,9 +19,6 @@ class ScreenLogger {
     void begin();
     void print(const String &message);
     void println(const String &message);
-    void clearScreen();
-    void setTextSize(uint8_t size);
-    void setTextColor(uint16_t color);
     void update(); // handle delayed refresh
 
   private:

@@ -1,5 +1,5 @@
 #include "Servos.h"
-#include "utils/I2CScanner.h"
+#include "I2CScanner.h"
 #include <Wire.h>
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
@@ -67,7 +67,7 @@ void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
     rotateServo(motorIndex, 0);
 
     // Prepare response
-    DynamicJsonDocument responseDoc(200);
+    JsonDocument responseDoc;
     responseDoc["status"] = "success";
     responseDoc["motorIndex"] = motorIndex;
     responseDoc["degrees"] = degrees;

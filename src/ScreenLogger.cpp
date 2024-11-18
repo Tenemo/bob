@@ -5,8 +5,8 @@ ScreenLogger::ScreenLogger()
       _textColor(COLOR_RGB565_WHITE), _lineCount(0), _currentLine("") {}
 
 void ScreenLogger::begin() {
-    Serial.println("Initializing screen...");
     Serial.begin(115200);
+    Serial.println("Initializing screen...");
     pinMode(LCD_BL, OUTPUT);
     digitalWrite(LCD_BL, HIGH); // Turn on backlight
     _screen.begin();

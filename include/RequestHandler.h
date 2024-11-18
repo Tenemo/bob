@@ -72,7 +72,7 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
 
         // For GET requests, process immediately without waiting for body
         if (request->method() == HTTP_GET) {
-            DynamicJsonDocument doc(512); // Empty JSON doc for GET requests
+            JsonDocument doc; // Empty JSON doc for GET requests
             processor(request, doc);
             LEDTimer::endProcessing(); // End LED timing
             return;
@@ -87,7 +87,7 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
         }
 
         if (index + len == total) { // Check if all data has been received
-            DynamicJsonDocument doc(512);
+            JsonDocument doc;
 
             if (data && len > 0) {
                 DeserializationError error = deserializeJson(doc, body);

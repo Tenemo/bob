@@ -10,7 +10,7 @@ void ScreenLogger::begin() {
     pinMode(LCD_BL, OUTPUT);
     digitalWrite(LCD_BL, HIGH); // Turn on backlight
     _screen.begin();
-    _screen.setRotation(0);
+    _screen.setRotation(2);
     _screen.fillScreen(COLOR_RGB565_BLACK);
     _screen.setTextColor(_textColor);
     _screen.setTextSize(_textSize);
@@ -20,7 +20,6 @@ void ScreenLogger::begin() {
 void ScreenLogger::print(const String &message) {
     Serial.print(message);
     processMessage(message);
-    // Request a screen refresh
     _refreshPending = true;
     _lastRefreshRequest = millis();
 }
@@ -28,7 +27,6 @@ void ScreenLogger::print(const String &message) {
 void ScreenLogger::println(const String &message) {
     Serial.println(message);
     processMessage(message + "\n");
-    // Request a screen refresh
     _refreshPending = true;
     _lastRefreshRequest = millis();
 }

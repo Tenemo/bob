@@ -17,9 +17,15 @@ class ScreenLogger {
   public:
     ScreenLogger();
     void begin();
+    void update(); // handle delayed refresh
+
     void print(const String &message);
     void println(const String &message);
-    void update(); // handle delayed refresh
+
+    // Template methods for other types
+    template <typename T> void print(T message);
+
+    template <typename T> void println(T message);
 
   private:
     DFRobot_ST7735_128x160_HW_SPI _screen;
@@ -39,5 +45,19 @@ class ScreenLogger {
     bool _refreshPending;
     const unsigned long _refreshDelay = 5; // 5 milliseconds
 };
+
+template <typename T> void ScreenLogger::print(T message) {
+    Serial.print(message);
+    processMessage(String(message));
+    _refreshPending = true;
+    _lastRefreshRequest = millis();
+}
+
+template <typename T> void ScreenLogger::println(T message) {
+    Serial.println(message);
+    processMessage(String(message) + "\n");
+    _refreshPending = true;
+    _lastRefreshRequest = millis();
+}
 
 #endif // SCREENLOGGER_H

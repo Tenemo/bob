@@ -33,7 +33,7 @@ void initializeCamera() {
     config.fb_location = CAMERA_FB_IN_PSRAM;
 
     if (psramFound()) {
-        logger.println("PSRAM found.");
+        Serial.println("PSRAM found.");
         Serial.printf("Total PSRAM Size: %u bytes\n", ESP.getPsramSize());
         Serial.printf("Free PSRAM: %u bytes\n", ESP.getFreePsram());
         config.frame_size = FRAMESIZE_UXGA;

@@ -30,12 +30,8 @@ void connectToWiFi() {
         logger.print(".");
     }
 
-    logger.println("");
-    logger.println("Connected to " + String(WIFI_SSID) + ".");
-    logger.print("IP Address: ");
-
     IPAddress ip = WiFi.localIP();
     String ipStr = ip.toString();
-    logger.println(ipStr);
-    logger.println("");
+    logger.println("\nConnected to " + String(WIFI_SSID) +
+                   ". IP Address: " + ipStr);
 }

@@ -5,6 +5,10 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
+#include <Wire.h>
+
+#define SDA_PIN 13 // D11
+#define SCL_PIN 14 // D10
 
 // Function prototypes
 void initializeServos();

@@ -55,8 +55,8 @@ void initializeServos() {
 
     // Check if a device was found
     if (servoAddress == -1) {
-        logger.println(
-            "No I2C devices found on the servo bus. Halting initialization.");
+        logger.println("PCA9685 initialization FAILURE. No I2C devices found "
+                       "on the servo I2C bus.");
         while (1)
             ; // Halt execution
     }
@@ -71,7 +71,7 @@ void initializeServos() {
     pwm = new Adafruit_PWMServoDriver(servoAddress, servoWire);
 
     if (!pwm->begin()) {
-        logger.println("Failed to initialize PCA9685!");
+        logger.println("PCA9685 initialization FAILURE.");
         while (1)
             ; // Halt execution
     }

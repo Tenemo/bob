@@ -21,7 +21,7 @@ void initializeStartup() {
     delay(100);
 
     // Initialize the camera
-    initializeCamera();
+    // initializeCamera();
 }
 
 void connectToWiFi() {

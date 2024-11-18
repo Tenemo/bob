@@ -8,6 +8,6 @@
 
 extern ScreenLogger logger;
 
-#define PROCESSING_LED_PIN 9 // D7
+#define PROCESSING_LED_PIN 10 // A4
 
 #endif // GLOBALS_H

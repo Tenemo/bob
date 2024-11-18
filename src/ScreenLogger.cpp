@@ -14,6 +14,7 @@ void ScreenLogger::begin() {
     _screen.setTextColor(_textColor);
     _screen.setTextSize(_textSize);
     _screen.setCursor(0, 0);
+    Serial.println("Screen initialized.");
 }
 
 void ScreenLogger::print(const String &message) {

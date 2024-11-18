@@ -6,8 +6,21 @@
 #include "src/Globals.h"
 #include "src/RequestHandler.h"
 #include "src/Startup.h"
+#include <Adafruit_PWMServoDriver.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
+#include <Wire.h>
+
+#define SERVOMIN 150 // This is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX 600 // This is the 'maximum' pulse length count (out of 4096)
+#define USMIN                                                                  \
+    600 // This is the rounded 'minimum' microsecond length based on the minimum
+        // pulse of 150
+#define USMAX                                                                  \
+    2400 // This is the rounded 'maximum' microsecond length based on the
+         // maximum pulse of 600
+#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 ScreenLogger logger;
 AsyncWebServer server(80);
@@ -36,6 +49,36 @@ void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
 void setup() {
     // Initialize logger, camera, and Wi-Fi
     initializeStartup();
+
+    if (!pwm.begin()) {
+        logger.println("Failed to initialize PCA9685!");
+        while (1)
+            ;
+    }
+    pwm.setOscillatorFrequency(27000000);
+    pwm.setPWMFreq(SERVO_FREQ); // Analog servos run at ~50 Hz updates
+
+    int pwm0;
+    int SER0 = 0;
+    for (int posDegrees = 0; posDegrees <= 180; posDegrees++) {
+        // Determine PWM pulse width
+        pwm0 = map(posDegrees, 0, 180, SERVOMIN, SERVOMAX);
+        // Write to PCA9685
+        pwm.setPWM(SER0, 0, pwm0);
+        delay(30);
+    }
+    logger.println("Servo 0 rotated to 180 degrees");
+
+    // Move Motor 0 from 180 to 0 degrees
+    for (int posDegrees = 180; posDegrees >= 0; posDegrees--) {
+
+        // Determine PWM pulse width
+        pwm0 = map(posDegrees, 0, 180, SERVOMIN, SERVOMAX);
+        // Write to PCA9685
+        pwm.setPWM(SER0, 0, pwm0);
+        delay(30);
+    }
+    logger.println("Servo 0 rotated to 0 degrees");
 
     server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request) {
         handleRequest(request, nullptr, 0, 0, 0, processCaptureRequest);

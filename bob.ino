@@ -11,6 +11,8 @@
 #include <ESPAsyncWebServer.h>
 #include <Wire.h>
 
+int servoPositions[16];
+
 #define SERVOMIN 150 // This is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX 600 // This is the 'maximum' pulse length count (out of 4096)
 #define USMIN                                                                  \
@@ -26,20 +28,42 @@ ScreenLogger logger;
 AsyncWebServer server(80);
 
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
-    const char *direction = doc["direction"];
+    // Extract motorIndex and degrees from the JSON document
+    int motorIndex = doc["motorIndex"];
     int degrees = doc["degrees"];
 
-    if (!direction || (strcmp(direction, "clockwise") != 0 &&
-                       strcmp(direction, "counterclockwise") != 0)) {
-        req->send(400, "application/json", "{\"error\":\"Invalid direction\"}");
+    // Validate motorIndex
+    if (motorIndex < 0 || motorIndex > 15) {
+        req->send(
+            400, "application/json",
+            "{\"error\":\"Invalid motorIndex. Must be between 0 and 15.\"}");
         return;
     }
 
-    // TODO: Implement rotation logic based on direction and degrees
+    // Validate degrees
+    if (degrees < 1 || degrees > 180) {
+        req->send(
+            400, "application/json",
+            "{\"error\":\"Invalid degrees. Must be between 1 and 180.\"}");
+        return;
+    }
 
+    // Move servo to the desired position
+    int pwmValue = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
+    pwm.setPWM(motorIndex, 0, pwmValue);
+
+    // Log the action
+    logger.println("Moved servo " + String(motorIndex) + " to " +
+                   String(degrees) + " degrees");
+
+    // move servo back to 0 degrees
+    pwmValue = map(0, 0, 180, SERVOMIN, SERVOMAX);
+    pwm.setPWM(motorIndex, 0, pwmValue);
+
+    // Send success response
     DynamicJsonDocument responseDoc(200);
     responseDoc["status"] = "success";
-    responseDoc["direction"] = direction;
+    responseDoc["motorIndex"] = motorIndex;
     responseDoc["degrees"] = degrees;
     String response;
     serializeJson(responseDoc, response);
@@ -67,18 +91,6 @@ void setup() {
         pwm.setPWM(SER0, 0, pwm0);
         delay(30);
     }
-    logger.println("Servo 0 rotated to 180 degrees");
-
-    // Move Motor 0 from 180 to 0 degrees
-    for (int posDegrees = 180; posDegrees >= 0; posDegrees--) {
-
-        // Determine PWM pulse width
-        pwm0 = map(posDegrees, 0, 180, SERVOMIN, SERVOMAX);
-        // Write to PCA9685
-        pwm.setPWM(SER0, 0, pwm0);
-        delay(30);
-    }
-    logger.println("Servo 0 rotated to 0 degrees");
 
     server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request) {
         handleRequest(request, nullptr, 0, 0, 0, processCaptureRequest);

@@ -16,11 +16,11 @@ void initializeStartup() {
     // Initialize Wi-Fi connection
     connectToWiFi();
 
-    // Initialize servos
-    initializeServos();
-
     // Initialize the camera
     // initializeCamera();
+
+    // Initialize servos
+    initializeServos();
 }
 
 void connectToWiFi() {

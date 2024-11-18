@@ -4,8 +4,7 @@
 #define SERVOMAX 600  // Maximum pulse length count (out of 4096)
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
-// Create PWM driver instance
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
 
 void initializeServos() {
     if (!pwm.begin()) {

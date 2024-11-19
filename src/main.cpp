@@ -26,19 +26,8 @@
       (defined(ARDUCAM_SHIELD_V2) && defined(OV2640_CAM)))
 #error Please select the hardware platform and camera module in the ../libraries/ArduCAM/memorysaver.h file
 #endif
-// set GPIO16 as the slave select :
+
 const int CS = 14;
-
-// you can change the value of wifiType to select Station or AP mode.
-// Default is AP mode.
-int wifiType = 0; // 0:Station  1:AP
-
-// AP mode configuration
-// Default is arducam_esp8266.If you want,you can change the AP_aaid  to your
-// favorite name
-const char *AP_ssid = "arducam_esp8266";
-// Default is no password.If you want to set password,put your password here
-const char *AP_password = "";
 
 // Station mode you should put your ssid and password
 const char *ssid = "BestNetwork";         // Put your SSID here
@@ -231,45 +220,31 @@ void setup() {
     delay(1000);
     myCAM.clear_fifo_flag();
 
-    if (wifiType == 0) {
-        if (!strcmp(ssid, "SSID")) {
-            Serial.println("Please set your SSID");
-            while (1)
-                ;
-        }
-        if (!strcmp(password, "PASSWORD")) {
-            Serial.println("Please set your PASSWORD");
-            while (1)
-                ;
-        }
-        // Connect to WiFi network
-        Serial.println();
-        Serial.println();
-        Serial.print("Connecting to ");
-        Serial.println(ssid);
-
-        WiFi.mode(WIFI_STA);
-        WiFi.begin(ssid, password);
-        while (WiFi.status() != WL_CONNECTED) {
-            delay(500);
-            Serial.print(".");
-        }
-        Serial.println("WiFi connected");
-        Serial.println("");
-        Serial.println(WiFi.localIP());
-    } else if (wifiType == 1) {
-        Serial.println();
-        Serial.println();
-        Serial.print("Share AP: ");
-        Serial.println(AP_ssid);
-        Serial.print("The password is: ");
-        Serial.println(AP_password);
-
-        WiFi.mode(WIFI_AP);
-        WiFi.softAP(AP_ssid, AP_password);
-        Serial.println("");
-        Serial.println(WiFi.softAPIP());
+    if (!strcmp(ssid, "SSID")) {
+        Serial.println("Please set your SSID");
+        while (1)
+            ;
     }
+    if (!strcmp(password, "PASSWORD")) {
+        Serial.println("Please set your PASSWORD");
+        while (1)
+            ;
+    }
+    // Connect to WiFi network
+    Serial.println();
+    Serial.println();
+    Serial.print("Connecting to ");
+    Serial.println(ssid);
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("WiFi connected");
+    Serial.println("");
+    Serial.println(WiFi.localIP());
 
     // Start the server
     server.on("/capture", HTTP_GET, serverCapture);

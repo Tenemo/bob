@@ -1,18 +1,11 @@
 
-#include <Arduino.h>
-
-// This demo was made for ArduCAM ESP8266 OV2640 2MP Camera.
-// 1. Set the camera to JEPG output mode.
-// 2. if server.on("/capture", HTTP_GET, serverCapture),it can take photo
-
-// This program requires the ArduCAM V4.0.0 (or later) library and ArduCAM
-// ESP8266 2MP camera and use Arduino IDE 1.5.8 compiler or above
-
 #include "memorysaver.h"
 #include <ArduCAM.h>
+// Fixes ArduCAM overwriting swap
 #ifdef swap
 #undef swap
 #endif
+#include <Arduino.h>
 #include <SPI.h>
 #include <WebServer.h>
 #include <WiFi.h>
@@ -26,7 +19,6 @@
 
 const int CS = 14;
 
-// Station mode you should put your ssid and password
 const char *ssid = "BestNetwork";         // Put your SSID here
 const char *password = "samsunggalaxys2"; // Put your PASSWORD here
 

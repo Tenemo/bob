@@ -3,10 +3,7 @@
 
 // This demo was made for ArduCAM ESP8266 OV2640 2MP Camera.
 // 1. Set the camera to JEPG output mode.
-// 2. if server.on("/capture", HTTP_GET, serverCapture),it can take photo and
-// send to the Web. 3.if server.on("/stream", HTTP_GET, serverStream),it can
-// take photo continuously as video
-// streaming and send to the Web.
+// 2. if server.on("/capture", HTTP_GET, serverCapture),it can take photo
 
 // This program requires the ArduCAM V4.0.0 (or later) library and ArduCAM
 // ESP8266 2MP camera and use Arduino IDE 1.5.8 compiler or above
@@ -105,77 +102,6 @@ void serverCapture() {
     Serial.println("CAM send Done!");
 }
 
-void serverStream() {
-    WiFiClient client = server.client();
-
-    String response = "HTTP/1.1 200 OK\r\n";
-    response +=
-        "Content-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n";
-    server.sendContent(response);
-
-    while (1) {
-        start_capture();
-
-        while (!myCAM.get_bit(ARDUCHIP_TRIG, CAP_DONE_MASK))
-            ;
-
-        size_t len = myCAM.read_fifo_length();
-        if (len >= 0x07ffff) {
-            Serial.println("Over size.");
-            continue;
-        } else if (len == 0) {
-            Serial.println("Size is 0.");
-            continue;
-        }
-
-        myCAM.CS_LOW();
-        myCAM.set_fifo_burst();
-#if !(defined(ARDUCAM_SHIELD_V2) && defined(OV2640_CAM))
-        SPI.transfer(0xFF);
-#endif
-        if (!client.connected())
-            break;
-        response = "--frame\r\n";
-        response += "Content-Type: image/jpeg\r\n\r\n";
-        server.sendContent(response);
-
-        static const size_t bufferSize = 4096;
-        static uint8_t buffer[bufferSize] = {0xFF};
-
-        while (len) {
-            size_t will_copy = (len < bufferSize) ? len : bufferSize;
-            SPI.transferBytes(&buffer[0], &buffer[0], will_copy);
-            if (!client.connected())
-                break;
-            client.write(&buffer[0], will_copy);
-            len -= will_copy;
-        }
-        myCAM.CS_HIGH();
-
-        if (!client.connected())
-            break;
-    }
-}
-
-void handleNotFound() {
-    String message = "Server is running!\n\n";
-    message += "URI: ";
-    message += server.uri();
-    message += "\nMethod: ";
-    message += (server.method() == HTTP_GET) ? "GET" : "POST";
-    message += "\nArguments: ";
-    message += server.args();
-    message += "\n";
-    server.send(200, "text/plain", message);
-
-    if (server.hasArg("ql")) {
-        int ql = server.arg("ql").toInt();
-        myCAM.OV2640_set_JPEG_size(ql);
-        delay(1000);
-        Serial.println("QL change to: " + server.arg("ql"));
-    }
-}
-
 void setup() {
     uint8_t vid, pid;
     uint8_t temp;
@@ -248,8 +174,6 @@ void setup() {
 
     // Start the server
     server.on("/capture", HTTP_GET, serverCapture);
-    server.on("/stream", HTTP_GET, serverStream);
-    server.onNotFound(handleNotFound);
     server.begin();
     Serial.println("Server started");
 }

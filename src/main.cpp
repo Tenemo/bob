@@ -1,3 +1,5 @@
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#include "esp_log.h"
 
 #include "memorysaver.h"
 #include <ArduCAM.h>
@@ -95,6 +97,9 @@ void serverCapture() {
 }
 
 void setup() {
+    esp_log_level_set("*", ESP_LOG_ERROR);
+    esp_log_level_set("wifi", ESP_LOG_WARN);
+    esp_log_level_set("dhcpc", ESP_LOG_INFO);
     uint8_t vid, pid;
     uint8_t temp;
 #if defined(__SAM3X8E__)

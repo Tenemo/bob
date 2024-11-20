@@ -11,10 +11,9 @@
 #define SERVOMAX 600  // Maximum pulse length count (out of 4096)
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
-#define SERVO_SCL_PIN 2 // D12
-#define SERVO_SDA_PIN 1 // D11
-
-#define SERVO_CONTROLLER_ADDR 0x40
+#define SERVO_DRIVER_ADDR 0x40
+#define SERVO_SDA_PIN 1
+#define SERVO_SCL_PIN 2
 
 void initializeServos();
 void rotateServo(int motorIndex, int degrees);

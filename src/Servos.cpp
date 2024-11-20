@@ -5,8 +5,8 @@
 
 TwoWire servoWire = TwoWire(1);
 
-Adafruit_PWMServoDriver pwm =
-    Adafruit_PWMServoDriver(SERVO_CONTROLLER_ADDR, servoWire);
+Adafruit_PWMServoDriver servoDriver =
+    Adafruit_PWMServoDriver(SERVO_DRIVER_ADDR, servoWire);
 
 void initializeServos() {
     i2c_driver_delete(I2C_NUM_1);
@@ -15,25 +15,14 @@ void initializeServos() {
 
     delay(100);
 
-    // Initialize PWM controller with retry mechanism
-    int retryCount = 0;
-    const int maxRetries = 3;
-
-    while (retryCount < maxRetries) {
-        if (pwm.begin()) {
-            logger.println("PCA9685 initialized successfully");
-            pwm.setOscillatorFrequency(27000000);
-            pwm.setPWMFreq(SERVO_FREQ);
-            return;
-        }
-        logger.println("PCA9685 initialization attempt " +
-                       String(retryCount + 1) + " failed");
-        delay(100);
-        retryCount++;
+    if (servoDriver.begin()) {
+        logger.println("PCA9685 initialization SUCCESSFUL.");
+        servoDriver.setOscillatorFrequency(27000000);
+        servoDriver.setPWMFreq(SERVO_FREQ);
+        return;
     }
 
-    logger.println("PCA9685 initialization failed after " + String(maxRetries) +
-                   " attempts");
+    logger.println("PCA9685 initialization FAILURE.");
 }
 
 void rotateServo(int motorIndex, int degrees) {
@@ -51,7 +40,7 @@ void rotateServo(int motorIndex, int degrees) {
     int pwmValue = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
 
     // Set the PWM signal for the servo
-    pwm.setPWM(motorIndex, 0, pwmValue);
+    servoDriver.setPWM(motorIndex, 0, pwmValue);
 }
 
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {

@@ -2,10 +2,40 @@
 #include "I2CScanner.h"
 #include <Wire.h>
 
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
+TwoWire servoWire = TwoWire(1);
+
+Adafruit_PWMServoDriver pwm =
+    Adafruit_PWMServoDriver(SERVO_CONTROLLER_ADDR, servoWire);
+
+DFRobot_I2C_Multiplexer I2CMulti(&servoWire, I2C_MULTIPLEXER_ADDR);
 
 void initializeServos() {
+    servoWire.begin(SDA_PIN, SCL_PIN,
+                    400000); // 400kHz is standard for PWM drivers
 
+    // Initialize the I2C multiplexer
+    I2CMulti.begin();
+
+    I2CMulti.selectPort(0);
+    delay(100);
+
+    // Optional: Scan the I2C bus to confirm the servo controller is detected
+    uint8_t *result = I2CMulti.scan(0);
+    bool servoDetected = false;
+    for (int i = 0; i < 127; i++) {
+        if (result[i] == SERVO_CONTROLLER_ADDR) {
+            servoDetected = true;
+            break;
+        }
+    }
+
+    if (!servoDetected) {
+        logger.println(
+            "PCA9685 initialization FAILURE. Servo controller not found.");
+        return;
+    }
+
+    // Initialize the PWM servo driver
     if (!pwm.begin()) {
         logger.println("PCA9685 initialization FAILURE. Aborting.");
         return;
@@ -40,6 +70,13 @@ void rotateServo(int motorIndex, int degrees) {
 }
 
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
+    // Validate JSON fields
+    if (!doc["motorIndex"] || !doc["degrees"]) {
+        req->send(400, "application/json",
+                  "{\"error\":\"Missing motorIndex or degrees\"}");
+        return;
+    }
+
     int motorIndex = doc["motorIndex"];
     int degrees = doc["degrees"];
 

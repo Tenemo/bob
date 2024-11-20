@@ -1,4 +1,3 @@
-// Contents of: "src/Camera.h"
 #ifndef CAMERA_H
 #define CAMERA_H
 

@@ -17,7 +17,9 @@ void initializeStartup() {
     connectToWiFi();
 
     // Initialize servos
-    initializeServos();
+    // initializeServos();
+
+    delay(1000);
 
     // Initialize camera
     initializeCamera();

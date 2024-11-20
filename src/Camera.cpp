@@ -3,25 +3,15 @@
 #include "I2CScanner.h"
 #include <Arduino.h>
 
-// Use I2C port 0 for the camera
-// TwoWire cameraWire = TwoWire(0);
+// Define cameraWire for I2C_NUM_0
+TwoWire cameraWire = TwoWire(0);
 
-// DFRobot_AXP313A axp(0x36, &cameraWire);
-DFRobot_AXP313A axp(0x36);
+// Instantiate the AXP313A power management chip with cameraWire
+DFRobot_AXP313A axp(0x36, &cameraWire);
 
 void initializeCamera() {
-    // // Initialize the I2C bus for the camera
-    // // SDA, SCL, Frequency 100kHz
-    // cameraWire.begin(SIOD_GPIO_NUM, SIOC_GPIO_NUM, 400000);
-
-    // // Scan the I2C bus and get the address
-    // int cameraAddress = scanI2CBus(cameraWire);
-
-    // if (cameraAddress == -1) {
-    //     logger.println("Camera initialization WARNING: No I2C devices found
-    //     on "
-    //                    "the camera bus.");
-    // }
+    // Initialize the I2C bus for the camera with SDA, SCL, and frequency 400kHz
+    cameraWire.begin(SIOD_GPIO_NUM, SIOC_GPIO_NUM, 400000);
 
     // Initialize the AXP313A power management chip
     while (axp.begin() != 0) {
@@ -30,6 +20,7 @@ void initializeCamera() {
     }
     axp.enableCameraPower(axp.eOV2640); // Enable the power for camera
 
+    // Camera configuration
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
     config.ledc_timer = LEDC_TIMER_0;

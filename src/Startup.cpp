@@ -12,12 +12,8 @@ void initializeStartup() {
     logger.println("Starting...");
     pinMode(PROCESSING_LED_PIN, OUTPUT);
     digitalWrite(PROCESSING_LED_PIN, LOW);
-
-    delay(1000);
     connectToWiFi();
-    delay(1000);
     initializeCamera();
-    delay(1000);
     initializeServos();
 }
 

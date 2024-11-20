@@ -13,8 +13,6 @@ void initializeServos() {
 
     servoWire.begin(SERVO_SDA_PIN, SERVO_SCL_PIN, 100000);
 
-    delay(100);
-
     if (servoDriver.begin()) {
         logger.println("PCA9685 initialization SUCCESSFUL.");
         servoDriver.setOscillatorFrequency(27000000);

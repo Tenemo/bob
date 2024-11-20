@@ -10,7 +10,7 @@ Adafruit_PWMServoDriver pwm =
 DFRobot_I2C_Multiplexer multiplexer(&servoWire, I2C_MULTIPLEXER_ADDR);
 
 void initializeServos() {
-    servoWire.begin(SERVO_SDA_PIN, SERVO_SCL_PIN, 400000);
+    servoWire.begin(SERVO_SDA_PIN, SERVO_SCL_PIN, 20000);
 
     // Initialize the I2C multiplexer
     multiplexer.begin();

@@ -11,7 +11,7 @@ DFRobot_AXP313A axp(0x36, &cameraWire);
 
 void initializeCamera() {
     // Initialize the I2C bus for the camera with SDA, SCL, and frequency 400kHz
-    cameraWire.begin(SIOD_GPIO_NUM, SIOC_GPIO_NUM, 400000);
+    cameraWire.begin(SIOD_GPIO_NUM, SIOC_GPIO_NUM, 20000);
 
     // Initialize the AXP313A power management chip
     while (axp.begin() != 0) {

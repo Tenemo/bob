@@ -37,9 +37,6 @@ void initializeCamera() {
     config.pixel_format = PIXFORMAT_JPEG;
     config.fb_location = CAMERA_FB_IN_PSRAM;
 
-    // Set the I2C port for the camera to use I2C_NUM_0
-    config.sccb_i2c_port = 0;
-
     if (psramFound()) {
         Serial.println("PSRAM found.");
         Serial.printf("Total PSRAM Size: %u bytes\n", ESP.getPsramSize());

@@ -25,8 +25,6 @@
 #define HREF_GPIO_NUM 42
 #define PCLK_GPIO_NUM 5
 
-extern TwoWire cameraWire;
-
 void initializeCamera();
 camera_fb_t *capturePhoto();
 void processCaptureRequest(AsyncWebServerRequest *request,

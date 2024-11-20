@@ -7,20 +7,19 @@ TwoWire servoWire = TwoWire(1);
 Adafruit_PWMServoDriver pwm =
     Adafruit_PWMServoDriver(SERVO_CONTROLLER_ADDR, servoWire);
 
-DFRobot_I2C_Multiplexer I2CMulti(&servoWire, I2C_MULTIPLEXER_ADDR);
+DFRobot_I2C_Multiplexer multiplexer(&servoWire, I2C_MULTIPLEXER_ADDR);
 
 void initializeServos() {
-    servoWire.begin(SDA_PIN, SCL_PIN,
-                    400000); // 400kHz is standard for PWM drivers
+    servoWire.begin(SERVO_SDA_PIN, SERVO_SCL_PIN, 400000);
 
     // Initialize the I2C multiplexer
-    I2CMulti.begin();
+    multiplexer.begin();
 
-    I2CMulti.selectPort(0);
+    multiplexer.selectPort(0);
     delay(100);
 
-    // Optional: Scan the I2C bus to confirm the servo controller is detected
-    uint8_t *result = I2CMulti.scan(0);
+    // Scan the I2C bus to confirm the servo controller is detected
+    uint8_t *result = multiplexer.scan(0);
     bool servoDetected = false;
     for (int i = 0; i < 127; i++) {
         if (result[i] == SERVO_CONTROLLER_ADDR) {
@@ -35,14 +34,13 @@ void initializeServos() {
         return;
     }
 
-    // Initialize the PWM servo driver
     if (!pwm.begin()) {
         logger.println("PCA9685 initialization FAILURE. Aborting.");
         return;
     }
     logger.println("PCA9685 initialized.");
     pwm.setOscillatorFrequency(27000000);
-    pwm.setPWMFreq(SERVO_FREQ); // Set PWM frequency
+    pwm.setPWMFreq(SERVO_FREQ);
 
     // Optionally, initialize servos to default positions
     // for (int i = 0; i < 16; i++) {

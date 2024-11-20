@@ -3,14 +3,11 @@
 #include "I2CScanner.h"
 #include <Arduino.h>
 
-// Define cameraWire for I2C_NUM_0
 TwoWire cameraWire = TwoWire(0);
 
-// Instantiate the AXP313A power management chip with cameraWire
 DFRobot_AXP313A axp(0x36, &cameraWire);
 
 void initializeCamera() {
-    // Initialize the I2C bus for the camera with SDA, SCL, and frequency 400kHz
     cameraWire.begin(SIOD_GPIO_NUM, SIOC_GPIO_NUM, 20000);
 
     // Initialize the AXP313A power management chip
@@ -20,7 +17,6 @@ void initializeCamera() {
     }
     axp.enableCameraPower(axp.eOV2640); // Enable the power for camera
 
-    // Camera configuration
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
     config.ledc_timer = LEDC_TIMER_0;

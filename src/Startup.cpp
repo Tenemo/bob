@@ -18,13 +18,13 @@ void initializeStartup() {
 
     delay(1000);
 
-    // Initialize servos
-    initializeServos();
+    // Initialize camera
+    initializeCamera();
 
     delay(1000);
 
-    // Initialize camera
-    initializeCamera();
+    // Initialize servos
+    initializeServos();
 }
 
 void connectToWiFi() {

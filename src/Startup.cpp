@@ -8,8 +8,6 @@
 extern ScreenLogger logger;
 
 void initializeStartup() {
-    Serial.begin(115200);
-    Serial.println("Initializing...");
     logger.begin();
     logger.println("Starting...");
     pinMode(PROCESSING_LED_PIN, OUTPUT);
@@ -22,7 +20,7 @@ void initializeStartup() {
     initializeServos();
 
     // Initialize camera
-    // initializeCamera();
+    initializeCamera();
 }
 
 void connectToWiFi() {

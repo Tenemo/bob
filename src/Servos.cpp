@@ -37,9 +37,6 @@ void rotateServo(int motorIndex, int degrees) {
 
     // Set the PWM signal for the servo
     pwm.setPWM(motorIndex, 0, pwmValue);
-
-    logger.println("Moved servo " + String(motorIndex) + " to " +
-                   String(degrees) + " degrees");
 }
 
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
@@ -63,6 +60,8 @@ void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
     }
 
     rotateServo(motorIndex, degrees);
+    logger.println("Moved servo " + String(motorIndex) + " to " +
+                   String(degrees) + " degrees");
     delay(200);
     rotateServo(motorIndex, 0);
 

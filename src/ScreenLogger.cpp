@@ -10,7 +10,7 @@ void ScreenLogger::begin() {
     pinMode(LCD_BL, OUTPUT);
     digitalWrite(LCD_BL, HIGH); // Turn on backlight
     _screen.begin();
-    _screen.setRotation(2);
+    _screen.setRotation(0);
     _screen.fillScreen(COLOR_RGB565_BLACK);
     _screen.setTextColor(_textColor);
     _screen.setTextSize(_textSize);

@@ -13,17 +13,11 @@ void initializeStartup() {
     pinMode(PROCESSING_LED_PIN, OUTPUT);
     digitalWrite(PROCESSING_LED_PIN, LOW);
 
-    // Initialize Wi-Fi connection
+    delay(1000);
     connectToWiFi();
-
     delay(1000);
-
-    // Initialize camera
     initializeCamera();
-
     delay(1000);
-
-    // Initialize servos
     initializeServos();
 }
 

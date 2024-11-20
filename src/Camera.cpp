@@ -3,12 +3,9 @@
 #include "I2CScanner.h"
 #include <Arduino.h>
 
-TwoWire cameraWire = TwoWire(0);
-
-DFRobot_AXP313A axp(0x36, &cameraWire);
+DFRobot_AXP313A axp(0x36);
 
 void initializeCamera() {
-    cameraWire.begin(SIOD_GPIO_NUM, SIOC_GPIO_NUM, 20000);
 
     // Initialize the AXP313A power management chip
     while (axp.begin() != 0) {

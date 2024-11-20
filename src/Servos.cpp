@@ -1,52 +1,39 @@
 #include "Servos.h"
 #include "I2CScanner.h"
 #include <Wire.h>
+#include <driver/i2c.h>
 
 TwoWire servoWire = TwoWire(1);
 
 Adafruit_PWMServoDriver pwm =
     Adafruit_PWMServoDriver(SERVO_CONTROLLER_ADDR, servoWire);
 
-DFRobot_I2C_Multiplexer multiplexer(&servoWire, I2C_MULTIPLEXER_ADDR);
-
 void initializeServos() {
-    servoWire.begin(SERVO_SDA_PIN, SERVO_SCL_PIN, 20000);
+    i2c_driver_delete(I2C_NUM_1);
 
-    // Initialize the I2C multiplexer
-    multiplexer.begin();
+    servoWire.begin(SERVO_SDA_PIN, SERVO_SCL_PIN, 100000);
 
-    multiplexer.selectPort(0);
     delay(100);
 
-    // Scan the I2C bus to confirm the servo controller is detected
-    uint8_t *result = multiplexer.scan(0);
-    bool servoDetected = false;
-    for (int i = 0; i < 127; i++) {
-        if (result[i] == SERVO_CONTROLLER_ADDR) {
-            servoDetected = true;
-            break;
+    // Initialize PWM controller with retry mechanism
+    int retryCount = 0;
+    const int maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+        if (pwm.begin()) {
+            logger.println("PCA9685 initialized successfully");
+            pwm.setOscillatorFrequency(27000000);
+            pwm.setPWMFreq(SERVO_FREQ);
+            return;
         }
+        logger.println("PCA9685 initialization attempt " +
+                       String(retryCount + 1) + " failed");
+        delay(100);
+        retryCount++;
     }
 
-    if (!servoDetected) {
-        logger.println(
-            "PCA9685 initialization FAILURE. Servo controller not found.");
-        return;
-    }
-
-    if (!pwm.begin()) {
-        logger.println("PCA9685 initialization FAILURE. Aborting.");
-        return;
-    }
-    logger.println("PCA9685 initialized.");
-    pwm.setOscillatorFrequency(27000000);
-    pwm.setPWMFreq(SERVO_FREQ);
-
-    // Optionally, initialize servos to default positions
-    // for (int i = 0; i < 16; i++) {
-    //     rotateServo(i, 0);
-    // }
-    // logger.println("Servos positions reset.");
+    logger.println("PCA9685 initialization failed after " + String(maxRetries) +
+                   " attempts");
 }
 
 void rotateServo(int motorIndex, int degrees) {

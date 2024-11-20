@@ -9,6 +9,9 @@ Adafruit_PWMServoDriver servoDriver =
     Adafruit_PWMServoDriver(SERVO_DRIVER_ADDR, servoWire);
 
 void initializeServos() {
+    // This line fixes everything.
+    // Without it, both camera and servos will not work,
+    // no matter which I2C is used, included via a multiplexer.
     i2c_driver_delete(I2C_NUM_1);
 
     servoWire.begin(SERVO_SDA_PIN, SERVO_SCL_PIN, 100000);

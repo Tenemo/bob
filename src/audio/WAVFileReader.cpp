@@ -47,36 +47,23 @@ WAVFileReader::WAVFileReader(const char *file_name) : m_is_complete(false) {
 WAVFileReader::~WAVFileReader() { m_file.close(); }
 
 void WAVFileReader::getFrames(Frame_t *frames, int number_frames) {
-    if (m_is_complete) {
-        // Fill with silence if playback is complete
-        memset(frames, 0, number_frames * sizeof(Frame_t));
-        return;
-    }
-
-    size_t current_pos = m_file.position() - m_data_start;
-    size_t bytes_remaining = m_data_length - current_pos;
-    int frames_to_read = number_frames;
-
-    // If we don't have enough data left for all requested frames
-    if (bytes_remaining < (frames_to_read * sizeof(int16_t) * m_num_channels)) {
-        frames_to_read = bytes_remaining / (sizeof(int16_t) * m_num_channels);
-    }
-
-    // Read available frames
-    for (int i = 0; i < frames_to_read; i++) {
+    // fill the buffer with data from the file wrapping around if necessary
+    for (int i = 0; i < number_frames; i++) {
+        // if we've reached the end of the file then seek back to the beginning
+        // (after the header)
+        if (m_file.available() == 0) {
+            m_file.seek(44);
+        }
+        // read in the next sample to the left channel
         m_file.read((uint8_t *)(&frames[i].left), sizeof(int16_t));
+        // if we only have one channel duplicate the sample for the right
+        // channel
         if (m_num_channels == 1) {
             frames[i].right = frames[i].left;
         } else {
+            // otherwise read in the right channel sample
             m_file.read((uint8_t *)(&frames[i].right), sizeof(int16_t));
         }
-    }
-
-    // Fill remaining frames with silence if we've reached the end
-    if (frames_to_read < number_frames) {
-        memset(&frames[frames_to_read], 0,
-               (number_frames - frames_to_read) * sizeof(Frame_t));
-        m_is_complete = true;
     }
 }
 

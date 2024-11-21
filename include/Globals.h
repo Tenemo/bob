@@ -1,7 +1,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "ScreenLogger.h"
+#include "utils/ScreenLogger.h"
 
 extern ScreenLogger logger;
 

@@ -1,11 +1,8 @@
 #include "Startup.h"
 #include "Camera.h"
 #include "Globals.h"
-#include "ScreenLogger.h"
 #include "Servos.h"
 #include "env.h"
-
-extern ScreenLogger logger;
 
 void initializeStartup() {
     logger.begin();

@@ -1,6 +1,6 @@
 #include "Camera.h"
 #include "DFRobot_AXP313A.h"
-#include "I2CScanner.h"
+#include "utils/I2CScanner.h"
 #include <Arduino.h>
 
 DFRobot_AXP313A axp(0x36);

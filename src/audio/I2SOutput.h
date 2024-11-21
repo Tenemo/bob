@@ -1,5 +1,5 @@
-#ifndef __sampler_base_h__
-#define __sampler_base_h__
+#ifndef __i2s_output_h__
+#define __i2s_output_h__
 
 #include "driver/i2s.h"
 #include <Arduino.h>
@@ -16,23 +16,20 @@ inline i2s_pin_config_t getDefaultI2SPins() {
 
 class AudioFile;
 
-/**
- * Base Class for both the ADC and I2S sampler
- **/
 class I2SOutput {
   private:
-    // I2S write task
     TaskHandle_t m_i2sWriterTaskHandle;
-    // i2s writer queue
     QueueHandle_t m_i2sQueue;
-    // i2s port
     i2s_port_t m_i2sPort;
-    // src of files for us to play
     AudioFile *m_sample_generator;
+    volatile bool m_is_running;
 
   public:
+    I2SOutput() : m_is_running(false) {}
     void start(i2s_port_t i2sPort, i2s_pin_config_t &i2sPins,
                AudioFile *sample_generator);
+    void stop();
+    bool isRunning() { return m_is_running; }
 
     friend void i2sWriterTask(void *param);
 };

@@ -1,4 +1,3 @@
-// In src/audio/WAVFileReader.h:
 #ifndef __wav_file_reader_h__
 #define __wav_file_reader_h__
 
@@ -11,12 +10,16 @@ class WAVFileReader : public AudioFile {
     int m_num_channels;
     int m_sample_rate;
     File m_file;
+    bool m_is_complete;
+    size_t m_data_start;
+    size_t m_data_length;
 
   public:
     WAVFileReader(const char *file_name);
     ~WAVFileReader();
     int sampleRate() { return m_sample_rate; }
     void getFrames(Frame_t *frames, int number_frames);
+    bool isComplete() { return m_is_complete; }
 };
 
 void playAudioFile(const char *filename);

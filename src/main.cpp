@@ -17,7 +17,6 @@ void setup() {
     esp_log_level_set("*", ESP_LOG_ERROR);
     esp_log_level_set("wifi", ESP_LOG_WARN);
     esp_log_level_set("dhcpc", ESP_LOG_INFO);
-    // Initialize camera, Wi-Fi, and servos
     initializeStartup();
 
     server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request) {

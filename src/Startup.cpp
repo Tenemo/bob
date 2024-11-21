@@ -34,6 +34,9 @@ void initializeStartup() {
     } else {
         logger.println("Mounting SPIFFS FAILURE.");
     }
+    server.begin();
+    logger.println("Web server started.");
+    successCount++;
     if (successCount == totalSubsystems) {
         logger.println("ALL " + String(successCount) + "/" +
                        String(totalSubsystems) +
@@ -43,9 +46,6 @@ void initializeStartup() {
                        String(successCount) + "/" + String(totalSubsystems) +
                        " subsystems successfully.");
     }
-    server.begin();
-    logger.println("Web server started.");
-    successCount++;
 }
 bool connectToWiFi() {
     WiFi.mode(WIFI_STA);

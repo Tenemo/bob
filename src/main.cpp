@@ -13,6 +13,7 @@
 #include "utils/HealthCheck.h"
 #include <ESPAsyncWebServer.h>
 #include <FileList.h>
+#include <esp_task_wdt.h>
 
 ScreenLogger logger;
 AsyncWebServer server(80);
@@ -21,6 +22,7 @@ void setup() {
     esp_log_level_set("*", ESP_LOG_ERROR);
     esp_log_level_set("wifi", ESP_LOG_WARN);
     esp_log_level_set("dhcpc", ESP_LOG_INFO);
+    esp_task_wdt_init(60, true); // Watchdog timer set to 60 seconds
 
     server.on("/health-check", HTTP_GET, [](AsyncWebServerRequest *request) {
         handleRequest(request, nullptr, 0, 0, 0, processHealthCheckRequest);
@@ -47,6 +49,7 @@ void setup() {
         handleAudioUpload);
 
     initializeStartup();
+    playAudioFile("/silence.wav"); // Workaround to stop speaker popping
     // playAudioFile("/sample_music.wav");
     // playAudioFile("/sample_voice.wav");
     // playAudioFile("/uploaded_audio.wav");

@@ -14,61 +14,50 @@ void processAudioRequest(AsyncWebServerRequest *request,
 
 void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                        size_t index, uint8_t *data, size_t len, bool final) {
-    Serial.println("Handling audio upload");
-    if (index == 0) {
-        Serial.println("Starting audio upload");
-        // Start of file upload
-        if (len > MAX_FILE_SIZE) {
-            request->send(413, "application/json",
-                          "{\"error\":\"File too large\"}");
-            return;
+    String clientIP = request->client()->remoteIP().toString();
+
+    if (!index) {
+        Serial.println("Upload Start: " + filename + " from " + clientIP);
+
+        // Close any existing file
+        if (uploadFile) {
+            uploadFile.close();
         }
 
-        // Check if there's enough space on SPIFFS
-        size_t availableSpace = SPIFFS.totalBytes() - SPIFFS.usedBytes();
-        if (availableSpace < MAX_FILE_SIZE) {
-            request->send(507, "application/json",
-                          "{\"error\":\"Not enough storage space\"}");
-            return;
+        // Remove existing file
+        if (SPIFFS.exists(UPLOAD_PATH)) {
+            SPIFFS.remove(UPLOAD_PATH);
         }
-        Serial.println("File size: " + String(len) + " bytes");
 
-        // Open file for writing
         uploadFile = SPIFFS.open(UPLOAD_PATH, FILE_WRITE);
         if (!uploadFile) {
+            Serial.println("Failed to open file for writing");
             request->send(500, "application/json",
                           "{\"error\":\"Failed to open file for writing\"}");
             return;
         }
-
         logger.println("Started uploading: " + filename);
     }
 
-    if (uploadFile) {
-        Serial.println("Writing data to file...");
-        // Write the received chunk to the file
-        size_t written = uploadFile.write(data, len);
-        if (written != len) {
-            uploadFile.close();
+    if (len) {
+        if (uploadFile.write(data, len) != len) {
+            Serial.println("Failed to write data to file");
             request->send(500, "application/json",
                           "{\"error\":\"Failed to write file data\"}");
-            logger.println("Failed to write data to file.");
+            uploadFile.close();
             return;
         }
+        Serial.println("Writing file: " + filename + " len=" + String(len));
     }
 
     if (final) {
-        Serial.println("Finalizing upload...");
-        // End of file upload
-        if (uploadFile) {
-            uploadFile.close();
-            logger.println("Upload complete: " + filename);
-            request->send(200, "application/json",
-                          "{\"status\":\"Upload successful\"}");
-        } else {
-            request->send(500, "application/json",
-                          "{\"error\":\"Failed to finalize file upload\"}");
-        }
-        // playAudioFile(UPLOAD_PATH);
+        Serial.println("Upload Complete: " + filename + ", Size: " +
+                       String(index + len) + " bytes from " + clientIP);
+        uploadFile.close();
+
+        // Send response before attempting playback
+        request->send(200, "application/json",
+                      "{\"status\":\"Upload successful\", \"size\":" +
+                          String(index + len) + "}");
     }
 }

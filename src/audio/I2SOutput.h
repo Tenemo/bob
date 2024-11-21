@@ -4,6 +4,16 @@
 #include "driver/i2s.h"
 #include <Arduino.h>
 
+inline i2s_pin_config_t getDefaultI2SPins() {
+    i2s_pin_config_t pins = {
+        .bck_io_num = GPIO_NUM_12,   // BCK (Bit Clock)
+        .ws_io_num = GPIO_NUM_13,    // LRCK (Left/Right Clock)
+        .data_out_num = GPIO_NUM_14, // DATA (Serial Data)
+        .data_in_num = -1            // Not used for output
+    };
+    return pins;
+}
+
 class AudioFile;
 
 /**

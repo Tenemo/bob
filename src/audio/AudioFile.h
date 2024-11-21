@@ -1,6 +1,8 @@
 #ifndef __audio_file_h__
 #define __audio_file_h__
 
+#include <Arduino.h>
+
 typedef struct {
     int16_t left;
     int16_t right;

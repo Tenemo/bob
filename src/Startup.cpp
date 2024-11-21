@@ -11,9 +11,13 @@ void initializeStartup() {
     pinMode(PROCESSING_LED_PIN, OUTPUT);
     digitalWrite(PROCESSING_LED_PIN, LOW);
 
+    // WiFi
+    // Camera
+    // Servos
+    // SPIFFS
+    // Web server
+    const int totalSubsystems = 5;
     int successCount = 0;
-    // WiFi, Camera, Servos, SPIFFS
-    const int totalSubsystems = 4;
 
     if (connectToWiFi()) {
         successCount++;
@@ -39,6 +43,9 @@ void initializeStartup() {
                        String(successCount) + "/" + String(totalSubsystems) +
                        " subsystems successfully.");
     }
+    server.begin();
+    logger.println("Web server started.");
+    successCount++;
 }
 bool connectToWiFi() {
     WiFi.mode(WIFI_STA);

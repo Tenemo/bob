@@ -9,6 +9,7 @@
 #include "audio/AudioFile.h"
 #include "audio/WAVFileReader.h"
 #include "env.h"
+#include <ESPAsyncWebServer.h>
 
 ScreenLogger logger;
 AsyncWebServer server(80);
@@ -17,7 +18,6 @@ void setup() {
     esp_log_level_set("*", ESP_LOG_ERROR);
     esp_log_level_set("wifi", ESP_LOG_WARN);
     esp_log_level_set("dhcpc", ESP_LOG_INFO);
-    initializeStartup();
 
     server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request) {
         handleRequest(request, nullptr, 0, 0, 0, processCaptureRequest);
@@ -31,7 +31,8 @@ void setup() {
                           processRotateRequest);
         });
 
-    server.begin();
+    initializeStartup();
+
     logger.println("Server started");
     playAudioFile("/sample_music.wav");
 }

@@ -6,10 +6,22 @@
 #include "RequestHandler.h"
 #include "Servos.h"
 #include "Startup.h"
+#include "audio/AudioFile.h"
+#include "audio/I2SOutput.h"
+#include "audio/WAVFileReader.h"
 #include "env.h"
+#include <SPIFFS.h>
 
 ScreenLogger logger;
 AsyncWebServer server(80);
+
+i2s_pin_config_t i2sPins = {.bck_io_num = GPIO_NUM_12,   // GPIO_NUM_27
+                            .ws_io_num = GPIO_NUM_13,    // GPIO_NUM_14
+                            .data_out_num = GPIO_NUM_14, // GPIO_NUM_26
+                            .data_in_num = -1};
+
+I2SOutput *output;
+AudioFile *sample;
 
 void setup() {
     esp_log_level_set("*", ESP_LOG_ERROR);
@@ -32,6 +44,10 @@ void setup() {
 
     server.begin();
     logger.println("Server started");
+    SPIFFS.begin();
+    sample = new WAVFileReader("/sample_music.wav");
+    output = new I2SOutput();
+    output->start(I2S_NUM_1, i2sPins, sample);
 }
 
 void loop() {

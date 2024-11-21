@@ -47,14 +47,29 @@ WAVFileReader::WAVFileReader(const char *file_name) : m_is_complete(false) {
 WAVFileReader::~WAVFileReader() { m_file.close(); }
 
 void WAVFileReader::getFrames(Frame_t *frames, int number_frames) {
-    // fill the buffer with data from the file wrapping around if necessary
-    for (int i = 0; i < number_frames; i++) {
-        // if we've reached the end of the file then seek back to the beginning
-        // (after the header)
-        if (m_file.available() == 0) {
-            m_file.seek(44);
+    // Check if we've already completed playback
+    if (m_is_complete) {
+        // Fill the buffer with silence (zeros)
+        for (int i = 0; i < number_frames; i++) {
+            frames[i].left = 0;
+            frames[i].right = 0;
         }
-        // read in the next sample to the left channel
+        return;
+    }
+    // Fill the buffer with data from the file
+    for (int i = 0; i < number_frames; i++) {
+        // If we've reached the end of the file, fill remaining buffer with
+        // silence and mark playback as complete
+        if (m_file.available() == 0) {
+            m_is_complete = true;
+            // Fill the rest of the buffer with silence
+            for (; i < number_frames; i++) {
+                frames[i].left = 0;
+                frames[i].right = 0;
+            }
+            return;
+        }
+        // Read in the next sample to the left channel
         m_file.read((uint8_t *)(&frames[i].left), sizeof(int16_t));
         // if we only have one channel duplicate the sample for the right
         // channel
@@ -66,7 +81,6 @@ void WAVFileReader::getFrames(Frame_t *frames, int number_frames) {
         }
     }
 }
-
 void playAudioFile(const char *filename) {
     WAVFileReader *wav = new WAVFileReader(filename);
     I2SOutput *output = new I2SOutput();

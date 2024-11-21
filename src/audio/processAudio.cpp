@@ -9,51 +9,60 @@ const char *UPLOAD_PATH = "/uploaded_audio.wav";
 
 void processAudioRequest(AsyncWebServerRequest *request,
                          const JsonDocument &doc) {
-    // This function will be called for the initial POST request
-    // The actual file handling is done in handleAudioUpload
-    request->send(200);
+    request->send(200, "application/json", "{\"status\":\"OK\"}");
 }
 
 void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                        size_t index, uint8_t *data, size_t len, bool final) {
-    String clientIP = request->client()->remoteIP().toString();
+    if (index == 0) {
+        // Start of file upload
+        if (len > MAX_FILE_SIZE) {
+            request->send(413, "application/json",
+                          "{\"error\":\"File too large\"}");
+            return;
+        }
 
-    if (!index) {
-        logger.println("Starting audio upload from " + clientIP);
+        // Check if there's enough space on SPIFFS
+        size_t availableSpace = SPIFFS.totalBytes() - SPIFFS.usedBytes();
+        if (availableSpace < MAX_FILE_SIZE) {
+            request->send(507, "application/json",
+                          "{\"error\":\"Not enough storage space\"}");
+            return;
+        }
 
         // Open file for writing
         uploadFile = SPIFFS.open(UPLOAD_PATH, FILE_WRITE);
         if (!uploadFile) {
-            logger.println("Failed to open file for writing");
-            request->send(500, "text/plain", "Failed to open file for writing");
+            request->send(500, "application/json",
+                          "{\"error\":\"Failed to open file for writing\"}");
             return;
         }
+
+        logger.println("Started uploading: " + filename);
     }
 
-    if (len) {
-        if (uploadFile.write(data, len) != len) {
-            logger.println("Failed to write audio data");
-            request->send(500, "text/plain", "Failed to write audio data");
+    if (uploadFile) {
+        // Write the received chunk to the file
+        size_t written = uploadFile.write(data, len);
+        if (written != len) {
             uploadFile.close();
+            request->send(500, "application/json",
+                          "{\"error\":\"Failed to write file data\"}");
+            logger.println("Failed to write data to file.");
             return;
         }
     }
 
     if (final) {
-        uploadFile.close();
-        logger.println("Upload complete: " + String(index + len) + " bytes");
-
-        // Start playing the uploaded audio
-        playAudioFile(UPLOAD_PATH);
-
-        // Send success response
-        JsonDocument responseDoc;
-        responseDoc["status"] = "success";
-        responseDoc["message"] = "Audio uploaded and playing";
-        responseDoc["size"] = index + len;
-
-        String response;
-        serializeJson(responseDoc, response);
-        request->send(200, "application/json", response);
-    }
+        // End of file upload
+        if (uploadFile) {
+            uploadFile.close();
+            logger.println("Upload complete: " + filename);
+            request->send(200, "application/json",
+                          "{\"status\":\"Upload successful\"}");
+        } else {
+            request->send(500, "application/json",
+                          "{\"error\":\"Failed to finalize file upload\"}");
+        }
+        }
 }

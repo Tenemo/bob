@@ -44,12 +44,7 @@ void setup() {
         [](AsyncWebServerRequest *request) {
             handleRequest(request, nullptr, 0, 0, 0, processAudioRequest);
         },
-        handleAudioUpload,
-        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
-           size_t index, size_t total) {
-            // This is needed for the file upload handling but we don't need to
-            // do anything here as handleAudioUpload handles the actual data
-        });
+        handleAudioUpload);
 
     initializeStartup();
     // playAudioFile("/sample_music.wav");

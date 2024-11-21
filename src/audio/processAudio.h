@@ -6,11 +6,17 @@
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 
+// Maximum allowed file size (10MB)
+const size_t MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+// Path where uploaded audio will be stored
+extern const char *UPLOAD_PATH;
+
 /**
- * @brief Processes an audio upload request and initiates playback.
+ * @brief Processes an audio upload request.
  *
- * Handles the upload of WAV audio files to SPIFFS storage and starts playback
- * once the upload is complete.
+ * This function handles the initial POST request for audio uploads.
+ * The actual file processing is done in handleAudioUpload.
  *
  * @param request Pointer to the AsyncWebServerRequest object.
  * @param doc Reference to the JsonDocument containing request data.
@@ -21,15 +27,17 @@ void processAudioRequest(AsyncWebServerRequest *request,
 /**
  * @brief Handles the file upload process for audio files.
  *
- * Manages the upload of audio data in chunks, writes to SPIFFS, and initiates
- * playback when complete.
+ * Processes incoming WAV file uploads in chunks, validating:
+ * - File type (.wav only)
+ * - File size (max 10MB)
+ * - Available SPIFFS space
  *
- * @param request Pointer to the AsyncWebServerRequest object.
- * @param filename Name of the uploaded file.
- * @param index Current position in the upload stream.
- * @param data Pointer to the current chunk of data.
- * @param len Length of the current data chunk.
- * @param final Whether this is the final chunk of the upload.
+ * @param request Pointer to the AsyncWebServerRequest object
+ * @param filename Name of the uploaded file
+ * @param index Current position in the upload stream
+ * @param data Pointer to the current chunk of data
+ * @param len Length of the current data chunk
+ * @param final Whether this is the final chunk of the upload
  */
 void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                        size_t index, uint8_t *data, size_t len, bool final);

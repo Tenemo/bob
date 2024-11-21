@@ -9,12 +9,14 @@ const char *UPLOAD_PATH = "/uploaded_audio.wav";
 
 void processAudioRequest(AsyncWebServerRequest *request,
                          const JsonDocument &doc) {
-    request->send(200, "application/json", "{\"status\":\"OK\"}");
+    request->send(200, "application/json", "{\"status\":\"Ready for upload\"}");
 }
 
 void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                        size_t index, uint8_t *data, size_t len, bool final) {
+    Serial.println("Handling audio upload");
     if (index == 0) {
+        Serial.println("Starting audio upload");
         // Start of file upload
         if (len > MAX_FILE_SIZE) {
             request->send(413, "application/json",
@@ -29,6 +31,7 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                           "{\"error\":\"Not enough storage space\"}");
             return;
         }
+        Serial.println("File size: " + String(len) + " bytes");
 
         // Open file for writing
         uploadFile = SPIFFS.open(UPLOAD_PATH, FILE_WRITE);
@@ -42,6 +45,7 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
     }
 
     if (uploadFile) {
+        Serial.println("Writing data to file...");
         // Write the received chunk to the file
         size_t written = uploadFile.write(data, len);
         if (written != len) {
@@ -54,6 +58,7 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
     }
 
     if (final) {
+        Serial.println("Finalizing upload...");
         // End of file upload
         if (uploadFile) {
             uploadFile.close();
@@ -64,5 +69,6 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
             request->send(500, "application/json",
                           "{\"error\":\"Failed to finalize file upload\"}");
         }
-        }
+        // playAudioFile(UPLOAD_PATH);
+    }
 }

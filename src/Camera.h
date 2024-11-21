@@ -24,7 +24,7 @@
 #define HREF_GPIO_NUM 42
 #define PCLK_GPIO_NUM 5
 
-void initializeCamera();
+bool initializeCamera();
 camera_fb_t *capturePhoto();
 void processCaptureRequest(AsyncWebServerRequest *request,
                            const JsonDocument &doc);

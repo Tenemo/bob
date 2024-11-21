@@ -4,7 +4,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
 
+// Update the function signature to return a bool
+bool connectToWiFi();
 void initializeStartup();
-void connectToWiFi();
 
 #endif // STARTUP_H

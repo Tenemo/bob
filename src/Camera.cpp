@@ -4,12 +4,19 @@
 
 DFRobot_AXP313A axp(0x36);
 
-void initializeCamera() {
-
+bool initializeCamera() {
     // Initialize the AXP313A power management chip
+    const int maxRetries = 10;
+    int retries = 0;
     while (axp.begin() != 0) {
         Serial.println("AXP313A init error");
         delay(1000);
+        retries++;
+        if (retries >= maxRetries) {
+            logger.println("AXP313A initialization FAILURE after " +
+                           String(maxRetries) + " attempts.");
+            return false;
+        }
     }
     axp.enableCameraPower(axp.eOV2640); // Enable the power for camera
 
@@ -47,7 +54,7 @@ void initializeCamera() {
     } else {
         logger.println("Camera initialization FAILURE. PSRAM not found, "
                        "aborting camera initialization.");
-        return;
+        return false;
     }
 
     esp_err_t err = esp_camera_init(&config);
@@ -56,9 +63,10 @@ void initializeCamera() {
         logger.println(esp_err_to_name(err));
         Serial.print("Camera initialization failed with error: 0x");
         Serial.println(err, HEX);
-        return;
+        return false;
     }
-    logger.println("Camera initialization SUCCESSFUL.");
+    Serial.println("Camera initialization SUCCESSFUL.");
+    return true;
 }
 
 camera_fb_t *capturePhoto() {

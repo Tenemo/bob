@@ -7,7 +7,7 @@ TwoWire servoWire = TwoWire(1);
 Adafruit_PWMServoDriver servoDriver =
     Adafruit_PWMServoDriver(SERVO_DRIVER_ADDR, servoWire);
 
-void initializeServos() {
+bool initializeServos() {
     // This line fixes everything.
     // Without it, both camera and servos will not work,
     // no matter which I2C is used, included via a multiplexer.
@@ -16,13 +16,14 @@ void initializeServos() {
     servoWire.begin(SERVO_SDA_PIN, SERVO_SCL_PIN, 100000);
 
     if (servoDriver.begin()) {
-        logger.println("PCA9685 initialization SUCCESSFUL.");
+        Serial.println("PCA9685 initialization SUCCESSFUL.");
         servoDriver.setOscillatorFrequency(27000000);
         servoDriver.setPWMFreq(SERVO_FREQ);
-        return;
+        return true;
     }
 
     logger.println("PCA9685 initialization FAILURE.");
+    return false;
 }
 
 void rotateServo(int motorIndex, int degrees) {

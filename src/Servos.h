@@ -15,7 +15,7 @@
 #define SERVO_SDA_PIN 1
 #define SERVO_SCL_PIN 2
 
-void initializeServos();
+bool initializeServos();
 void rotateServo(int motorIndex, int degrees);
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc);
 

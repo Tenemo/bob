@@ -32,8 +32,6 @@ void setup() {
         });
 
     initializeStartup();
-
-    logger.println("Server started");
     playAudioFile("/sample_music.wav");
 }
 

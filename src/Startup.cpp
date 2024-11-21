@@ -3,6 +3,8 @@
 #include "Globals.h"
 #include "Servos.h"
 #include "env.h"
+#include <ArduinoJson.h>
+#include <HTTPClient.h>
 #include <SPIFFS.h>
 
 void initializeStartup() {
@@ -35,8 +37,31 @@ void initializeStartup() {
         logger.println("Mounting SPIFFS FAILURE.");
     }
     server.begin();
-    logger.println("Web server started.");
-    successCount++;
+    Serial.println("Web server started.");
+
+    // Perform health check for the server
+    const int maxRetries = 3;
+    const int retryDelay = 200;
+    bool healthCheckPassed = false;
+
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+        Serial.println("Health check attempt " + String(attempt) + " of " +
+                       String(maxRetries));
+        if (performHealthCheck()) {
+            healthCheckPassed = true;
+            successCount++; // Increment successCount only if health check
+                            // passes
+            break;
+        }
+        delay(retryDelay);
+    }
+
+    if (healthCheckPassed) {
+        Serial.println("Web server initialization SUCCESSFULL.");
+    } else {
+        logger.println("Web server initialization FAILURE.");
+    }
+
     if (successCount == totalSubsystems) {
         logger.println("ALL " + String(successCount) + "/" +
                        String(totalSubsystems) +
@@ -70,6 +95,50 @@ bool connectToWiFi() {
         return true;
     } else {
         logger.println("\nFailed to connect to WiFi: " + String(WIFI_SSID));
+        return false;
+    }
+}
+
+bool performHealthCheck() {
+    if (WiFi.status() != WL_CONNECTED) {
+        logger.println("Cannot perform health check: WiFi not connected.");
+        return false;
+    }
+
+    IPAddress ip = WiFi.localIP();
+    String url = "http://" + ip.toString() + "/health-check";
+    Serial.println("Performing health check at: " + url);
+
+    HTTPClient http;
+    http.begin(url);
+    http.setTimeout(500); // 500 ms timeout
+
+    int httpCode = http.GET();
+    if (httpCode != HTTP_CODE_OK) {
+        logger.println("Health check failed. HTTP response code: " +
+                       String(httpCode));
+        http.end();
+        return false;
+    }
+
+    String payload = http.getString();
+    http.end();
+
+    // Parse JSON response
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, payload);
+    if (error) {
+        logger.println("Health check JSON parse error: " +
+                       String(error.c_str()));
+        return false;
+    }
+
+    const char *status = doc["status"];
+    if (status && String(status) == "OK") {
+        Serial.println("Health check successful: Server is running.");
+        return true;
+    } else {
+        logger.println("Health check FAILURE: Unexpected status.");
         return false;
     }
 }

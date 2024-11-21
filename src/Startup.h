@@ -7,5 +7,6 @@
 // Update the function signature to return a bool
 bool connectToWiFi();
 void initializeStartup();
+bool performHealthCheck();
 
 #endif // STARTUP_H

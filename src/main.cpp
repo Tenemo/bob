@@ -9,6 +9,7 @@
 #include "audio/AudioFile.h"
 #include "audio/WAVFileReader.h"
 #include "env.h"
+#include "utils/HealthCheck.h"
 #include <ESPAsyncWebServer.h>
 
 ScreenLogger logger;
@@ -30,6 +31,10 @@ void setup() {
             handleRequest(request, data, len, index, total,
                           processRotateRequest);
         });
+
+    server.on("/health-check", HTTP_GET, [](AsyncWebServerRequest *request) {
+        handleRequest(request, nullptr, 0, 0, 0, processHealthCheckRequest);
+    });
 
     initializeStartup();
     playAudioFile("/sample_music.wav");

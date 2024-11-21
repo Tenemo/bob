@@ -36,7 +36,6 @@ void processFileListRequest(AsyncWebServerRequest *request,
         fileObj["name"] = String(file.name());
         fileObj["size"] = file.size();
         fileObj["humanReadableSize"] = formatFileSize(file.size());
-        fileObj["isDirectory"] = file.isDirectory();
         file = root.openNextFile();
     }
 

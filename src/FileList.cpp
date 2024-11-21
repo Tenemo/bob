@@ -18,7 +18,9 @@ String formatFileSize(size_t bytes) {
 void processFileListRequest(AsyncWebServerRequest *request,
                             const JsonDocument &doc) {
     JsonDocument responseDoc;
-    JsonArray filesArray = responseDoc.createNestedArray("files");
+
+    // Use the newer syntax for creating arrays
+    responseDoc["files"].to<JsonArray>();
 
     File root = SPIFFS.open("/");
     if (!root) {
@@ -29,7 +31,8 @@ void processFileListRequest(AsyncWebServerRequest *request,
 
     File file = root.openNextFile();
     while (file) {
-        JsonObject fileObj = filesArray.createNestedObject();
+        // Use the newer syntax for adding objects to arrays
+        JsonObject fileObj = responseDoc["files"].add<JsonObject>();
         fileObj["name"] = String(file.name());
         fileObj["size"] = file.size();
         fileObj["humanReadableSize"] = formatFileSize(file.size());

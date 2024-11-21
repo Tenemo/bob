@@ -9,14 +9,11 @@
  */
 void processHealthCheckRequest(AsyncWebServerRequest *request,
                                const JsonDocument &doc) {
-    // Create a JSON response indicating the server status
-    StaticJsonDocument<100> responseDoc;
+    JsonDocument responseDoc;
     responseDoc["status"] = "OK";
     responseDoc["message"] = "Server is running.";
 
     String response;
     serializeJson(responseDoc, response);
-
-    // Send the response with status 200 and content type application/json
     request->send(200, "application/json", response);
 }

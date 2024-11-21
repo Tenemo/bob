@@ -11,6 +11,7 @@
 #include "env.h"
 #include "utils/HealthCheck.h"
 #include <ESPAsyncWebServer.h>
+#include <FileList.h>
 
 ScreenLogger logger;
 AsyncWebServer server(80);
@@ -31,7 +32,9 @@ void setup() {
             handleRequest(request, data, len, index, total,
                           processRotateRequest);
         });
-
+    server.on("/file-list", HTTP_GET, [](AsyncWebServerRequest *request) {
+        handleRequest(request, nullptr, 0, 0, 0, processFileListRequest);
+    });
     server.on("/health-check", HTTP_GET, [](AsyncWebServerRequest *request) {
         handleRequest(request, nullptr, 0, 0, 0, processHealthCheckRequest);
     });

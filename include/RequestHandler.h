@@ -17,63 +17,6 @@ typedef std::function<void(AsyncWebServerRequest *, const JsonDocument &)>
     RequestProcessor;
 
 /**
- * @class LEDTimer
- * @brief Manages the state of a processing LED to indicate ongoing operations.
- *
- * This class provides static methods to start, end, and update the state of
- * a processing LED, ensuring it remains on for a minimum duration.
- */
-class LEDTimer {
-  private:
-    /**
-     * @brief Timestamp when the LED was turned on.
-     */
-    static unsigned long ledOnTime;
-
-    /**
-     * @brief Minimum duration (in milliseconds) that the LED remains on.
-     */
-    static const unsigned long MIN_LED_DURATION = 200; // 200ms minimum ON time
-
-  public:
-    /**
-     * @brief Turns on the processing LED and records the current time.
-     */
-    static void startProcessing() {
-        digitalWrite(PROCESSING_LED_PIN, HIGH);
-        ledOnTime = millis();
-    }
-
-    /**
-     * @brief Turns off the processing LED if the minimum duration has passed.
-     */
-    static void endProcessing() {
-        // Only turn off LED if minimum duration has passed
-        unsigned long currentTime = millis();
-        if (currentTime - ledOnTime >= MIN_LED_DURATION) {
-            digitalWrite(PROCESSING_LED_PIN, LOW);
-        }
-        // Otherwise, let loop() handle it
-    }
-
-    /**
-     * @brief Updates the state of the processing LED, turning it off if
-     * necessary.
-     */
-    static void update() {
-        if (digitalRead(PROCESSING_LED_PIN) == HIGH) {
-            unsigned long currentTime = millis();
-            if (currentTime - ledOnTime >= MIN_LED_DURATION) {
-                digitalWrite(PROCESSING_LED_PIN, LOW);
-            }
-        }
-    }
-};
-
-// Initialization of static member
-unsigned long LEDTimer::ledOnTime = 0;
-
-/**
  * @brief Handles incoming web server requests, managing LED state and JSON
  * processing.
  *
@@ -94,7 +37,7 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
 
     if (index == 0) {
         body = ""; // Reset the body at the start of a new request
-        LEDTimer::startProcessing(); // Start LED timing
+        digitalWrite(PROCESSING_LED_PIN, HIGH); // Turn on LED
 
         // Log the request method and endpoint
         String method;
@@ -121,7 +64,7 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
         if (request->method() == HTTP_GET) {
             JsonDocument doc; // Empty JSON doc for GET requests
             processor(request, doc);
-            LEDTimer::endProcessing(); // End LED timing
+            digitalWrite(PROCESSING_LED_PIN, LOW); // Turn off LED
             return;
         }
     }
@@ -141,14 +84,14 @@ void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
                 if (error) {
                     request->send(400, "application/json",
                                   "{\"error\":\"Invalid JSON\"}");
-                    LEDTimer::endProcessing(); // End LED timing
+                    digitalWrite(PROCESSING_LED_PIN, LOW); // Turn off LED
                     return;
                 }
             }
 
             // Process the request with the provided processor function
             processor(request, doc);
-            LEDTimer::endProcessing(); // End LED timing
+            digitalWrite(PROCESSING_LED_PIN, LOW); // Turn off LED
         }
     }
 }

@@ -55,7 +55,4 @@ void setup() {
     // playAudioFile("/sample_music.wav");
 }
 
-void loop() {
-    delay(5);
-    LEDTimer::update();
-}
+void loop() { delay(5); }

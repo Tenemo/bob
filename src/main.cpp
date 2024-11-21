@@ -8,6 +8,7 @@
 #include "Startup.h"
 #include "audio/AudioFile.h"
 #include "audio/WAVFileReader.h"
+#include "audio/processAudio.h"
 #include "env.h"
 #include "utils/HealthCheck.h"
 #include <ESPAsyncWebServer.h>
@@ -38,8 +39,20 @@ void setup() {
                           processRotateRequest);
         });
 
+    server.on(
+        "/audio", HTTP_POST,
+        [](AsyncWebServerRequest *request) {
+            handleRequest(request, nullptr, 0, 0, 0, processAudioRequest);
+        },
+        handleAudioUpload,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+           size_t index, size_t total) {
+            // This is needed for the file upload handling but we don't need to
+            // do anything here as handleAudioUpload handles the actual data
+        });
+
     initializeStartup();
-    playAudioFile("/sample_music.wav");
+    // playAudioFile("/sample_music.wav");
 }
 
 void loop() {

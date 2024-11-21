@@ -4,21 +4,49 @@
 #include "Globals.h"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
+#include <functional>
 
+/**
+ * @typedef RequestProcessor
+ * @brief A function type for processing web server requests.
+ *
+ * @param request Pointer to the AsyncWebServerRequest object.
+ * @param doc     Reference to the JsonDocument containing request data.
+ */
 typedef std::function<void(AsyncWebServerRequest *, const JsonDocument &)>
     RequestProcessor;
 
+/**
+ * @class LEDTimer
+ * @brief Manages the state of a processing LED to indicate ongoing operations.
+ *
+ * This class provides static methods to start, end, and update the state of
+ * a processing LED, ensuring it remains on for a minimum duration.
+ */
 class LEDTimer {
   private:
+    /**
+     * @brief Timestamp when the LED was turned on.
+     */
     static unsigned long ledOnTime;
+
+    /**
+     * @brief Minimum duration (in milliseconds) that the LED remains on.
+     */
     static const unsigned long MIN_LED_DURATION = 200; // 200ms minimum ON time
 
   public:
+    /**
+     * @brief Turns on the processing LED and records the current time.
+     */
     static void startProcessing() {
         digitalWrite(PROCESSING_LED_PIN, HIGH);
         ledOnTime = millis();
     }
 
+    /**
+     * @brief Turns off the processing LED if the minimum duration has passed.
+     */
     static void endProcessing() {
         // Only turn off LED if minimum duration has passed
         unsigned long currentTime = millis();
@@ -28,6 +56,10 @@ class LEDTimer {
         // Otherwise, let loop() handle it
     }
 
+    /**
+     * @brief Updates the state of the processing LED, turning it off if
+     * necessary.
+     */
     static void update() {
         if (digitalRead(PROCESSING_LED_PIN) == HIGH) {
             unsigned long currentTime = millis();
@@ -38,8 +70,24 @@ class LEDTimer {
     }
 };
 
+// Initialization of static member
 unsigned long LEDTimer::ledOnTime = 0;
 
+/**
+ * @brief Handles incoming web server requests, managing LED state and JSON
+ * processing.
+ *
+ * This function manages the lifecycle of a web request, including logging,
+ * LED indication, and JSON deserialization for non-GET requests.
+ *
+ * @param request   Pointer to the AsyncWebServerRequest object.
+ * @param data      Pointer to the incoming data buffer.
+ * @param len       Length of the incoming data chunk.
+ * @param index     Current index of the data chunk.
+ * @param total     Total length of the incoming data.
+ * @param processor Function to process the request with the parsed JSON
+ * document.
+ */
 void handleRequest(AsyncWebServerRequest *request, uint8_t *data, size_t len,
                    size_t index, size_t total, RequestProcessor processor) {
     static String body;

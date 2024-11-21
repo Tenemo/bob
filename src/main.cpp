@@ -10,7 +10,6 @@
 #include "audio/I2SOutput.h"
 #include "audio/WAVFileReader.h"
 #include "env.h"
-#include <SPIFFS.h>
 
 ScreenLogger logger;
 AsyncWebServer server(80);
@@ -44,7 +43,6 @@ void setup() {
 
     server.begin();
     logger.println("Server started");
-    SPIFFS.begin();
     sample = new WAVFileReader("/sample_music.wav");
     output = new I2SOutput();
     output->start(I2S_NUM_1, i2sPins, sample);

@@ -3,6 +3,7 @@
 #include "Globals.h"
 #include "Servos.h"
 #include "env.h"
+#include <SPIFFS.h>
 
 void initializeStartup() {
     logger.begin();
@@ -12,6 +13,12 @@ void initializeStartup() {
     connectToWiFi();
     initializeCamera();
     initializeServos();
+    // Initialize SPIFFS for audio files
+    if (!SPIFFS.begin(true)) {
+        logger.println("Mounting SPIFFS FAILURE.");
+        return;
+    }
+    logger.println("Mounting SPIFFS SUCCESSFUL.");
 }
 
 void connectToWiFi() {

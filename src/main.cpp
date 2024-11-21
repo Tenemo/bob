@@ -21,10 +21,15 @@ void setup() {
     esp_log_level_set("wifi", ESP_LOG_WARN);
     esp_log_level_set("dhcpc", ESP_LOG_INFO);
 
+    server.on("/health-check", HTTP_GET, [](AsyncWebServerRequest *request) {
+        handleRequest(request, nullptr, 0, 0, 0, processHealthCheckRequest);
+    });
+    server.on("/file-list", HTTP_GET, [](AsyncWebServerRequest *request) {
+        handleRequest(request, nullptr, 0, 0, 0, processFileListRequest);
+    });
     server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request) {
         handleRequest(request, nullptr, 0, 0, 0, processCaptureRequest);
     });
-
     server.on(
         "/rotate", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
         [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
@@ -32,12 +37,6 @@ void setup() {
             handleRequest(request, data, len, index, total,
                           processRotateRequest);
         });
-    server.on("/file-list", HTTP_GET, [](AsyncWebServerRequest *request) {
-        handleRequest(request, nullptr, 0, 0, 0, processFileListRequest);
-    });
-    server.on("/health-check", HTTP_GET, [](AsyncWebServerRequest *request) {
-        handleRequest(request, nullptr, 0, 0, 0, processHealthCheckRequest);
-    });
 
     initializeStartup();
     playAudioFile("/sample_music.wav");

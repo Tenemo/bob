@@ -6,6 +6,7 @@
 #include <ESPAsyncWebServer.h>
 #include <esp_camera.h>
 
+// GPIO pin definitions for the camera
 #define PWDN_GPIO_NUM -1
 #define RESET_GPIO_NUM -1
 #define XCLK_GPIO_NUM 45
@@ -24,8 +25,39 @@
 #define HREF_GPIO_NUM 42
 #define PCLK_GPIO_NUM 5
 
+/**
+ * @brief Initializes the camera module.
+ *
+ * Configures and initializes the camera with predefined settings. Ensures that
+ * the power management chip is properly initialized before setting up the
+ * camera.
+ *
+ * @return `true` if the camera is successfully initialized, `false` otherwise.
+ */
 bool initializeCamera();
+
+/**
+ * @brief Captures a photo using the initialized camera.
+ *
+ * Triggers the camera to capture a single frame and retrieves the framebuffer.
+ *
+ * @return Pointer to the captured framebuffer (`camera_fb_t`). Returns
+ * `nullptr` if the capture fails.
+ */
 camera_fb_t *capturePhoto();
+
+/**
+ * @brief Processes incoming capture requests by capturing a photo and sending
+ * it as a response.
+ *
+ * Handles HTTP requests to capture photos, retrieves the image from the camera,
+ * and sends it back to the client as a JPEG image.
+ *
+ * @param request Pointer to the AsyncWebServerRequest object representing the
+ * incoming request.
+ * @param doc     Reference to the JsonDocument containing request data (unused
+ * in this case).
+ */
 void processCaptureRequest(AsyncWebServerRequest *request,
                            const JsonDocument &doc);
 

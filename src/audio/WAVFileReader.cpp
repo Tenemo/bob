@@ -84,5 +84,6 @@ void playAudioFile(const char *filename) {
     WAVFileReader *wav = new WAVFileReader(filename);
     I2SOutput *output = new I2SOutput();
     i2s_pin_config_t pins = getDefaultI2SPins();
+    Serial.println("Playing audio file: " + String(filename));
     output->start(I2S_NUM_1, pins, wav);
 }

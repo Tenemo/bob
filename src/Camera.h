@@ -4,7 +4,6 @@
 #include "Globals.h"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
-#include <Wire.h>
 #include <esp_camera.h>
 
 #define PWDN_GPIO_NUM -1

@@ -1,5 +1,4 @@
 #include "Servos.h"
-#include "utils/I2CScanner.h"
 #include <Wire.h>
 #include <driver/i2c.h>
 

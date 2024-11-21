@@ -4,7 +4,6 @@
 #include "Globals.h"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
-#include <functional>
 
 typedef std::function<void(AsyncWebServerRequest *, const JsonDocument &)>
     RequestProcessor;

@@ -3,7 +3,6 @@
 
 #include "AudioFile.h"
 #include <FS.h>
-#include <SPIFFS.h>
 
 class WAVFileReader : public AudioFile {
   private:

@@ -1,9 +1,5 @@
 
 #include "driver/i2s.h"
-#include <Arduino.h>
-#include <FS.h>
-#include <SPIFFS.h>
-#include <math.h>
 
 #include "AudioFile.h"
 #include "I2SOutput.h"

@@ -64,7 +64,7 @@ void initializeStartup() {
     }
     // Workaround to stop speaker popping
     // 10ms of silence
-    playAudioFile("/silence.wav");
+    // playAudioFile("/silence.wav");
     delay(10);
 
     if (successCount == totalSubsystems) {

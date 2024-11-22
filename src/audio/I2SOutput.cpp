@@ -54,10 +54,10 @@ void I2SOutput::start(i2s_port_t i2sPort, i2s_pin_config_t &i2sPins,
     // i2s config for writing both channels of I2S
     i2s_config_t i2sConfig = {
         .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
-        .sample_rate = m_sample_generator->sampleRate(),
+        .sample_rate = static_cast<uint32_t>(m_sample_generator->sampleRate()),
         .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
-        .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S),
+        .communication_format = (i2s_comm_format_t)(0x01),
         .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
         .dma_buf_count = 4,
         .dma_buf_len = 1024};

@@ -1,4 +1,4 @@
-# ESP32-S3 multimedia control system
+# bob
 
 An embedded system project using ESP32-S3 for controlling camera, servo motors, and audio playback with a web-based API interface.
 

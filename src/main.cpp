@@ -48,7 +48,7 @@ void setup() {
         handleAudioUpload);
 
     initializeStartup();
-    playAudioFile("/sample_music.wav");
+    // playAudioFile("/sample_music.wav");
     // playAudioFile("/sample_voice.wav");
     // playAudioFile("/uploaded_audio.wav");
 }

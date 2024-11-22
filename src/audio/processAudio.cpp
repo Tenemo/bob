@@ -8,13 +8,27 @@
 
 volatile bool uploadError = false;
 extern DFRobot_AXP313A cameraPowerDriver;
-File uploadFile;
-FileUploadHandler uploadHandler;
 
 const char *UPLOAD_PATH = "/uploaded_audio.wav";
 static int lastReportedProgress = 0;
 static String message = "";
 static String path = "";
+
+// Global buffer management
+static uint8_t *uploadBuffer = nullptr;
+static size_t uploadSize = 0;
+static size_t currentPosition = 0;
+static bool isUploading = false;
+
+void cleanupUpload() {
+    if (uploadBuffer != nullptr) {
+        free(uploadBuffer);
+        uploadBuffer = nullptr;
+    }
+    uploadSize = 0;
+    currentPosition = 0;
+    isUploading = false;
+}
 
 void processAudioRequest(AsyncWebServerRequest *request,
                          const JsonDocument &doc) {
@@ -30,20 +44,17 @@ void processAudioRequest(AsyncWebServerRequest *request,
 void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                        size_t index, uint8_t *data, size_t len, bool final) {
     String clientIP = request->client()->remoteIP().toString();
-    // For some reason onRequest fires AFTER upload,
-    // so we handle status request LED logic here
-    digitalWrite(PROCESSING_LED_PIN, HIGH);
+
     if (!index) {
-        uploadError = false; // Reset error flag at start
+        digitalWrite(PROCESSING_LED_PIN, HIGH);
+        uploadError = false;
         logger.println("Audio upload from " + clientIP + " began.");
         lastReportedProgress = 0;
 
-        deinitializeCamera();
-
-        // Close any existing file
-        if (uploadFile) {
-            uploadFile.close();
-        }
+        // Stop any current playback before starting new upload
+        stopPlayback();
+        // Make sure previous upload is cleaned up
+        cleanupUpload();
 
         path = filename;
         if (path.length() == 0)
@@ -51,8 +62,10 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
         if (path[0] != '/')
             path = "/" + path;
 
-        // Initialize PSRAM buffer
-        if (!uploadHandler.begin(path, request->contentLength())) {
+        // Allocate new buffer
+        uploadSize = request->contentLength();
+        uploadBuffer = (uint8_t *)ps_malloc(uploadSize);
+        if (!uploadBuffer) {
             uploadError = true;
             logger.println("Failed to allocate PSRAM buffer");
             request->send(500, "application/json",
@@ -60,58 +73,80 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
             digitalWrite(PROCESSING_LED_PIN, LOW);
             return;
         }
+        currentPosition = 0;
+        isUploading = true;
     }
-    if (len) {
-        if (!uploadHandler.writeChunk(data, len)) {
+
+    if (len && uploadBuffer && isUploading) {
+        if (currentPosition + len <= uploadSize) {
+            memcpy(uploadBuffer + currentPosition, data, len);
+            currentPosition += len;
+
+            if (request->contentLength() > 0) {
+                int currentProgress =
+                    (currentPosition * 100) / request->contentLength();
+                int currentFifth = currentProgress / 20;
+                int lastFifth = lastReportedProgress / 20;
+
+                if (currentFifth > lastFifth) {
+                    message =
+                        "Upload progress: " + String(currentProgress) + "%";
+                    logger.println(message);
+                    lastReportedProgress = currentFifth * 20;
+                }
+            }
+        } else {
             uploadError = true;
-            logger.println("Failed to write to PSRAM buffer");
+            logger.println("Buffer overflow prevented");
+            cleanupUpload();
             request->send(500, "application/json",
-                          "{\"error\":\"Failed to write to buffer\"}");
-            uploadHandler.cleanup();
+                          "{\"error\":\"Buffer overflow\"}");
             digitalWrite(PROCESSING_LED_PIN, LOW);
             return;
-        }
-
-        // Calculate and log progress
-        if (request->contentLength() > 0) {
-            int currentProgress =
-                ((index + len) * 100) / request->contentLength();
-            int currentFifth = currentProgress / 20;
-            int lastFifth = lastReportedProgress / 20;
-
-            if (currentFifth > lastFifth) {
-                int progressToReport = currentFifth * 20;
-                message = "Upload progress: " + String(currentProgress) + "%";
-                logger.println(message);
-                lastReportedProgress = progressToReport;
-            }
         }
     }
 
     if (final) {
-        // Stop playback, otherwise the sounds gets all glitchy
-        stopPlayback();
-
-        logger.println("Finalizing upload...");
-        if (!uploadHandler.finish()) {
+        if (!uploadBuffer || !isUploading) {
             uploadError = true;
-            logger.println("Failed to save file to SPIFFS.");
+            logger.println("Upload state error");
+            cleanupUpload();
             request->send(500, "application/json",
-                          "{\"error\":\"Failed to save file\"}");
+                          "{\"error\":\"Upload state error\"}");
             digitalWrite(PROCESSING_LED_PIN, LOW);
             return;
         }
 
-        Serial.println("Upload Complete: " + filename + ", Size: " +
-                       String(index + len) + " bytes from " + clientIP);
-        initializeCamera();
+        logger.println("Upload complete, starting playback...");
+
+        // Create a copy of the buffer for playback
+        uint8_t *playbackBuffer = (uint8_t *)ps_malloc(currentPosition);
+        if (!playbackBuffer) {
+            uploadError = true;
+            logger.println("Failed to allocate playback buffer");
+            cleanupUpload();
+            request->send(500, "application/json",
+                          "{\"error\":\"Playback buffer allocation failed\"}");
+            digitalWrite(PROCESSING_LED_PIN, LOW);
+            return;
+        }
+
+        // Copy the data and clean up upload buffer
+        memcpy(playbackBuffer, uploadBuffer, currentPosition);
+        size_t finalSize = currentPosition;
+
+        // Clean up upload state
+        cleanupUpload();
+
+        // Start playback with the copied buffer
+        playAudioFromPSRAM(playbackBuffer, finalSize);
+
+        Serial.println("Upload complete: " + filename + ", size: " +
+                       String(finalSize) + " bytes from " + clientIP);
 
         request->send(200, "application/json",
                       "{\"status\":\"Upload successful\", \"size\":" +
-                          String(index + len) + "}");
-
+                          String(finalSize) + "}");
         digitalWrite(PROCESSING_LED_PIN, LOW);
-
-        playAudioFile(path.c_str());
     }
 }

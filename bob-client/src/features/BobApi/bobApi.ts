@@ -3,7 +3,7 @@ export type HealthcheckResponse = {
     status: string;
 };
 
-export const bobApiSlice = createApi({
+export const bobApi = createApi({
     reducerPath: 'bobApi',
     baseQuery: fetchBaseQuery({
         baseUrl: '',
@@ -29,4 +29,4 @@ export const bobApiSlice = createApi({
     }),
 });
 
-export const { useHealthcheckQuery, useCaptureQuery } = bobApiSlice;
+export const { useHealthcheckQuery, useCaptureQuery } = bobApi;

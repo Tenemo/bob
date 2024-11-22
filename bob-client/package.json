@@ -62,7 +62,7 @@
     "react-router": "^6.28.0",
     "react-router-dom": "^6.28.0",
     "redux": "^5.0.1",
-    "redux-first-history": "^5.2.0",
+    "redux-persist": "^6.0.0",
     "redux-thunk": "^3.1.0",
     "reselect": "^5.1.1"
   },

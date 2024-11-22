@@ -1,12 +1,13 @@
-import { CssBaseline, ThemeProvider } from '@mui/material';
+import { CircularProgress, CssBaseline, ThemeProvider } from '@mui/material';
 import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
 import { Provider } from 'react-redux';
-import { HistoryRouter as Router } from 'redux-first-history/rr6';
+import { BrowserRouter } from 'react-router-dom';
+import { PersistGate } from 'redux-persist/integration/react';
 
 import App from 'app/App';
-import { store, history } from 'app/store';
+import { store, persistor } from 'app/store';
 import { darkTheme } from 'styles/theme';
 
 import 'styles/global.scss';
@@ -28,14 +29,19 @@ export const Root = (): React.JSX.Element => {
     return (
         <React.StrictMode>
             <Provider store={store}>
-                <HelmetProvider>
-                    <ThemeProvider theme={darkTheme}>
-                        <CssBaseline enableColorScheme />
-                        <Router history={history}>
-                            <App />
-                        </Router>
-                    </ThemeProvider>
-                </HelmetProvider>
+                <PersistGate
+                    loading={<CircularProgress />}
+                    persistor={persistor}
+                >
+                    <HelmetProvider>
+                        <ThemeProvider theme={darkTheme}>
+                            <CssBaseline enableColorScheme />
+                            <BrowserRouter>
+                                <App />
+                            </BrowserRouter>
+                        </ThemeProvider>
+                    </HelmetProvider>
+                </PersistGate>
             </Provider>
         </React.StrictMode>
     );

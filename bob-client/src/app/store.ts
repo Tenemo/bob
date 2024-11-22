@@ -1,62 +1,73 @@
 import type { Action, ThunkAction } from '@reduxjs/toolkit';
 import { configureStore } from '@reduxjs/toolkit';
-import { createBrowserHistory } from 'history';
 import { combineReducers } from 'redux';
-import { createReduxHistoryContext } from 'redux-first-history';
 import { createLogger } from 'redux-logger';
+import {
+    persistStore,
+    persistReducer,
+    FLUSH,
+    REHYDRATE,
+    PAUSE,
+    PERSIST,
+    PURGE,
+    REGISTER,
+} from 'redux-persist';
+import hardSet from 'redux-persist/lib/stateReconciler/hardSet';
+import storage from 'redux-persist/lib/storage';
 
 import { bobSlice } from 'features/Bob/bobSlice';
-import { bobApiSlice } from 'features/BobApi/bobApiSlice';
+import { bobApi } from 'features/BobApi/bobApi';
 
 export type RootState = ReturnType<typeof rootReducer>;
+
+const IS_LOGGING_ENABLED = false;
+
+const persistConfig = {
+    key: 'root',
+    storage,
+    stateReconciler: hardSet,
+    blacklist: [bobApi.reducerPath],
+    version: 1,
+};
 
 const logger = createLogger({
     diff: true,
     collapsed: true,
 });
 
-const { createReduxHistory, routerMiddleware, routerReducer } =
-    createReduxHistoryContext({ history: createBrowserHistory() });
-
 export const rootReducer = combineReducers({
     bob: bobSlice.reducer,
-    bobApi: bobApiSlice.reducer,
-    router: routerReducer,
+    bobApi: bobApi.reducer,
 });
 
-const middleware = [routerMiddleware, bobApiSlice.middleware];
+const persistedReducer = persistReducer<RootState>(persistConfig, rootReducer);
 
-// We'll be just fine with inferring these types :)
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/explicit-module-boundary-types
-export const makeStoreDev = (preloadedState?: Partial<RootState>) => {
-    const store = configureStore({
-        reducer: rootReducer,
-        devTools: true,
-        middleware: (getDefaultMiddleware) =>
-            getDefaultMiddleware().concat(middleware).concat(logger),
-        preloadedState,
-    });
-    return store;
-};
+const middleware = [bobApi.middleware];
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/explicit-module-boundary-types
-export const makeStoreProd = (preloadedState?: Partial<RootState>) => {
-    const store = configureStore({
-        reducer: rootReducer,
-        devTools: false,
-        middleware: (getDefaultMiddleware) =>
-            getDefaultMiddleware().concat(middleware),
-        preloadedState,
-    });
-    return store;
-};
+export const store = configureStore({
+    reducer: persistedReducer,
+    devTools: true, // Leaving it on for prod on purpose
+    middleware: (getDefaultMiddleware) => {
+        const defaultMiddleware = getDefaultMiddleware({
+            serializableCheck: {
+                ignoredActions: [
+                    FLUSH,
+                    REHYDRATE,
+                    PAUSE,
+                    PERSIST,
+                    PURGE,
+                    REGISTER,
+                ],
+            },
+        });
 
-const buildType = process.env.NODE_ENV ?? `production`;
-export const makeStore =
-    buildType === `development` ? makeStoreDev : makeStoreProd;
-
-export const store = makeStore();
-export const history = createReduxHistory(store);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        return IS_LOGGING_ENABLED
+            ? defaultMiddleware.concat(middleware).concat(logger)
+            : defaultMiddleware.concat(middleware);
+    },
+});
+export const persistor = persistStore(store);
 
 export type AppStore = typeof store;
 export type AppDispatch = AppStore['dispatch'];

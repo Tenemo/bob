@@ -15,10 +15,7 @@ import {
     setConnectionStatus,
     selectBobConnectionStatus,
 } from 'features/Bob/bobSlice';
-import {
-    useHealthcheckQuery,
-    useCaptureQuery,
-} from 'features/BobApi/bobApiSlice';
+import { useHealthcheckQuery, useCaptureQuery } from 'features/BobApi/bobApi';
 
 const HomePage = (): React.JSX.Element => {
     const dispatch = useDispatch();

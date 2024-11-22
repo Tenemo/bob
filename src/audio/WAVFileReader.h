@@ -75,4 +75,9 @@ class WAVFileReader : public AudioFile {
  */
 void playAudioFile(const char *filename, const bool announcePlayback = true);
 
+/**
+ * @brief Stops any active audio playback.
+ */
+void stopPlayback(void);
+
 #endif

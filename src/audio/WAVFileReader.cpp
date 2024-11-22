@@ -25,6 +25,7 @@ typedef struct {
 
 static I2SOutput *currentOutput = nullptr;
 static WAVFileReader *currentWav = nullptr;
+static volatile bool isPlaying = false;
 
 WAVFileReader::WAVFileReader(const char *file_name) : m_is_complete(false) {
     if (!SPIFFS.exists(file_name)) {
@@ -51,67 +52,65 @@ WAVFileReader::WAVFileReader(const char *file_name) : m_is_complete(false) {
 WAVFileReader::~WAVFileReader() { m_file.close(); }
 
 void WAVFileReader::getFrames(Frame_t *frames, int number_frames) {
-    // Check if we've already completed playback
-    if (m_is_complete) {
-        // Fill the buffer with silence (zeros)
+    if (m_is_complete || !isPlaying) {
         for (int i = 0; i < number_frames; i++) {
             frames[i].left = 0;
             frames[i].right = 0;
         }
         return;
     }
-    // Fill the buffer with data from the file
+
     for (int i = 0; i < number_frames; i++) {
-        // If we've reached the end of the file, fill remaining buffer with
-        // silence and mark playback as complete
-        if (m_file.available() == 0) {
+        if (m_file.available() == 0 || !isPlaying) {
             m_is_complete = true;
-            // Fill the rest of the buffer with silence
             for (; i < number_frames; i++) {
                 frames[i].left = 0;
                 frames[i].right = 0;
             }
             return;
         }
-        // Read in the next sample to the left channel
         m_file.read((uint8_t *)(&frames[i].left), sizeof(int16_t));
-        // if we only have one channel duplicate the sample for the right
-        // channel
         if (m_num_channels == 1) {
             frames[i].right = frames[i].left;
         } else {
-            // otherwise read in the right channel sample
             m_file.read((uint8_t *)(&frames[i].right), sizeof(int16_t));
         }
     }
 }
+
 void playAudioFile(const char *filename, const bool announcePlayback) {
-    if (currentOutput != nullptr) {
-        if (!announcePlayback) {
-            logger.println("Playback already in progress. Cancelling to play " +
-                           String(filename));
-        }
-        currentOutput->stop();
-        delete currentOutput;
-        currentOutput = nullptr;
+    // Stop any existing playback first
+    stopPlayback();
+
+    // Wait a short moment to ensure cleanup is complete
+    delay(50);
+
+    if (announcePlayback) {
+        logger.println("Playing audio file: " + String(filename));
     }
-    if (currentWav != nullptr) {
-        delete currentWav;
-        currentWav = nullptr;
-    }
+
+    // Create new instances
     currentWav = new WAVFileReader(filename);
     currentOutput = new I2SOutput();
+
     i2s_pin_config_t pins = getDefaultI2SPins();
-    logger.println("Playing audio file: " + String(filename));
+    isPlaying = true;
     currentOutput->start(I2S_NUM_1, pins, currentWav);
 }
 
 void stopPlayback() {
+    // Signal to stop playback
+    isPlaying = false;
+
+    // Stop I2S first and wait for it to complete
     if (currentOutput != nullptr) {
         currentOutput->stop();
+        delay(50); // Give time for I2S to properly stop
         delete currentOutput;
         currentOutput = nullptr;
     }
+
+    // Then clean up WAV reader
     if (currentWav != nullptr) {
         delete currentWav;
         currentWav = nullptr;

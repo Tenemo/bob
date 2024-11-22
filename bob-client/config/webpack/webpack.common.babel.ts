@@ -23,7 +23,7 @@ export const commonConfig: Configuration = {
             BUILD_DATE: JSON.stringify(new Date().toISOString().split('T')[0]),
         }),
         new DotenvPlugin({
-            safe: "./.env.sample",
+            safe: './.env.sample',
         }),
     ],
     resolve: {

@@ -21,7 +21,7 @@ extern const char *UPLOAD_PATH;
  * @param request Pointer to the AsyncWebServerRequest object.
  * @param doc Reference to the JsonDocument containing request data.
  */
-void processAudioRequest(AsyncWebServerRequest *request,
+void ProcessAudioRequest(AsyncWebServerRequest *request,
                          const JsonDocument &doc);
 
 /**

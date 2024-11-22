@@ -2,14 +2,14 @@
 #include "esp_log.h"
 
 #include "Camera.h"
+#include "Env.h"
 #include "Globals.h"
 #include "RequestHandler.h"
 #include "Servos.h"
 #include "Startup.h"
 #include "audio/AudioFile.h"
+#include "audio/ProcessAudio.h"
 #include "audio/WAVFileReader.h"
-#include "audio/processAudio.h"
-#include "env.h"
 #include "utils/HealthCheck.h"
 #include <ESPAsyncWebServer.h>
 #include <FileList.h>
@@ -43,7 +43,7 @@ void setup() {
     server.on(
         "/audio", HTTP_POST,
         [](AsyncWebServerRequest *request) {
-            handleRequest(request, nullptr, 0, 0, 0, processAudioRequest);
+            handleRequest(request, nullptr, 0, 0, 0, ProcessAudioRequest);
         },
         handleAudioUpload);
 

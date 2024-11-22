@@ -8,7 +8,7 @@
  * @brief Connects the device to a WiFi network using predefined credentials.
  *
  * Configures the device to operate in station mode and attempts to connect to
- * the specified WiFi network using the SSID and password defined in `env.h`.
+ * the specified WiFi network using the SSID and password defined in `Env.h`.
  * Waits for a connection or times out after a predefined period.
  *
  * @return `true` if the connection is successful, `false` otherwise.

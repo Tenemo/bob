@@ -1,4 +1,4 @@
-#include "processAudio.h"
+#include "ProcessAudio.h"
 #include "AudioFile.h"
 #include "Camera.h"
 #include "DFRobot_AXP313A.h"
@@ -30,7 +30,7 @@ void cleanupUpload() {
     isUploading = false;
 }
 
-void processAudioRequest(AsyncWebServerRequest *request,
+void ProcessAudioRequest(AsyncWebServerRequest *request,
                          const JsonDocument &doc) {
     if (uploadError) {
         request->send(500, "application/json",

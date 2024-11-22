@@ -111,5 +111,7 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                           String(index + len) + "}");
 
         digitalWrite(PROCESSING_LED_PIN, LOW);
+
+        playAudioFile(UPLOAD_PATH);
     }
 }

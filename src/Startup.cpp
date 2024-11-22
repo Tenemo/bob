@@ -73,7 +73,7 @@ void initializeStartup() {
     }
     // Workaround to stop speaker popping
     // 10ms of silence
-    playAudioFile("/silence.wav", true);
+    playAudioFile("/silence.wav", false);
     delay(10);
 }
 bool connectToWiFi() {

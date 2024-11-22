@@ -1,5 +1,6 @@
 #include "WAVFileReader.h"
 #include "AudioFile.h"
+#include "Globals.h"
 #include "I2SOutput.h"
 #include <FS.h>
 #include <SPIFFS.h>
@@ -86,6 +87,8 @@ void WAVFileReader::getFrames(Frame_t *frames, int number_frames) {
 }
 void playAudioFile(const char *filename) {
     if (currentOutput != nullptr) {
+        logger.println("Playback already in progress. Cancelling to play " +
+                       String(filename));
         currentOutput->stop();
         delete currentOutput;
         currentOutput = nullptr;
@@ -97,6 +100,6 @@ void playAudioFile(const char *filename) {
     currentWav = new WAVFileReader(filename);
     currentOutput = new I2SOutput();
     i2s_pin_config_t pins = getDefaultI2SPins();
-    Serial.println("Playing audio file: " + String(filename));
+    logger.println("Playing audio file: " + String(filename));
     currentOutput->start(I2S_NUM_1, pins, currentWav);
 }

@@ -103,3 +103,15 @@ void playAudioFile(const char *filename) {
     logger.println("Playing audio file: " + String(filename));
     currentOutput->start(I2S_NUM_1, pins, currentWav);
 }
+
+void stopPlayback() {
+    if (currentOutput != nullptr) {
+        currentOutput->stop();
+        delete currentOutput;
+        currentOutput = nullptr;
+    }
+    if (currentWav != nullptr) {
+        delete currentWav;
+        currentWav = nullptr;
+    }
+}

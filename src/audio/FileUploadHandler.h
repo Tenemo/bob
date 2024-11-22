@@ -1,117 +1,93 @@
-/**
- * @file FileUploadHandler.h
- * @brief Handles file uploads using PSRAM buffering before writing to SPIFFS
- */
-
 #ifndef FILE_UPLOAD_HANDLER_H
 #define FILE_UPLOAD_HANDLER_H
 
 #include <Arduino.h>
+#include <FS.h>
 #include <SPIFFS.h>
-#include <esp_heap_caps.h>
+#include <vector>
 
 /**
  * @class FileUploadHandler
- * @brief Manages file uploads by buffering in PSRAM before writing to SPIFFS
+ * @brief Handles file uploads by buffering data in PSRAM and writing to SPIFFS
+ * upon completion.
  *
- * This class provides a mechanism to handle large file uploads by:
- * 1. Allocating a buffer in PSRAM
- * 2. Accumulating uploaded chunks in PSRAM
- * 3. Writing the complete file to SPIFFS in a single operation
- * This approach reduces filesystem fragmentation and prevents audio glitches
- * during file operations.
+ * This class buffers incoming file data in memory (PSRAM) during the upload
+ * process. Once the upload is complete, it writes the buffered data to the
+ * specified SPIFFS path, overwriting any existing file with the same name.
  */
 class FileUploadHandler {
   private:
-    uint8_t *psramBuffer; /**< Pointer to the PSRAM buffer */
-    size_t bufferSize;    /**< Total size of the PSRAM buffer */
-    size_t currentSize;   /**< Current amount of data in buffer */
-    String targetPath;    /**< Target path in SPIFFS */
+    std::vector<uint8_t> buffer; /**< Buffer to store uploaded data in PSRAM */
+    String filePath;             /**< Destination SPIFFS path */
 
   public:
     /**
-     * @brief Constructs a FileUploadHandler instance
-     */
-    FileUploadHandler() : psramBuffer(nullptr), bufferSize(0), currentSize(0) {}
-
-    /**
-     * @brief Initializes the upload handler with expected file size
+     * @brief Begins the file upload by initializing the buffer and setting the
+     * file path.
      *
-     * @param path The target path in SPIFFS where the file will be saved
-     * @param expectedSize Expected total size of the file in bytes
-     * @return true if PSRAM allocation successful, false otherwise
-     */
-    bool begin(const String &path, size_t expectedSize) {
-        targetPath = path;
-        currentSize = 0;
-
-        // Allocate PSRAM buffer
-        bufferSize = expectedSize;
-        psramBuffer =
-            (uint8_t *)heap_caps_malloc(bufferSize, MALLOC_CAP_SPIRAM);
-
-        return psramBuffer != nullptr;
-    }
-
-    /**
-     * @brief Writes a chunk of data to the PSRAM buffer
+     * If a file with the same path already exists in SPIFFS, it will be removed
+     * to allow overwriting.
      *
-     * @param data Pointer to the data chunk
-     * @param len Length of the data chunk in bytes
-     * @return true if write successful, false if buffer full or not initialized
+     * @param path The SPIFFS path where the file will be stored.
+     * @param contentLength The total size of the file being uploaded.
+     * @return `true` if initialization is successful, `false` otherwise.
      */
-    bool writeChunk(uint8_t *data, size_t len) {
-        if (!psramBuffer || (currentSize + len > bufferSize)) {
-            return false;
-        }
-
-        memcpy(psramBuffer + currentSize, data, len);
-        currentSize += len;
+    bool begin(const String &path, size_t contentLength) {
+        filePath = path;
+        buffer.reserve(contentLength);
         return true;
     }
 
     /**
-     * @brief Finalizes the upload by writing the buffered data to SPIFFS
+     * @brief Writes a chunk of data to the buffer.
      *
-     * @return true if file was successfully written to SPIFFS, false otherwise
+     * @param data Pointer to the data buffer.
+     * @param len Length of the data buffer.
+     * @return `true` if data is successfully buffered, `false` otherwise.
+     */
+    bool writeChunk(uint8_t *data, size_t len) {
+        if (data && len > 0) {
+            try {
+                buffer.insert(buffer.end(), data, data + len);
+                return true;
+            } catch (std::bad_alloc &) {
+                return false; // Buffer overflow or memory allocation failure
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @brief Finalizes the upload by writing the buffered data to SPIFFS.
+     *
+     * This function writes all buffered data to the specified file path in
+     * SPIFFS, effectively overwriting any existing file.
+     *
+     * @return `true` if the data is successfully written to SPIFFS, `false`
+     * otherwise.
      */
     bool finish() {
-        if (!psramBuffer)
-            return false;
-
-        // Open SPIFFS file for writing
-        File file = SPIFFS.open(targetPath, FILE_WRITE);
-        if (!file) {
-            cleanup();
-            return false;
+        if (SPIFFS.exists(filePath)) {
+            SPIFFS.remove(filePath); // Remove existing file to allow overwrite
         }
-
-        // Write entire buffer to SPIFFS
-        size_t written = file.write(psramBuffer, currentSize);
+        if (buffer.empty())
+            return false;
+        File file = SPIFFS.open(filePath, FILE_WRITE);
+        if (!file)
+            return false;
+        size_t written = file.write(buffer.data(), buffer.size());
         file.close();
-
-        cleanup();
-        return written == currentSize;
+        return written == buffer.size();
     }
 
     /**
-     * @brief Cleans up allocated resources
-     *
-     * Frees the PSRAM buffer and resets internal state
+     * @brief Cleans up the upload by clearing the buffer and resetting the file
+     * path.
      */
     void cleanup() {
-        if (psramBuffer) {
-            heap_caps_free(psramBuffer);
-            psramBuffer = nullptr;
-        }
-        currentSize = 0;
-        bufferSize = 0;
+        buffer.clear();
+        filePath = "";
     }
-
-    /**
-     * @brief Destructor ensures cleanup of resources
-     */
-    ~FileUploadHandler() { cleanup(); }
 };
 
 #endif // FILE_UPLOAD_HANDLER_H

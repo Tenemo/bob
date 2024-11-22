@@ -53,6 +53,7 @@ void setup() {
         handleAudioUpload);
 
     initializeStartup();
+    delay(200);
     playAudioFile("/sample_music.wav");
     // playAudioFile("/sample_voice.wav");
     // playAudioFile("/uploaded_audio.wav");

@@ -86,6 +86,7 @@
     "unordered_set": "cpp",
     "string_view": "cpp",
     "set": "cpp",
-    "ostream": "cpp"
+    "ostream": "cpp",
+    "new": "cpp"
   }
 }

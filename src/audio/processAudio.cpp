@@ -51,21 +51,6 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
         if (path[0] != '/')
             path = "/" + path;
 
-        // Generate timestamp
-        time_t now = time(nullptr);
-        struct tm *timeinfo = localtime(&now);
-        char timestamp[20];
-        strftime(timestamp, sizeof(timestamp), "_%m%d%H%M%S", timeinfo);
-
-        // Append timestamp before the file extension
-        int extIndex = path.lastIndexOf('.');
-        if (extIndex != -1) {
-            path = path.substring(0, extIndex) + String(timestamp) +
-                   path.substring(extIndex);
-        } else {
-            path += String(timestamp);
-        }
-
         // Initialize PSRAM buffer
         if (!uploadHandler.begin(path, request->contentLength())) {
             uploadError = true;
@@ -104,9 +89,13 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
     }
 
     if (final) {
+        // Stop playback, otherwise the sounds gets all glitchy
+        stopPlayback();
+
+        Serial.println("Finalizing upload, writing to SPIFFS...");
         if (!uploadHandler.finish()) {
             uploadError = true;
-            logger.println("Failed to save file to SPIFFS");
+            logger.println("Failed to save file to SPIFFS.");
             request->send(500, "application/json",
                           "{\"error\":\"Failed to save file\"}");
             digitalWrite(PROCESSING_LED_PIN, LOW);

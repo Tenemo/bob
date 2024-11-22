@@ -9,8 +9,9 @@
 
 extern FileUploadHandler uploadHandler;
 
-// Maximum allowed file size (10MB)
-const size_t MAX_FILE_SIZE = 10 * 1024 * 1024;
+// Maximum allowed file size (8MB)
+// It's 8MB because the ESP32-S3 has 8MB of PSRAM
+const size_t MAX_FILE_SIZE = 8 * 1024 * 1024;
 
 // Path where uploaded audio will be stored
 extern const char *UPLOAD_PATH;
@@ -44,5 +45,10 @@ void processAudioRequest(AsyncWebServerRequest *request,
  */
 void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                        size_t index, uint8_t *data, size_t len, bool final);
+
+/**
+ * @brief Stops audio playback.
+ */
+void stopPlayback();
 
 #endif // PROCESS_AUDIO_H

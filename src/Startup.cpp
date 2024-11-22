@@ -11,6 +11,7 @@
 void initializeStartup() {
     logger.begin();
     logger.println("Starting...");
+
     pinMode(PROCESSING_LED_PIN, OUTPUT);
     digitalWrite(PROCESSING_LED_PIN, LOW);
 
@@ -21,6 +22,17 @@ void initializeStartup() {
     // Web server
     const int totalSubsystems = 5;
     int successCount = 0;
+
+    if (SPIFFS.begin(true)) {
+        Serial.println("Mounting SPIFFS SUCCESSFUL.");
+        successCount++;
+    } else {
+        logger.println("Mounting SPIFFS FAILURE.");
+    }
+    // Workaround to stop speaker popping
+    // 10ms of silence
+    playAudioFile("/silence.wav", false);
+    delay(10);
 
     if (connectToWiFi()) {
         successCount++;
@@ -56,12 +68,6 @@ void initializeStartup() {
     if (initializeServos()) {
         successCount++;
     }
-    if (SPIFFS.begin(true)) {
-        Serial.println("Mounting SPIFFS SUCCESSFUL.");
-        successCount++;
-    } else {
-        logger.println("Mounting SPIFFS FAILURE.");
-    }
 
     if (successCount == totalSubsystems) {
         logger.println(String(successCount) + "/" + String(totalSubsystems) +
@@ -71,10 +77,6 @@ void initializeStartup() {
                        String(successCount) + "/" + String(totalSubsystems) +
                        " subsystems successfully.");
     }
-    // Workaround to stop speaker popping
-    // 10ms of silence
-    playAudioFile("/silence.wav", false);
-    delay(10);
 }
 bool connectToWiFi() {
     WiFi.mode(WIFI_STA);

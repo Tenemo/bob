@@ -88,8 +88,6 @@ void playAudioFile(const char *filename, const bool announcePlayback) {
     if (announcePlayback) {
         logger.println("Playing audio file: " + String(filename));
     }
-
-    // Create new instances
     currentWav = new WAVFileReader(filename);
     currentOutput = new I2SOutput();
 

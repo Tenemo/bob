@@ -15,11 +15,6 @@
 #include <FileList.h>
 #include <esp_task_wdt.h>
 
-ScreenLogger logger;
-AsyncWebServer server(80);
-TwoWire cameraWire(0);
-DFRobot_AXP313A cameraPowerDriver(0x36, &cameraWire);
-
 void setup() {
     esp_log_level_set("*", ESP_LOG_ERROR);
     esp_log_level_set("wifi", ESP_LOG_WARN);

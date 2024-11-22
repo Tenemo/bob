@@ -14,6 +14,7 @@ FileUploadHandler uploadHandler;
 const char *UPLOAD_PATH = "/uploaded_audio.wav";
 static int lastReportedProgress = 0;
 static String message = "";
+static String path = "";
 
 void processAudioRequest(AsyncWebServerRequest *request,
                          const JsonDocument &doc) {
@@ -44,8 +45,7 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
             uploadFile.close();
         }
 
-        // Handle "fileName" parameter with default and leading slash
-        String path = filename;
+        path = filename;
         if (path.length() == 0)
             path = "/uploaded_audio.wav";
         if (path[0] != '/')
@@ -92,7 +92,7 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
         // Stop playback, otherwise the sounds gets all glitchy
         stopPlayback();
 
-        Serial.println("Finalizing upload, writing to SPIFFS...");
+        logger.println("Finalizing upload...");
         if (!uploadHandler.finish()) {
             uploadError = true;
             logger.println("Failed to save file to SPIFFS.");
@@ -112,6 +112,6 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
 
         digitalWrite(PROCESSING_LED_PIN, LOW);
 
-        // playAudioFile(UPLOAD_PATH);
+        playAudioFile(path.c_str());
     }
 }

@@ -1,6 +1,7 @@
 #ifndef FILE_UPLOAD_HANDLER_H
 #define FILE_UPLOAD_HANDLER_H
 
+#include "Globals.h"
 #include <Arduino.h>
 #include <FS.h>
 #include <SPIFFS.h>
@@ -10,10 +11,6 @@
  * @class FileUploadHandler
  * @brief Handles file uploads by buffering data in PSRAM and writing to SPIFFS
  * upon completion.
- *
- * This class buffers incoming file data in memory (PSRAM) during the upload
- * process. Once the upload is complete, it writes the buffered data to the
- * specified SPIFFS path, overwriting any existing file with the same name.
  */
 class FileUploadHandler {
   private:
@@ -21,72 +18,115 @@ class FileUploadHandler {
     String filePath;             /**< Destination SPIFFS path */
 
   public:
-    /**
-     * @brief Begins the file upload by initializing the buffer and setting the
-     * file path.
-     *
-     * If a file with the same path already exists in SPIFFS, it will be removed
-     * to allow overwriting.
-     *
-     * @param path The SPIFFS path where the file will be stored.
-     * @param contentLength The total size of the file being uploaded.
-     * @return `true` if initialization is successful, `false` otherwise.
-     */
     bool begin(const String &path, size_t contentLength) {
-        filePath = path;
-        buffer.reserve(contentLength);
+        if (contentLength == 0) {
+            logger.println("Error: Content length is zero");
+            return false;
+        }
+
+        if (contentLength > MAX_FILE_SIZE) {
+            logger.println(
+                "Error: File too large (" + String(contentLength / 1024) +
+                "KB). Maximum size is " + String(MAX_FILE_SIZE / 1024) + "KB");
+            return false;
+        }
+
+        if (!path.startsWith("/")) {
+            logger.println("Error: Invalid file path (must start with /)");
+            return false;
+        }
+
+        // Check available space in SPIFFS
+        size_t totalBytes = SPIFFS.totalBytes();
+        size_t usedBytes = SPIFFS.usedBytes();
+        size_t freeSpace = totalBytes - usedBytes;
+
+        if (contentLength > freeSpace) {
+            logger.println("Error: Insufficient space in SPIFFS. Need " +
+                           String(contentLength / 1024) + "KB, but only " +
+                           String(freeSpace / 1024) + "KB available");
+            return false;
+        }
+
+        try {
+            filePath = path;
+            buffer.reserve(contentLength);
+            return true;
+        } catch (const std::bad_alloc &e) {
+            logger.println("Error: Failed to allocate buffer memory for " +
+                           String(contentLength / 1024) + "KB");
+            return false;
+        }
+    }
+
+    bool writeChunk(uint8_t *data, size_t len) {
+        if (!data || len == 0) {
+            logger.println("Error: Invalid chunk data");
+            return false;
+        }
+
+        try {
+            buffer.insert(buffer.end(), data, data + len);
+            return true;
+        } catch (const std::bad_alloc &e) {
+            logger.println(
+                "Error: Memory allocation failed while writing chunk");
+            return false;
+        } catch (const std::exception &e) {
+            logger.println("Error: Exception while writing chunk: " +
+                           String(e.what()));
+            return false;
+        }
+    }
+
+    bool finish() {
+        if (buffer.empty()) {
+            logger.println("Error: No data to write");
+            return false;
+        }
+
+        // Remove existing file if it exists
+        if (SPIFFS.exists(filePath)) {
+            if (!SPIFFS.remove(filePath)) {
+                logger.println("Error: Failed to remove existing file: " +
+                               filePath);
+                return false;
+            }
+        }
+
+        File file = SPIFFS.open(filePath, FILE_WRITE);
+        if (!file) {
+            logger.println("Error: Failed to open file for writing: " +
+                           filePath);
+            return false;
+        }
+
+        size_t written = file.write(buffer.data(), buffer.size());
+        file.close();
+
+        if (written != buffer.size()) {
+            logger.println("Error: Failed to write complete file. Wrote " +
+                           String(written) + " of " + String(buffer.size()) +
+                           " bytes");
+            // Try to clean up the partial file
+            SPIFFS.remove(filePath);
+            return false;
+        }
+
+        logger.println("Successfully wrote " + String(written / 1024) +
+                       "KB to " + filePath);
         return true;
     }
 
-    /**
-     * @brief Writes a chunk of data to the buffer.
-     *
-     * @param data Pointer to the data buffer.
-     * @param len Length of the data buffer.
-     * @return `true` if data is successfully buffered, `false` otherwise.
-     */
-    bool writeChunk(uint8_t *data, size_t len) {
-        if (data && len > 0) {
-            try {
-                buffer.insert(buffer.end(), data, data + len);
-                return true;
-            } catch (std::bad_alloc &) {
-                return false; // Buffer overflow or memory allocation failure
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @brief Finalizes the upload by writing the buffered data to SPIFFS.
-     *
-     * This function writes all buffered data to the specified file path in
-     * SPIFFS, effectively overwriting any existing file.
-     *
-     * @return `true` if the data is successfully written to SPIFFS, `false`
-     * otherwise.
-     */
-    bool finish() {
-        if (SPIFFS.exists(filePath)) {
-            SPIFFS.remove(filePath); // Remove existing file to allow overwrite
-        }
-        if (buffer.empty())
-            return false;
-        File file = SPIFFS.open(filePath, FILE_WRITE);
-        if (!file)
-            return false;
-        size_t written = file.write(buffer.data(), buffer.size());
-        file.close();
-        return written == buffer.size();
-    }
-
-    /**
-     * @brief Cleans up the upload by clearing the buffer and resetting the file
-     * path.
-     */
     void cleanup() {
-        buffer.clear();
-        filePath = "";
+        try {
+            buffer.clear();
+            buffer.shrink_to_fit(); // Release memory back to the system
+            filePath = "";
+        } catch (const std::exception &e) {
+            logger.println("Warning: Exception during cleanup: " +
+                           String(e.what()));
+        }
     }
 };
 

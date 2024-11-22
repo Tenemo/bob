@@ -6,6 +6,11 @@
 #include <ESPAsyncWebServer.h>
 
 /**
+ * @brief GPIO pin number for the processing LED.
+ */
+#define PROCESSING_LED_PIN 10 // A4
+
+/**
  * @brief Global instance of the screen logger.
  */
 extern ScreenLogger logger;
@@ -26,8 +31,9 @@ extern TwoWire cameraWire;
 extern DFRobot_AXP313A cameraPowerDriver;
 
 /**
- * @brief GPIO pin number for the processing LED.
+ * @brief Maximum allowed file size (8MB)
+ * It's 8MB because the ESP32-S3 has 8MB of PSRAM
  */
-#define PROCESSING_LED_PIN 10 // A4
+extern const size_t MAX_FILE_SIZE;
 
 #endif // GLOBALS_H

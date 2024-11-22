@@ -23,6 +23,7 @@ export const commonConfig: Configuration = {
                 BUILD_DATE: JSON.stringify(
                     new Date().toISOString().split('T')[0],
                 ),
+                OPENAI_API_KEY: JSON.stringify(process.env.OPENAI_API_KEY),
             },
         }),
     ],

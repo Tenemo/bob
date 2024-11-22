@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "Globals.h"
 #include "Servos.h"
+#include "audio/WAVFileReader.h"
 #include "env.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
@@ -36,6 +37,10 @@ void initializeStartup() {
     } else {
         logger.println("Mounting SPIFFS FAILURE.");
     }
+    // Workaround to stop speaker popping
+    // 10ms of silence
+    playAudioFile("/silence.wav");
+    delay(10);
     server.begin();
     Serial.println("Web server started.");
 

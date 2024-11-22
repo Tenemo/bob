@@ -37,6 +37,18 @@
 bool initializeCamera();
 
 /**
+ * @brief Safely deinitializes the camera and its power management.
+ *
+ * This function performs the following steps:
+ * 1. Deinitializes the ESP camera driver
+ * 2. Disables camera power via AXP313A
+ *
+ * @return bool Returns true if deinitialization was successful, false if any
+ * errors occurred
+ */
+bool deinitializeCamera();
+
+/**
  * @brief Captures a photo using the initialized camera.
  *
  * Triggers the camera to capture a single frame and retrieves the framebuffer.

@@ -102,3 +102,26 @@ void processCaptureRequest(AsyncWebServerRequest *request,
     response->addHeader("Content-Disposition", "inline; filename=capture.jpg");
     request->send(response);
 }
+
+bool deinitializeCamera() {
+    bool success = true;
+    String errorMessage;
+
+    // Deinitialize the ESP camera driver
+    esp_err_t err = esp_camera_deinit();
+    if (err != ESP_OK) {
+        success = false;
+        errorMessage = "Failed to deinitialize camera driver: ";
+        errorMessage += esp_err_to_name(err);
+        Serial.println(errorMessage);
+    }
+
+    // Then, try to disable camera power regardless of previous step
+    axp.disablePower();
+
+    if (success) {
+        Serial.println("Camera deinitialization successful");
+    }
+
+    return success;
+}

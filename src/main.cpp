@@ -49,7 +49,8 @@ void setup() {
         handleAudioUpload);
 
     initializeStartup();
-    playAudioFile("/silence.wav"); // Workaround to stop speaker popping
+    delay(500);
+    logger.println("Initialization complete.");
     // playAudioFile("/sample_music.wav");
     // playAudioFile("/sample_voice.wav");
     // playAudioFile("/uploaded_audio.wav");

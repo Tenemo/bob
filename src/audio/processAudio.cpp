@@ -15,7 +15,9 @@ void processAudioRequest(AsyncWebServerRequest *request,
 void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                        size_t index, uint8_t *data, size_t len, bool final) {
     String clientIP = request->client()->remoteIP().toString();
-
+    // For some reason onRequest fires AFTER upload,
+    // so we handle status request LED logic here
+    digitalWrite(PROCESSING_LED_PIN, HIGH);
     if (!index) {
         Serial.println("Upload Start: " + filename + " from " + clientIP);
 
@@ -47,7 +49,6 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
             uploadFile.close();
             return;
         }
-        Serial.println("Writing file: " + filename + " len=" + String(len));
     }
 
     if (final) {
@@ -59,5 +60,8 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
         request->send(200, "application/json",
                       "{\"status\":\"Upload successful\", \"size\":" +
                           String(index + len) + "}");
+        // delay(50);
+        // playAudioFile(UPLOAD_PATH);
+        digitalWrite(PROCESSING_LED_PIN, LOW);
     }
 }

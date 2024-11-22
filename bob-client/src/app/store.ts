@@ -58,6 +58,7 @@ export const store = configureStore({
                     PURGE,
                     REGISTER,
                 ],
+                ignoredPaths: [bobApi.reducerPath],
             },
         });
 

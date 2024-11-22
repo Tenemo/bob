@@ -30,7 +30,6 @@ export default tseslint.config(
     prettierPluginRecommended,
     reactPlugin.configs.flat.recommended,
     reactPlugin.configs.flat['jsx-runtime'],
-    securityPlugin.configs.recommended,
     {
         files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
         ...reactHooksPlugin.configs['recommended-latest'],

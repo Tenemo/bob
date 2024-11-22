@@ -18,7 +18,8 @@ bool initializeCamera() {
             return false;
         }
     }
-    axp.enableCameraPower(axp.eOV2640); // Enable the power for camera
+    // Enable the power for camera
+    axp.enableCameraPower(axp.eOV2640);
 
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
@@ -39,7 +40,7 @@ bool initializeCamera() {
     config.pin_sccb_scl = SIOC_GPIO_NUM;
     config.pin_pwdn = PWDN_GPIO_NUM;
     config.pin_reset = RESET_GPIO_NUM;
-    config.xclk_freq_hz = 20000000;
+    config.xclk_freq_hz = 20 * 1000 * 1000;
     config.pixel_format = PIXFORMAT_JPEG;
     config.fb_location = CAMERA_FB_IN_PSRAM;
 

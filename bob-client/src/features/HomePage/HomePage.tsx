@@ -71,7 +71,7 @@ const HomePage = (): React.JSX.Element => {
     };
 
     return (
-        <Container maxWidth="sm">
+        <Container>
             <Helmet>
                 <title>Bob</title>
             </Helmet>
@@ -80,7 +80,7 @@ const HomePage = (): React.JSX.Element => {
             >
                 <TextField
                     fullWidth
-                    label="Bob IP Address"
+                    label="Bob's IP Address"
                     onChange={(e) => {
                         setInputIp(e.target.value);
                     }}

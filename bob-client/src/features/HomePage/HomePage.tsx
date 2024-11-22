@@ -8,19 +8,21 @@ import {
 } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useDispatch, useSelector } from 'react-redux';
 
+import { useAppDispatch, useAppSelector } from 'app/hooks';
 import {
     setIp,
     setConnectionStatus,
     selectBobConnectionStatus,
+    selectBobIp,
 } from 'features/Bob/bobSlice';
 import { useHealthcheckQuery, useCaptureQuery } from 'features/BobApi/bobApi';
 
 const HomePage = (): React.JSX.Element => {
-    const dispatch = useDispatch();
-    const isConnected = useSelector(selectBobConnectionStatus);
-    const [inputIp, setInputIp] = useState('');
+    const dispatch = useAppDispatch();
+    const isConnected = useAppSelector(selectBobConnectionStatus);
+    const storedIp = useAppSelector(selectBobIp);
+    const [inputIp, setInputIp] = useState(storedIp);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
     const {
@@ -33,6 +35,10 @@ const HomePage = (): React.JSX.Element => {
         useCaptureQuery(undefined, {
             skip: !isConnected,
         });
+
+    useEffect(() => {
+        setInputIp(storedIp);
+    }, [storedIp, dispatch]);
 
     useEffect(() => {
         if (healthcheckData?.status === 'OK') {

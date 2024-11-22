@@ -48,7 +48,7 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
     if (!index) {
         digitalWrite(PROCESSING_LED_PIN, HIGH);
         uploadError = false;
-        logger.println("Audio upload from " + clientIP + " began.");
+        logger.println("Audio upload from " + clientIP + " starting...");
         lastReportedProgress = 0;
 
         // Make sure previous upload is cleaned up

@@ -5,6 +5,18 @@
 #include "Servos.h"
 #include "audio/WAVFileReader.h"
 #include <ArduinoJson.h>
+#include <ESPAsyncWebServer.h>
+#include <HTTPClient.h>
+#include <SPIFFS.h>
+
+#include "Camera.h"
+#include "Env.h"
+#include "Globals.h"
+#include "Servos.h"
+#include "Startup.h"
+#include "audio/WAVFileReader.h"
+#include <ArduinoJson.h>
+#include <ESPAsyncWebServer.h>
 #include <HTTPClient.h>
 #include <SPIFFS.h>
 
@@ -37,6 +49,26 @@ void initializeStartup() {
     if (connectToWiFi()) {
         successCount++;
     }
+
+    // Add CORS headers to all responses
+    DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+    DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods",
+                                         "GET, POST, PUT, DELETE, OPTIONS");
+    DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers",
+                                         "Content-Type, Authorization");
+    DefaultHeaders::Instance().addHeader("Access-Control-Allow-Credentials",
+                                         "true");
+    DefaultHeaders::Instance().addHeader("Access-Control-Max-Age", "86400");
+
+    // Add OPTIONS handler for CORS preflight requests
+    server.onNotFound([](AsyncWebServerRequest *request) {
+        if (request->method() == HTTP_OPTIONS) {
+            request->send(200);
+        } else {
+            request->send(404);
+        }
+    });
+
     server.begin();
     Serial.println("Web server started.");
 
@@ -58,7 +90,7 @@ void initializeStartup() {
     }
 
     if (healthCheckPassed) {
-        Serial.println("Web server initialization SUCCESSFULL.");
+        Serial.println("Web server initialization SUCCESSFUL.");
     } else {
         logger.println("Web server initialization FAILURE.");
     }
@@ -78,6 +110,8 @@ void initializeStartup() {
                        " subsystems successfully.");
     }
 }
+
+// Rest of the file remains the same...
 bool connectToWiFi() {
     WiFi.mode(WIFI_STA);
     logger.print("Connecting to WiFi: " + String(WIFI_SSID) + "...");

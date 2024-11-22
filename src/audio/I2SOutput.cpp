@@ -74,3 +74,8 @@ void I2SOutput::start(i2s_port_t i2sPort, i2s_pin_config_t &i2sPins,
     xTaskCreate(i2sWriterTask, "i2s Writer Task", 4096, this, 1,
                 &writerTaskHandle);
 }
+
+void I2SOutput::stop() {
+    m_is_running = false;
+    i2s_driver_uninstall(m_i2sPort);
+}

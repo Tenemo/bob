@@ -34,12 +34,21 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
             uploadFile.close();
         }
 
-        // Remove existing file
-        if (SPIFFS.exists(UPLOAD_PATH)) {
-            SPIFFS.remove(UPLOAD_PATH);
-        }
+        // Handle "fileName" parameter with default and leading slash
+        String path = filename;
+        if (path.length() == 0)
+            path = "/uploaded_audio.wav";
+        if (path[0] != '/')
+            path = "/" + path;
 
-        uploadFile = SPIFFS.open(UPLOAD_PATH, FILE_WRITE);
+        // Remove existing file
+        if (SPIFFS.exists(path.c_str())) {
+            SPIFFS.remove(path.c_str());
+        }
+        Serial.println("Uploading file: " + path);
+
+        // Open the file for writing
+        uploadFile = SPIFFS.open(path.c_str(), FILE_WRITE);
         if (!uploadFile) {
             Serial.println("Failed to open file for writing");
             request->send(500, "application/json",

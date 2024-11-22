@@ -22,6 +22,9 @@ typedef struct {
 } wav_header_t;
 #pragma pack(pop)
 
+static I2SOutput *currentOutput = nullptr;
+static WAVFileReader *currentWav = nullptr;
+
 WAVFileReader::WAVFileReader(const char *file_name) : m_is_complete(false) {
     if (!SPIFFS.exists(file_name)) {
         Serial.println(
@@ -82,9 +85,18 @@ void WAVFileReader::getFrames(Frame_t *frames, int number_frames) {
     }
 }
 void playAudioFile(const char *filename) {
-    WAVFileReader *wav = new WAVFileReader(filename);
-    I2SOutput *output = new I2SOutput();
+    if (currentOutput != nullptr) {
+        currentOutput->stop();
+        delete currentOutput;
+        currentOutput = nullptr;
+    }
+    if (currentWav != nullptr) {
+        delete currentWav;
+        currentWav = nullptr;
+    }
+    currentWav = new WAVFileReader(filename);
+    currentOutput = new I2SOutput();
     i2s_pin_config_t pins = getDefaultI2SPins();
     Serial.println("Playing audio file: " + String(filename));
-    output->start(I2S_NUM_1, pins, wav);
+    currentOutput->start(I2S_NUM_1, pins, currentWav);
 }

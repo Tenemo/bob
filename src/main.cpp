@@ -53,9 +53,7 @@ void setup() {
         handleAudioUpload);
 
     initializeStartup();
-    playAudioFile("/sample_voice.wav");
-    // Serial.println("delaying longer than the file lasts.");
-    // delay(12000);
+    // playAudioFile("/sample_voice.wav");
     // playAudioFile("/sample_music.wav");
     // playAudioFile("/uploaded_audio.wav");
 }

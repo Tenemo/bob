@@ -1,61 +1,133 @@
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { RealtimeClient } from '@openai/realtime-api-beta';
-import { Mic, MicOff } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { X, Zap } from 'react-feather';
 
 import {
     handleMessageSubmit,
-    initializeRealtimeClient,
-    startRecording,
-    stopRecording,
+    ConversationItem,
     Transcript,
+    playAndUploadAudio,
 } from './realtimeUtils';
 import { WavPacker } from './wav_packer';
+import { WavRecorder } from './wav_recorder';
 
 import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
+export const REALTIME_PROMPT = `
+You are a chip on a breadboard and
+want to find out more about the world around you.
+`;
 const Realtime = (): React.JSX.Element => {
     const [input, setInput] = useState<string>('');
-    const [status, setStatus] = useState<string>('Disconnected');
     const [error, setError] = useState<string>('');
-    const [lastTranscript, setLastTranscript] = useState<Transcript[]>();
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [audioUrl, setAudioUrl] = useState<string>('');
-    const clientRef = useRef<RealtimeClient | null>(null);
-    const [uploadAudio] = useUploadAudioMutation();
+    const [lastTranscript, setLastTranscript] = useState<Transcript[]>();
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [uploadAudio] = useUploadAudioMutation();
+    const wavRecorderRef = useRef<WavRecorder>(
+        new WavRecorder({ sampleRate: 24000 }),
+    );
+    const clientRef = useRef<RealtimeClient>(
+        new RealtimeClient({
+            apiKey: process.env.OPENAI_API_KEY,
+            dangerouslyAllowAPIKeyInBrowser: true,
+        }),
+    );
+    const [isConnected, setIsConnected] = useState(false);
 
-    console.log(lastTranscript);
+    const connectConversation = useCallback(async () => {
+        const client = clientRef.current;
+        const wavRecorder = wavRecorderRef.current;
 
-    const handleInit = async (): Promise<void> => {
-        try {
-            clientRef.current = await initializeRealtimeClient(
-                process.env.OPENAI_API_KEY ?? '',
-                setStatus,
-                setError,
-                setLastTranscript,
-                uploadAudio,
-            );
-        } catch (err) {
-            setError(
-                err instanceof Error ? err.message : 'Failed to initialize',
-            );
-            setStatus('Error');
-        }
+        setIsConnected(true);
+
+        // Connect to microphone
+        await wavRecorder.begin();
+
+        // Connect to realtime API
+        await client.connect();
+        client.sendUserMessageContent([
+            {
+                type: `input_text`,
+                text: `Siema!`,
+            },
+        ]);
+
+        // if (client.getTurnDetectionType() === 'server_vad') {
+        //     await wavRecorder.record((data) =>
+        //         client.appendInputAudio(data.mono),
+        //     );
+        // }
+    }, []);
+    /**
+     * Disconnect and reset conversation state
+     */
+    const disconnectConversation = useCallback(async () => {
+        setIsConnected(false);
+
+        const client = clientRef.current;
+        client.disconnect();
+
+        const wavRecorder = wavRecorderRef.current;
+        await wavRecorder.end();
+    }, []);
+    const startRecording = async () => {
+        setIsRecording(true);
+        const client = clientRef.current;
+        const wavRecorder = wavRecorderRef.current;
+        await wavRecorder.record((data) => client.appendInputAudio(data.mono));
     };
+    const stopRecording = async () => {
+        setIsRecording(false);
+        const client = clientRef.current;
+        const wavRecorder = wavRecorderRef.current;
+        await wavRecorder.pause();
+        client.createResponse();
+    };
+
+    useEffect(() => {
+        // Get refs
+        const client = clientRef.current;
+
+        // Set instructions
+        client.updateSession({ instructions: REALTIME_PROMPT });
+        client.updateSession({
+            input_audio_transcription: { model: 'whisper-1' },
+        });
+        client.updateSession({ voice: 'nova' });
+
+        client.on('error', (event: any) => {
+            console.error(event);
+        });
+
+        client.on(
+            'conversation.item.completed',
+            ({ item }: { item: ConversationItem }) => {
+                if (item.type === 'message' && item.role === 'assistant') {
+                    if (item.content) {
+                        setLastTranscript(item.content);
+                    }
+                    if (item.formatted?.audio) {
+                        void playAndUploadAudio(
+                            item.formatted.audio,
+                            uploadAudio,
+                            setError,
+                        );
+                    }
+                }
+            },
+        );
+        return () => {
+            // cleanup; resets to defaults
+            client.reset();
+        };
+    }, []);
 
     const handleSubmit = (): void => {
         handleMessageSubmit(clientRef.current, input, setError);
         setInput('');
-    };
-
-    const toggleRecording = async (): Promise<void> => {
-        if (isRecording) {
-            await stopRecording(clientRef.current, setError);
-        } else {
-            await startRecording(clientRef.current, setError);
-        }
-        setIsRecording(!isRecording);
     };
 
     useEffect(() => {
@@ -76,61 +148,52 @@ const Realtime = (): React.JSX.Element => {
 
     return (
         <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography>Status: {status}</Typography>
-
-            {!clientRef.current && (
+            <Box
+                sx={{
+                    display: 'flex',
+                    gap: 1,
+                    alignItems: 'center',
+                }}
+            >
+                <TextField
+                    fullWidth
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setInput(e.target.value);
+                    }}
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                        if (e.key === 'Enter') handleSubmit();
+                    }}
+                    placeholder="Type your message..."
+                    value={input}
+                />
                 <Button
-                    disabled={status === 'Connected'}
-                    onClick={() => void handleInit()}
+                    disabled={!input.trim()}
+                    onClick={() => {
+                        handleSubmit();
+                    }}
                     variant="contained"
                 >
-                    Initialize Realtime Client
+                    Send
                 </Button>
-            )}
-
-            {status === 'Connected' && (
-                <Box
-                    sx={{
-                        display: 'flex',
-                        gap: 1,
-                        alignItems: 'center',
-                    }}
-                >
-                    <TextField
-                        fullWidth
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            setInput(e.target.value);
-                        }}
-                        onKeyDown={(
-                            e: React.KeyboardEvent<HTMLInputElement>,
-                        ) => {
-                            if (e.key === 'Enter') handleSubmit();
-                        }}
-                        placeholder="Type your message..."
-                        value={input}
-                    />
+                {isConnected && (
                     <Button
-                        disabled={!input.trim()}
-                        onClick={() => {
-                            handleSubmit();
-                        }}
-                        variant="contained"
+                        disabled={!isConnected}
+                        onMouseDown={startRecording}
+                        onMouseUp={stopRecording}
                     >
-                        Send
+                        {isRecording ? 'release to send' : 'push to talk'}
                     </Button>
-                    <Button
-                        color={isRecording ? 'error' : 'primary'}
-                        onClick={() => void toggleRecording()}
-                        startIcon={isRecording ? <MicOff /> : <Mic />}
-                        sx={{
-                            minWidth: 'auto',
-                        }}
-                        variant="contained"
-                    >
-                        {isRecording ? 'Stop' : 'Record'}
-                    </Button>
-                </Box>
-            )}
+                )}
+                <div className="spacer" />
+            </Box>
+            <Button
+                onClick={
+                    isConnected ? disconnectConversation : connectConversation
+                }
+                variant="contained"
+            >
+                {isConnected ? 'disconnect' : 'connect'}
+            </Button>
 
             {audioUrl && (
                 <Box sx={{ mt: 2 }}>

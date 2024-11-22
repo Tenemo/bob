@@ -51,13 +51,9 @@ void setup() {
         handleAudioUpload);
 
     initializeStartup();
-    delay(500);
     // playAudioFile("/sample_music.wav");
     // playAudioFile("/sample_voice.wav");
     // playAudioFile("/uploaded_audio.wav");
-    // deinitializeCamera();
-    // delay(500);
-    // initializeCamera();
 }
 
 void loop() {}

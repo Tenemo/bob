@@ -4,13 +4,6 @@
 #include <driver/i2c.h>
 
 bool initializeCamera() {
-    // i2c_driver_delete(I2C_NUM_0);
-    if (cameraWire.begin(SIOD_GPIO_NUM, SIOC_GPIO_NUM, 100000)) {
-        Serial.println("cameraWire initialized.");
-    } else {
-        Serial.println("cameraWire initialization FAILURE.");
-        return false;
-    }
     // Initialize the AXP313A power management chip
     const int maxRetries = 3;
     int retries = 0;
@@ -73,7 +66,6 @@ bool initializeCamera() {
         return false;
     }
     Serial.println("Camera initialization SUCCESSFUL.");
-    delay(100);
     return true;
 }
 
@@ -89,7 +81,12 @@ bool deinitializeCamera() {
     Serial.println("Camera driver deinitialized. Disabling power.");
     cameraPowerDriver.disablePower();
 
-    delay(100); // Wait after power enable
+    if (cameraWire.end()) {
+        Serial.println("cameraWire deinitialized.");
+    } else {
+        Serial.println("cameraWire deinitialization FAILURE.");
+        return false;
+    }
 
     return true;
 }

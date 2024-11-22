@@ -25,22 +25,6 @@ void initializeStartup() {
     if (connectToWiFi()) {
         successCount++;
     }
-    if (initializeCamera()) {
-        successCount++;
-    }
-    if (initializeServos()) {
-        successCount++;
-    }
-    if (SPIFFS.begin(true)) {
-        Serial.println("Mounting SPIFFS SUCCESSFUL.");
-        successCount++;
-    } else {
-        logger.println("Mounting SPIFFS FAILURE.");
-    }
-    // Workaround to stop speaker popping
-    // 10ms of silence
-    playAudioFile("/silence.wav");
-    delay(10);
     server.begin();
     Serial.println("Web server started.");
 
@@ -66,6 +50,22 @@ void initializeStartup() {
     } else {
         logger.println("Web server initialization FAILURE.");
     }
+    if (initializeCamera()) {
+        successCount++;
+    }
+    if (initializeServos()) {
+        successCount++;
+    }
+    if (SPIFFS.begin(true)) {
+        Serial.println("Mounting SPIFFS SUCCESSFUL.");
+        successCount++;
+    } else {
+        logger.println("Mounting SPIFFS FAILURE.");
+    }
+    // Workaround to stop speaker popping
+    // 10ms of silence
+    playAudioFile("/silence.wav");
+    delay(10);
 
     if (successCount == totalSubsystems) {
         logger.println(String(successCount) + "/" + String(totalSubsystems) +

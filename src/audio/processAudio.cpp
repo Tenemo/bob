@@ -26,9 +26,8 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
     if (!index) {
         logger.println("Audio upload from " + clientIP + " began.");
         lastReportedProgress = 0;
-        // Deinitializing camera
-        // deinitializeCamera();
-        // Serial.println("Camera deinitialized.");
+
+        deinitializeCamera();
 
         // Close any existing file
         if (uploadFile) {
@@ -78,7 +77,7 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
                        String(index + len) + " bytes from " + clientIP);
         uploadFile.close();
 
-        // initializeCamera();
+        initializeCamera();
 
         // Send response before attempting playback
         request->send(200, "application/json",

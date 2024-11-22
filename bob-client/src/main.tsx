@@ -1,3 +1,4 @@
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
@@ -6,6 +7,7 @@ import { HistoryRouter as Router } from 'redux-first-history/rr6';
 
 import App from 'app/App';
 import { store, history } from 'app/store';
+import { darkTheme } from 'styles/theme';
 
 import 'styles/global.scss';
 
@@ -27,9 +29,12 @@ export const Root = (): React.JSX.Element => {
         <React.StrictMode>
             <Provider store={store}>
                 <HelmetProvider>
-                    <Router history={history}>
-                        <App />
-                    </Router>
+                    <ThemeProvider theme={darkTheme}>
+                        <CssBaseline enableColorScheme />
+                        <Router history={history}>
+                            <App />
+                        </Router>
+                    </ThemeProvider>
                 </HelmetProvider>
             </Provider>
         </React.StrictMode>

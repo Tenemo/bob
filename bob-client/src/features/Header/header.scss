@@ -1,4 +1,8 @@
 .header {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    h1 {
+        font-size: 2rem;
+        margin: 0;
+    }
 }

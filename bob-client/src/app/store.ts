@@ -5,8 +5,8 @@ import { combineReducers } from 'redux';
 import { createReduxHistoryContext } from 'redux-first-history';
 import { createLogger } from 'redux-logger';
 
-import { appThemeSlice } from 'features/AppTheme/appThemeSlice';
-import { exampleRequestSlice } from 'features/ExampleRequest/exampleRequestSlice';
+import { bobSlice } from 'features/Bob/bobSlice';
+import { bobApiSlice } from 'features/BobApi/bobApiSlice';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -19,12 +19,12 @@ const { createReduxHistory, routerMiddleware, routerReducer } =
     createReduxHistoryContext({ history: createBrowserHistory() });
 
 export const rootReducer = combineReducers({
-    appTheme: appThemeSlice.reducer,
-    exampleRequestApi: exampleRequestSlice.reducer,
+    bob: bobSlice.reducer,
+    bobApi: bobApiSlice.reducer,
     router: routerReducer,
 });
 
-const middleware = [routerMiddleware, exampleRequestSlice.middleware];
+const middleware = [routerMiddleware, bobApiSlice.middleware];
 
 // We'll be just fine with inferring these types :)
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/explicit-module-boundary-types

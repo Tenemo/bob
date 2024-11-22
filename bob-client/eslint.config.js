@@ -1,6 +1,3 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 import eslint from '@eslint/js';
 import { flatConfigs as importConfigs } from 'eslint-plugin-import';
 import jestPlugin from 'eslint-plugin-jest';
@@ -34,9 +31,6 @@ export default tseslint.config(
     reactPlugin.configs.flat.recommended,
     reactPlugin.configs.flat['jsx-runtime'],
     securityPlugin.configs.recommended,
-    ...compat.config({
-        plugins: ['only-error'],
-    }),
     {
         files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
         ...reactHooksPlugin.configs['recommended-latest'],

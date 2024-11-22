@@ -13,13 +13,6 @@ An embedded system project using ESP32-S3 for controlling camera, servo motors, 
 
 ## Pin configuration
 
-### Servo control pins
-
-```
-SDA   -> GPIO 1
-SCL   -> GPIO 2
-```
-
 ### I2S audio pins
 
 ```

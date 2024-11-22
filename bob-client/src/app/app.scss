@@ -11,23 +11,6 @@
             url("../fonts/RobotoMono-Regular.woff") format("woff");
     }
 }
-:global .theme-dark {
-    color: #ddd;
-    background-color: #222;
-    a {
-        color: #aaa;
-        &:visited {
-            color: #777;
-        }
-        &:hover {
-            color: #fff;
-        }
-    }
-}
-:global .theme-light {
-    color: #222;
-    background-color: #eee;
-}
 .error {
     color: darkred;
     margin: 10px 20px;

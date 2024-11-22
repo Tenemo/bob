@@ -2,7 +2,6 @@
     "editor.formatOnSave": true,
     "editor.linkedEditing": true,
     "files.autoSave": "off",
-    "editor.tabSize": 4,
     "javascript.updateImportsOnFileMove.enabled": "prompt",
     "typescript.tsdk": "node_modules/typescript/lib",
     "editor.bracketPairColorization.enabled": true,
@@ -11,6 +10,7 @@
     "css.validate": false,
     "scss.validate": false,
     "javascript.validate.enable": false,
+
     "eslint.format.enable": true,
     "eslint.useFlatConfig": true,
     "[javascript]": {
@@ -41,6 +41,7 @@
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "never"
     },
+
     "workbench.iconTheme": "vscode-icons",
     "cSpell.ignorePaths": ["node_modules", ".git"],
     "cSpell.words": [
@@ -63,6 +64,7 @@
         "spaceflightnewsapi",
         "streetsidesoftware",
         "teamsupercell",
+        "tseslint",
         "wojtekmaj"
     ]
 }

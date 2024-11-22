@@ -85,10 +85,12 @@ void WAVFileReader::getFrames(Frame_t *frames, int number_frames) {
         }
     }
 }
-void playAudioFile(const char *filename) {
+void playAudioFile(const char *filename, const bool announcePlayback) {
     if (currentOutput != nullptr) {
-        logger.println("Playback already in progress. Cancelling to play " +
-                       String(filename));
+        if (!announcePlayback) {
+            logger.println("Playback already in progress. Cancelling to play " +
+                           String(filename));
+        }
         currentOutput->stop();
         delete currentOutput;
         currentOutput = nullptr;

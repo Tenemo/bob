@@ -70,7 +70,9 @@ class WAVFileReader : public AudioFile {
  * Creates a `WAVFileReader` and `I2SOutput` instance to play the audio file.
  *
  * @param filename Path to the WAV file in SPIFFS.
+ * @param announcePlayback Flag to indicate if audio playback should be
+ * announced via ogger.
  */
-void playAudioFile(const char *filename);
+void playAudioFile(const char *filename, const bool announcePlayback = true);
 
 #endif

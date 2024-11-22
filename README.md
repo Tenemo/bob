@@ -134,8 +134,6 @@ Uploads and plays a WAV audio file.
 }
 ```
 
-[Previous sections remain the same until Setup instructions]
-
 ## Setup instructions
 
 ### Development environment

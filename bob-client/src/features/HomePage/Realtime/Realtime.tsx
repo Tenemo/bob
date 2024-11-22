@@ -2,13 +2,17 @@ import { Box, TextField, Button, Typography } from '@mui/material';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import React, { useState, useRef } from 'react';
 
+import { useUploadAudioMutation } from 'features/BobApi/bobApi';
+
 const Realtime = (): React.JSX.Element => {
     const [input, setInput] = useState('');
     const [status, setStatus] = useState('Disconnected');
     const [error, setError] = useState('');
     const clientRef = useRef<RealtimeClient | null>(null);
+    const [uploadAudio] = useUploadAudioMutation();
 
-    const playAudio = (audioData: Int16Array): void => {
+    const playAndUploadAudio = async (audioData: Int16Array): Promise<void> => {
+        // Play audio through speakers
         const audioContext = new AudioContext();
         const buffer = audioContext.createBuffer(1, audioData.length, 24000);
         const channelData = buffer.getChannelData(0);
@@ -21,6 +25,15 @@ const Realtime = (): React.JSX.Element => {
         source.buffer = buffer;
         source.connect(audioContext.destination);
         source.start();
+
+        // Upload to Bob
+        try {
+            await uploadAudio(audioData);
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : 'Failed to upload audio',
+            );
+        }
     };
 
     const initializeClient = async (): Promise<void> => {
@@ -51,7 +64,7 @@ const Realtime = (): React.JSX.Element => {
                         item.role === 'assistant' &&
                         item.formatted?.audio
                     ) {
-                        playAudio(item.formatted.audio);
+                        void playAndUploadAudio(item.formatted.audio);
                     }
                 },
             );

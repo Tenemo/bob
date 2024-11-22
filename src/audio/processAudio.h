@@ -1,10 +1,13 @@
 #ifndef PROCESS_AUDIO_H
 #define PROCESS_AUDIO_H
 
+#include "FileUploadHandler.h"
 #include "Globals.h"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
+
+extern FileUploadHandler uploadHandler;
 
 // Maximum allowed file size (10MB)
 const size_t MAX_FILE_SIZE = 10 * 1024 * 1024;

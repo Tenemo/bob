@@ -9,6 +9,8 @@
 volatile bool uploadError = false;
 extern DFRobot_AXP313A cameraPowerDriver;
 File uploadFile;
+FileUploadHandler uploadHandler;
+
 const char *UPLOAD_PATH = "/uploaded_audio.wav";
 static int lastReportedProgress = 0;
 static String message = "";
@@ -64,63 +66,61 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
             path += String(timestamp);
         }
 
-        // Remove existing file
-        if (SPIFFS.exists(path.c_str())) {
-            SPIFFS.remove(path.c_str());
-        }
-        Serial.println("Uploading file: " + path);
-
-        // Open the file for writing
-        uploadFile = SPIFFS.open(path.c_str(), FILE_WRITE);
-        if (!uploadFile) {
+        // Initialize PSRAM buffer
+        if (!uploadHandler.begin(path, request->contentLength())) {
             uploadError = true;
-            Serial.println("Failed to open file for writing");
+            logger.println("Failed to allocate PSRAM buffer");
             request->send(500, "application/json",
-                          "{\"error\":\"Failed to open file for writing\"}");
+                          "{\"error\":\"Failed to allocate buffer\"}");
             digitalWrite(PROCESSING_LED_PIN, LOW);
             return;
         }
     }
-    if (len && request->contentLength() > 0) {
-        // Calculate current progress percentage
-        int currentProgress = ((index + len) * 100) / request->contentLength();
-
-        // Check if we've reached a new 20% milestone
-        int currentFifth = currentProgress / 20;
-        int lastFifth = lastReportedProgress / 20;
-
-        if (currentFifth > lastFifth) {
-            int progressToReport = currentFifth * 20;
-            message = "Upload progress: " + String(currentProgress) + "%";
-            logger.println(message);
-            ;
-            lastReportedProgress = progressToReport;
-        }
-
-        if (uploadFile.write(data, len) != len) {
+    if (len) {
+        if (!uploadHandler.writeChunk(data, len)) {
             uploadError = true;
-            Serial.println("Failed to write data to file");
+            logger.println("Failed to write to PSRAM buffer");
             request->send(500, "application/json",
-                          "{\"error\":\"Failed to write file data\"}");
-            uploadFile.close();
+                          "{\"error\":\"Failed to write to buffer\"}");
+            uploadHandler.cleanup();
             digitalWrite(PROCESSING_LED_PIN, LOW);
             return;
+        }
+
+        // Calculate and log progress
+        if (request->contentLength() > 0) {
+            int currentProgress =
+                ((index + len) * 100) / request->contentLength();
+            int currentFifth = currentProgress / 20;
+            int lastFifth = lastReportedProgress / 20;
+
+            if (currentFifth > lastFifth) {
+                int progressToReport = currentFifth * 20;
+                message = "Upload progress: " + String(currentProgress) + "%";
+                logger.println(message);
+                lastReportedProgress = progressToReport;
+            }
         }
     }
 
     if (final) {
+        if (!uploadHandler.finish()) {
+            uploadError = true;
+            logger.println("Failed to save file to SPIFFS");
+            request->send(500, "application/json",
+                          "{\"error\":\"Failed to save file\"}");
+            digitalWrite(PROCESSING_LED_PIN, LOW);
+            return;
+        }
+
         Serial.println("Upload Complete: " + filename + ", Size: " +
                        String(index + len) + " bytes from " + clientIP);
-        uploadFile.close();
-
         initializeCamera();
 
-        // Send response before attempting playback
         request->send(200, "application/json",
                       "{\"status\":\"Upload successful\", \"size\":" +
                           String(index + len) + "}");
-        // delay(50);
-        // playAudioFile(UPLOAD_PATH);
+
         digitalWrite(PROCESSING_LED_PIN, LOW);
     }
 }

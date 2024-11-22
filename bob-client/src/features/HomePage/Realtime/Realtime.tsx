@@ -8,6 +8,7 @@ import {
     initializeRealtimeClient,
     startRecording,
     stopRecording,
+    Transcript,
 } from './realtimeUtils';
 import { WavPacker } from './wav_packer';
 
@@ -17,12 +18,14 @@ const Realtime = (): React.JSX.Element => {
     const [input, setInput] = useState<string>('');
     const [status, setStatus] = useState<string>('Disconnected');
     const [error, setError] = useState<string>('');
-    const [lastTranscript, setLastTranscript] = useState<string>('');
+    const [lastTranscript, setLastTranscript] = useState<Transcript[]>();
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [audioUrl, setAudioUrl] = useState<string>('');
     const clientRef = useRef<RealtimeClient | null>(null);
     const [uploadAudio] = useUploadAudioMutation();
     const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    console.log(lastTranscript);
 
     const handleInit = async (): Promise<void> => {
         try {
@@ -145,7 +148,7 @@ const Realtime = (): React.JSX.Element => {
                     }}
                     variant="body1"
                 >
-                    Last response: {lastTranscript}
+                    Last response: {lastTranscript[0].transcript}
                 </Typography>
             )}
 

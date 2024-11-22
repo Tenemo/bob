@@ -1,13 +1,22 @@
 import { RealtimeClient } from '@openai/realtime-api-beta';
 
+export type Transcript = {
+    type: string;
+    transcript: string;
+};
 export type ConversationItem = {
     type: string;
     role: string;
-    content?: string;
+    content?: Transcript[];
     formatted?: { audio: Int16Array };
 };
 
 export const MAX_AUDIO_SIZE_BYTES = 8 * 1024 * 1024;
+
+export const REALTIME_PROMPT = `
+You are a chip on a breadboard and
+want to find out more about the world around you.
+`;
 
 export const playAndUploadAudio = async (
     audioData: Int16Array,
@@ -36,6 +45,8 @@ export const playAndUploadAudio = async (
     source.start();
 
     try {
+        // LEAVE IT FOR NOW, TO BE REMOVED LATER
+        return;
         await uploadAudio(audioData);
     } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to upload audio');
@@ -46,7 +57,7 @@ export const initializeRealtimeClient = async (
     apiKey: string | undefined,
     setStatus: (status: string) => void,
     setError: (error: string) => void,
-    setLastTranscript: (transcript: string) => void,
+    setLastTranscript: (transcript: Transcript[]) => void,
     uploadAudio: (audio: Int16Array) => Promise<unknown>,
 ): Promise<RealtimeClient> => {
     if (!apiKey) {
@@ -58,6 +69,9 @@ export const initializeRealtimeClient = async (
         dangerouslyAllowAPIKeyInBrowser: true,
     });
 
+    client.updateSession({
+        instructions: REALTIME_PROMPT,
+    });
     client.updateSession({ voice: 'coral' });
 
     client.on(

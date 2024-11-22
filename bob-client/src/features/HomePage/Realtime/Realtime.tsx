@@ -1,23 +1,33 @@
 import { Box, TextField, Button, Typography } from '@mui/material';
-import type { RealtimeClient } from '@openai/realtime-api-beta';
-import React, { useState, useRef } from 'react';
+import { RealtimeClient } from '@openai/realtime-api-beta';
+import { Mic, MicOff } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
 
-import { handleMessageSubmit, initializeRealtimeClient } from './realtimeUtils';
+import {
+    handleMessageSubmit,
+    initializeRealtimeClient,
+    startRecording,
+    stopRecording,
+} from './realtimeUtils';
+import { WavPacker } from './wav_packer';
 
 import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
 const Realtime = (): React.JSX.Element => {
-    const [input, setInput] = useState('');
-    const [status, setStatus] = useState('Disconnected');
-    const [error, setError] = useState('');
-    const [lastTranscript, setLastTranscript] = useState('');
+    const [input, setInput] = useState<string>('');
+    const [status, setStatus] = useState<string>('Disconnected');
+    const [error, setError] = useState<string>('');
+    const [lastTranscript, setLastTranscript] = useState<string>('');
+    const [isRecording, setIsRecording] = useState<boolean>(false);
+    const [audioUrl, setAudioUrl] = useState<string>('');
     const clientRef = useRef<RealtimeClient | null>(null);
     const [uploadAudio] = useUploadAudioMutation();
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const handleInit = async (): Promise<void> => {
         try {
             clientRef.current = await initializeRealtimeClient(
-                process.env.OPENAI_API_KEY,
+                process.env.OPENAI_API_KEY ?? '',
                 setStatus,
                 setError,
                 setLastTranscript,
@@ -36,6 +46,31 @@ const Realtime = (): React.JSX.Element => {
         setInput('');
     };
 
+    const toggleRecording = async (): Promise<void> => {
+        if (isRecording) {
+            await stopRecording(clientRef.current, setError);
+        } else {
+            await startRecording(clientRef.current, setError);
+        }
+        setIsRecording(!isRecording);
+    };
+
+    useEffect(() => {
+        if (lastTranscript && clientRef.current) {
+            const item = clientRef.current.conversation.getItems().slice(-1)[0];
+            if (item.formatted.audio) {
+                const wavPacker = new WavPacker();
+                const audioBlob = wavPacker.pack(24000, {
+                    bitsPerSample: 16,
+                    channels: [new Float32Array(item.formatted.audio)],
+                    data: new Int16Array(item.formatted.audio),
+                }).blob;
+                const url = URL.createObjectURL(audioBlob);
+                setAudioUrl(url);
+            }
+        }
+    }, [lastTranscript]);
+
     return (
         <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography>Status: {status}</Typography>
@@ -51,13 +86,21 @@ const Realtime = (): React.JSX.Element => {
             )}
 
             {status === 'Connected' && (
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        gap: 1,
+                        alignItems: 'center',
+                    }}
+                >
                     <TextField
                         fullWidth
-                        onChange={(e) => {
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             setInput(e.target.value);
                         }}
-                        onKeyDown={(e) => {
+                        onKeyDown={(
+                            e: React.KeyboardEvent<HTMLInputElement>,
+                        ) => {
                             if (e.key === 'Enter') handleSubmit();
                         }}
                         placeholder="Type your message..."
@@ -65,11 +108,30 @@ const Realtime = (): React.JSX.Element => {
                     />
                     <Button
                         disabled={!input.trim()}
-                        onClick={handleSubmit}
+                        onClick={() => {
+                            handleSubmit();
+                        }}
                         variant="contained"
                     >
                         Send
                     </Button>
+                    <Button
+                        color={isRecording ? 'error' : 'primary'}
+                        onClick={() => void toggleRecording()}
+                        startIcon={isRecording ? <MicOff /> : <Mic />}
+                        sx={{
+                            minWidth: 'auto',
+                        }}
+                        variant="contained"
+                    >
+                        {isRecording ? 'Stop' : 'Record'}
+                    </Button>
+                </Box>
+            )}
+
+            {audioUrl && (
+                <Box sx={{ mt: 2 }}>
+                    <audio controls ref={audioRef} src={audioUrl} />
                 </Box>
             )}
 

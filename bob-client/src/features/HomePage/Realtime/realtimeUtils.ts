@@ -87,16 +87,85 @@ export const initializeRealtimeClient = async (
 
 export const handleMessageSubmit = (
     client: RealtimeClient | null,
-    input: string,
+    message: string,
     setError: (error: string) => void,
 ): void => {
-    if (!client || !input.trim()) return;
+    if (!client) {
+        setError('Client not initialized');
+        return;
+    }
 
     try {
-        client.sendUserMessageContent([
-            { type: 'input_text', text: input.trim() },
-        ]);
-    } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to send message');
+        client.sendUserMessageContent([{ type: 'input_text', text: message }]);
+    } catch (error) {
+        setError(
+            error instanceof Error ? error.message : 'Failed to send message',
+        );
     }
+};
+
+let mediaRecorder: MediaRecorder | null = null;
+let audioChunks: Blob[] = [];
+
+export const startRecording = async (
+    client: RealtimeClient | null,
+    setError: (error: string) => void,
+): Promise<void> => {
+    if (!client) {
+        setError('Client not initialized');
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+        });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.start(100); // Collect data every 100ms
+    } catch (error) {
+        setError('Failed to start recording');
+        console.error(error);
+    }
+};
+
+export const stopRecording = async (
+    client: RealtimeClient | null,
+    setError: (error: string) => void,
+): Promise<void> => {
+    if (!mediaRecorder || !client) {
+        setError('No active recording');
+        return;
+    }
+
+    return new Promise((resolve) => {
+        if (!mediaRecorder) {
+            resolve();
+            return;
+        }
+        mediaRecorder.onstop = async () => {
+            try {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const audioData = new Int16Array(arrayBuffer);
+                client.appendInputAudio(audioData);
+                client.createResponse();
+                resolve();
+            } catch (error) {
+                setError('Failed to process recording');
+                console.error(error);
+            }
+        };
+
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach((track) => {
+            track.stop();
+        });
+        mediaRecorder = null;
+    });
 };

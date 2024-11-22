@@ -86,7 +86,7 @@ const BobActions = (): React.JSX.Element => {
                     <img
                         alt="Captured by Bob"
                         src={captureData}
-                        style={{ maxWidth: '100%' }}
+                        style={{ maxWidth: '60%' }}
                     />
                 </Box>
             )}

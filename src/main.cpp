@@ -17,6 +17,8 @@
 
 ScreenLogger logger;
 AsyncWebServer server(80);
+TwoWire cameraWire(0);
+DFRobot_AXP313A cameraPowerDriver(0x36, &cameraWire);
 
 void setup() {
     esp_log_level_set("*", ESP_LOG_ERROR);
@@ -50,10 +52,12 @@ void setup() {
 
     initializeStartup();
     delay(500);
-    logger.println("Initialization complete.");
     // playAudioFile("/sample_music.wav");
     // playAudioFile("/sample_voice.wav");
     // playAudioFile("/uploaded_audio.wav");
+    // deinitializeCamera();
+    // delay(500);
+    // initializeCamera();
 }
 
 void loop() {}

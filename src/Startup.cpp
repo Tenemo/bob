@@ -68,11 +68,10 @@ void initializeStartup() {
     }
 
     if (successCount == totalSubsystems) {
-        logger.println("ALL " + String(successCount) + "/" +
-                       String(totalSubsystems) +
-                       " subsystems initialized\nSUCCESSFULLY!");
+        logger.println(String(successCount) + "/" + String(totalSubsystems) +
+                       " subsystems initialized SUCCESSFULLY!");
     } else {
-        logger.println("Failures occurred, initialized " +
+        logger.println("FAILURES occurred, initialized " +
                        String(successCount) + "/" + String(totalSubsystems) +
                        " subsystems successfully.");
     }

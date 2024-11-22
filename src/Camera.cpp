@@ -1,16 +1,22 @@
 #include "Camera.h"
-#include "DFRobot_AXP313A.h"
+#include "Globals.h"
 #include <Arduino.h>
-
-DFRobot_AXP313A axp(0x36);
+#include <driver/i2c.h>
 
 bool initializeCamera() {
+    // i2c_driver_delete(I2C_NUM_0);
+    if (cameraWire.begin(SIOD_GPIO_NUM, SIOC_GPIO_NUM, 100000)) {
+        Serial.println("cameraWire initialized.");
+    } else {
+        Serial.println("cameraWire initialization FAILURE.");
+        return false;
+    }
     // Initialize the AXP313A power management chip
-    const int maxRetries = 10;
+    const int maxRetries = 3;
     int retries = 0;
-    while (axp.begin() != 0) {
+    while (cameraPowerDriver.begin() != 0) {
         Serial.println("AXP313A init error");
-        delay(1000);
+        delay(20);
         retries++;
         if (retries >= maxRetries) {
             logger.println("AXP313A initialization FAILURE after " +
@@ -19,7 +25,7 @@ bool initializeCamera() {
         }
     }
     // Enable the power for camera
-    axp.enableCameraPower(axp.eOV2640);
+    cameraPowerDriver.enableCameraPower(cameraPowerDriver.eOV2640);
 
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
@@ -67,6 +73,24 @@ bool initializeCamera() {
         return false;
     }
     Serial.println("Camera initialization SUCCESSFUL.");
+    delay(100);
+    return true;
+}
+
+bool deinitializeCamera() {
+    String errorMessage;
+
+    esp_err_t err = esp_camera_deinit();
+    if (err != ESP_OK) {
+        errorMessage = "Failed to deinitialize camera driver: ";
+        errorMessage += esp_err_to_name(err);
+        return false;
+    }
+    Serial.println("Camera driver deinitialized. Disabling power.");
+    cameraPowerDriver.disablePower();
+
+    delay(100); // Wait after power enable
+
     return true;
 }
 
@@ -101,27 +125,4 @@ void processCaptureRequest(AsyncWebServerRequest *request,
         });
     response->addHeader("Content-Disposition", "inline; filename=capture.jpg");
     request->send(response);
-}
-
-bool deinitializeCamera() {
-    bool success = true;
-    String errorMessage;
-
-    // Deinitialize the ESP camera driver
-    esp_err_t err = esp_camera_deinit();
-    if (err != ESP_OK) {
-        success = false;
-        errorMessage = "Failed to deinitialize camera driver: ";
-        errorMessage += esp_err_to_name(err);
-        Serial.println(errorMessage);
-    }
-
-    // Then, try to disable camera power regardless of previous step
-    axp.disablePower();
-
-    if (success) {
-        Serial.println("Camera deinitialization successful");
-    }
-
-    return success;
 }

@@ -6,7 +6,7 @@
 #include "utils/ScreenLogger.h"
 #include <SPIFFS.h>
 
-extern DFRobot_AXP313A axp;
+extern DFRobot_AXP313A cameraPowerDriver;
 File uploadFile;
 const char *UPLOAD_PATH = "/uploaded_audio.wav";
 static int lastReportedProgress = 0;
@@ -24,8 +24,11 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
     // so we handle status request LED logic here
     digitalWrite(PROCESSING_LED_PIN, HIGH);
     if (!index) {
-        Serial.println("Upload Start: " + filename + " from " + clientIP);
+        logger.println("Audio upload from " + clientIP + " began.");
         lastReportedProgress = 0;
+        // Deinitializing camera
+        // deinitializeCamera();
+        // Serial.println("Camera deinitialized.");
 
         // Close any existing file
         if (uploadFile) {
@@ -74,6 +77,8 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
         Serial.println("Upload Complete: " + filename + ", Size: " +
                        String(index + len) + " bytes from " + clientIP);
         uploadFile.close();
+
+        // initializeCamera();
 
         // Send response before attempting playback
         request->send(200, "application/json",

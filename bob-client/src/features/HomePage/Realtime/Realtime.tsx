@@ -139,15 +139,7 @@ const Realtime = (): React.JSX.Element => {
             )}
 
             {lastTranscript && (
-                <Typography
-                    sx={{
-                        mt: 2,
-                        p: 2,
-                        bgcolor: 'background.paper',
-                        borderRadius: 1,
-                    }}
-                    variant="body1"
-                >
+                <Typography>
                     Last response: {lastTranscript[0].transcript}
                 </Typography>
             )}

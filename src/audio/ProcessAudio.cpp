@@ -51,8 +51,6 @@ void handleAudioUpload(AsyncWebServerRequest *request, String filename,
         logger.println("Audio upload from " + clientIP + " began.");
         lastReportedProgress = 0;
 
-        // Stop any current playback before starting new upload
-        stopPlayback();
         // Make sure previous upload is cleaned up
         cleanupUpload();
 

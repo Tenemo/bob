@@ -7,7 +7,6 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import prettierPluginRecommended from 'eslint-plugin-prettier/recommended';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import securityPlugin from 'eslint-plugin-security';
 import globals from 'globals';
 import tseslint, { configs as tsConfigs } from 'typescript-eslint';
 
@@ -39,7 +38,6 @@ export default tseslint.config(
             'jsx-a11y': jsxA11yPlugin,
             'only-error': errorOnlyPlugin,
             prettier: prettierPlugin,
-            security: securityPlugin,
             jest: jestPlugin,
         },
         settings: {

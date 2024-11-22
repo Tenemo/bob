@@ -37,7 +37,7 @@ const logger = createLogger({
 
 export const rootReducer = combineReducers({
     bob: bobSlice.reducer,
-    bobApi: bobApi.reducer,
+    [bobApi.reducerPath]: bobApi.reducer,
 });
 
 const persistedReducer = persistReducer<RootState>(persistConfig, rootReducer);

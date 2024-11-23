@@ -54,15 +54,14 @@ const Realtime = (): React.JSX.Element => {
             },
         ]);
 
+        // Turn detection for constant audio
         // if (client.getTurnDetectionType() === 'server_vad') {
         //     await wavRecorder.record((data) =>
         //         client.appendInputAudio(data.mono),
         //     );
         // }
     }, []);
-    /**
-     * Disconnect and reset conversation state
-     */
+
     const disconnectConversation = useCallback(async () => {
         setIsConnected(false);
 
@@ -87,7 +86,6 @@ const Realtime = (): React.JSX.Element => {
     };
 
     useEffect(() => {
-        // Get refs
         const client = clientRef.current;
 
         // Set instructions
@@ -119,7 +117,7 @@ const Realtime = (): React.JSX.Element => {
             },
         );
         return () => {
-            // cleanup; resets to defaults
+            // resets to defaults
             client.reset();
         };
     }, [uploadAudio]);

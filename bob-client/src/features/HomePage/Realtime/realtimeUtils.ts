@@ -45,7 +45,7 @@ export const playAndUploadAudio = async (
     source.start();
 
     try {
-        // LEAVE IT FOR NOW, TO BE REMOVED LATER
+        // To skip playback via the breadboard
         // return;
         await uploadAudio(audioData);
     } catch (err) {

@@ -8,7 +8,7 @@
 #include <Wire.h>
 
 // Servo configuration constants
-#define SERVOMIN 150  /**< Minimum pulse length count (out of 4096) */
+#define SERVOMIN 100  /**< Minimum pulse length count (out of 4096) */
 #define SERVOMAX 600  /**< Maximum pulse length count (out of 4096) */
 #define SERVO_FREQ 50 /**< Servo frequency in Hz */
 

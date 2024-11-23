@@ -21,14 +21,15 @@ bool initializeServos() {
     }
     servoDriver.setOscillatorFrequency(24700000);
     servoDriver.setPWMFreq(SERVO_FREQ);
+    delay(10);
     Serial.println("PCA9685 initialization SUCCESSFUL. Moving servos to 90 "
                    "degrees, neutral position.");
 
-    return true;
     // Move all servos to neutral position
     for (int motorIndex = 0; motorIndex < 16; motorIndex++) {
         rotateServo(motorIndex, 90);
     }
+    return true;
 }
 
 void rotateServo(int motorIndex, int degrees) {
@@ -42,11 +43,11 @@ void rotateServo(int motorIndex, int degrees) {
         return;
     }
 
-    // Map degrees to PWM value
-    int pwmValue = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
+    // Map degrees to pulse length value
+    int pulselen = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
 
     // Set the PWM signal for the servo
-    if (servoDriver.setPWM(motorIndex, 0, pwmValue)) {
+    if (servoDriver.setPWM(motorIndex, 0, pulselen) == 0) {
         Serial.println("Moved servo " + String(motorIndex) + " to " +
                        String(degrees) + " degrees");
     } else {
@@ -82,9 +83,6 @@ void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
     }
 
     rotateServo(motorIndex, degrees);
-    logger.println("Moved servo " + String(motorIndex) + " to " +
-                   String(degrees) + " degrees");
-
     // Prepare response
     JsonDocument responseDoc;
     responseDoc["status"] = "success";

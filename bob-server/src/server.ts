@@ -75,7 +75,7 @@ const rotate = async ({
 }): Promise<void> => {
     try {
         const response = await axios.post('http://192.168.212.22/rotate/', {
-            motorIndex,
+            motorIndex: motorIndex?.toString(),
             degrees,
         });
         console.log('Response:', response.data);
@@ -87,9 +87,19 @@ const rotate = async ({
         }
     }
 };
+const delay = (ms: number): Promise<void> =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
 const makeCalls = async (): Promise<void> => {
-    await rotate({ degrees: 50, motorIndex: 0 });
-    // await rotate({ degrees: 50, motorIndex: 15 });
+    for (let i = 0; i < 13; i++) {
+        await rotate({ degrees: 60 + i, motorIndex: i });
+        await delay(500);
+        await rotate({ degrees: 120 + i, motorIndex: i });
+        await delay(500);
+        await rotate({ degrees: 90 + i, motorIndex: i });
+        await delay(500);
+    }
+    //await rotate({ degrees: 90, motorIndex: 7 });
 };
 
 void makeCalls();

@@ -15,15 +15,20 @@ bool initializeServos() {
 
     servoWire.begin(SERVO_SDA_PIN, SERVO_SCL_PIN, 100000);
 
-    if (servoDriver.begin()) {
-        Serial.println("PCA9685 initialization SUCCESSFUL.");
-        servoDriver.setOscillatorFrequency(27000000);
-        servoDriver.setPWMFreq(SERVO_FREQ);
-        return true;
+    if (!servoDriver.begin()) {
+        logger.println("PCA9685 initialization FAILURE.");
+        return false;
     }
+    servoDriver.setOscillatorFrequency(24700000);
+    servoDriver.setPWMFreq(SERVO_FREQ);
+    Serial.println("PCA9685 initialization SUCCESSFUL. Moving servos to 90 "
+                   "degrees, neutral position.");
 
-    logger.println("PCA9685 initialization FAILURE.");
-    return false;
+    return true;
+    // Move all servos to neutral position
+    for (int motorIndex = 0; motorIndex < 16; motorIndex++) {
+        rotateServo(motorIndex, 90);
+    }
 }
 
 void rotateServo(int motorIndex, int degrees) {
@@ -41,7 +46,12 @@ void rotateServo(int motorIndex, int degrees) {
     int pwmValue = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
 
     // Set the PWM signal for the servo
-    servoDriver.setPWM(motorIndex, 0, pwmValue);
+    if (servoDriver.setPWM(motorIndex, 0, pwmValue)) {
+        Serial.println("Moved servo " + String(motorIndex) + " to " +
+                       String(degrees) + " degrees");
+    } else {
+        logger.println("FAILURE to move servo " + String(motorIndex));
+    }
 }
 
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
@@ -74,8 +84,6 @@ void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
     rotateServo(motorIndex, degrees);
     logger.println("Moved servo " + String(motorIndex) + " to " +
                    String(degrees) + " degrees");
-    delay(200);
-    rotateServo(motorIndex, 0);
 
     // Prepare response
     JsonDocument responseDoc;

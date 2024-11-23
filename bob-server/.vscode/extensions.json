@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "christian-kohler.npm-intellisense",
+        "christian-kohler.path-intellisense",
+        "dbaeumer.vscode-eslint",
+        "eamodio.gitlens",
+        "vscode-icons-team.vscode-icons",
+        "streetsidesoftware.code-spell-checker"
+    ]
+}

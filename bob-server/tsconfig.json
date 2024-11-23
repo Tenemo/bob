@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./src/",
+        "target": "esnext",
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "removeComments": true,
+        "declaration": false,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "strict": true,
+        "sourceMap": true,
+        "allowJs": true,
+        "noEmit": true,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "noUnusedParameters": true,
+        "noUnusedLocals": true,
+        "noErrorTruncation": true
+    },
+    "ts-node": {
+        "require": ["tsconfig-paths/register"]
+    },
+    "include": ["src/**/*", "config/**/*", ".eslintrc.js", "temp/**/*"]
+}

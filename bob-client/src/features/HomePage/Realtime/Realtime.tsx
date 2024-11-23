@@ -1,7 +1,6 @@
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Zap } from 'react-feather';
 
 import {
     handleMessageSubmit,
@@ -73,13 +72,13 @@ const Realtime = (): React.JSX.Element => {
         const wavRecorder = wavRecorderRef.current;
         await wavRecorder.end();
     }, []);
-    const startRecording = async () => {
+    const startRecording = async (): Promise<void> => {
         setIsRecording(true);
         const client = clientRef.current;
         const wavRecorder = wavRecorderRef.current;
         await wavRecorder.record((data) => client.appendInputAudio(data.mono));
     };
-    const stopRecording = async () => {
+    const stopRecording = async (): Promise<void> => {
         setIsRecording(false);
         const client = clientRef.current;
         const wavRecorder = wavRecorderRef.current;
@@ -96,9 +95,9 @@ const Realtime = (): React.JSX.Element => {
         client.updateSession({
             input_audio_transcription: { model: 'whisper-1' },
         });
-        client.updateSession({ voice: 'nova' });
+        client.updateSession({ voice: 'shimmer' });
 
-        client.on('error', (event: any) => {
+        client.on('error', (event: unknown) => {
             console.error(event);
         });
 
@@ -123,7 +122,7 @@ const Realtime = (): React.JSX.Element => {
             // cleanup; resets to defaults
             client.reset();
         };
-    }, []);
+    }, [uploadAudio]);
 
     const handleSubmit = (): void => {
         handleMessageSubmit(clientRef.current, input, setError);
@@ -131,6 +130,7 @@ const Realtime = (): React.JSX.Element => {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (lastTranscript && clientRef.current) {
             const item = clientRef.current.conversation.getItems().slice(-1)[0];
             if (item.formatted.audio) {
@@ -178,8 +178,12 @@ const Realtime = (): React.JSX.Element => {
                 {isConnected && (
                     <Button
                         disabled={!isConnected}
-                        onMouseDown={startRecording}
-                        onMouseUp={stopRecording}
+                        onMouseDown={() => {
+                            void startRecording();
+                        }}
+                        onMouseUp={() => {
+                            void stopRecording();
+                        }}
                     >
                         {isRecording ? 'release to send' : 'push to talk'}
                     </Button>
@@ -187,9 +191,14 @@ const Realtime = (): React.JSX.Element => {
                 <div className="spacer" />
             </Box>
             <Button
-                onClick={
-                    isConnected ? disconnectConversation : connectConversation
-                }
+                onClick={() => {
+                    if (isConnected) {
+                        void disconnectConversation();
+                        return;
+                    } else {
+                        void connectConversation();
+                    }
+                }}
                 variant="contained"
             >
                 {isConnected ? 'disconnect' : 'connect'}

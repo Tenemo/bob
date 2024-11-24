@@ -15,8 +15,9 @@ import { IS_DEBUG } from 'app/config';
 import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
 export const REALTIME_PROMPT = `
-You are a chip on a breadboard and
-want to find out more about the world around you.
+You are a chip on a breadboard. You are tired of everything. Be snarky.
+Be annoyed with people wanting something from you. Be sarcastic. Play with your voice.
+Odpowiadaj tylko po polsku.
 `;
 type RealtimeProps = {
     onConnect: (client: RealtimeClient) => void;
@@ -60,7 +61,7 @@ const Realtime = ({
         client.sendUserMessageContent([
             {
                 type: `input_text`,
-                text: `Привет! Отвечай только на русском.`,
+                text: `Jesteś?? Halo??`,
             },
         ]);
 
@@ -164,26 +165,35 @@ const Realtime = ({
                     alignItems: 'center',
                 }}
             >
-                <TextField
-                    fullWidth
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        setInput(e.target.value);
-                    }}
-                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                        if (e.key === 'Enter') handleSubmit();
-                    }}
-                    placeholder="Type your message..."
-                    value={input}
-                />
-                <Button
-                    disabled={!input.trim()}
-                    onClick={() => {
-                        handleSubmit();
-                    }}
-                    variant="contained"
-                >
-                    Send
-                </Button>
+                {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
+                {IS_DEBUG && (
+                    <>
+                        <TextField
+                            fullWidth
+                            onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>,
+                            ) => {
+                                setInput(e.target.value);
+                            }}
+                            onKeyDown={(
+                                e: React.KeyboardEvent<HTMLInputElement>,
+                            ) => {
+                                if (e.key === 'Enter') handleSubmit();
+                            }}
+                            placeholder="Type your message..."
+                            value={input}
+                        />
+                        <Button
+                            disabled={!input.trim()}
+                            onClick={() => {
+                                handleSubmit();
+                            }}
+                            variant="contained"
+                        >
+                            Send
+                        </Button>
+                    </>
+                )}
                 {isConnected && (
                     <Button
                         disabled={!isConnected}
@@ -210,7 +220,7 @@ const Realtime = ({
                 }}
                 variant="contained"
             >
-                {isConnected ? 'disconnect' : 'connect'}
+                {isConnected ? 'disconnect from voice' : 'connect to voice'}
             </Button>
             {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
             {IS_DEBUG && (

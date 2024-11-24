@@ -49,14 +49,16 @@ const BobActions = (): React.JSX.Element => {
                 />
                 <Button
                     color="primary"
-                    disabled={!bobIp || isHealthcheckLoading || !isBobUp}
+                    disabled={!bobIp || isHealthcheckLoading}
                     onClick={handleConnect}
                     variant="contained"
                 >
                     {isHealthcheckLoading ? (
                         <CircularProgress size={24} />
+                    ) : isBobUp ? (
+                        'Double-check if Bob is alive'
                     ) : (
-                        'Connect'
+                        'Check if Bob is alive'
                     )}
                 </Button>
 
@@ -84,7 +86,8 @@ const BobActions = (): React.JSX.Element => {
                     </Button>
                 </Box>
             )}
-            {captureData && (
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
+            {captureData && IS_DEBUG && (
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
                     <img
                         alt="Captured by Bob"

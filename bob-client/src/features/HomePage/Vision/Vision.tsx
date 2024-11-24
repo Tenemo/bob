@@ -110,11 +110,7 @@ const Vision = ({
                 sx={{ minWidth: 200 }}
                 variant="contained"
             >
-                {isFetching ? (
-                    <CircularProgress size={24} />
-                ) : (
-                    'Analyze Latest Image'
-                )}
+                {isFetching ? <CircularProgress size={24} /> : 'Share picture'}
             </Button>
 
             {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}

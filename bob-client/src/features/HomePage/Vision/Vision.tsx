@@ -1,10 +1,8 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import { OpenAI } from 'openai';
 import React, { useState } from 'react';
 
 import { IS_DEBUG } from 'app/config';
-import { useAppSelector } from 'app/hooks';
-import { selectBobIp } from 'features/Bob/bobSlice';
 import { useCaptureQuery } from 'features/BobApi/bobApi';
 
 const VISION_PROMPT = `
@@ -14,16 +12,21 @@ Another system will use your prompt to navigate and respond questions about the 
 
 type VisionProps = {
     onAnalysis: (description: string) => void;
+    isRealtimeConnected: boolean;
 };
 
-const Vision = ({ onAnalysis }: VisionProps): React.JSX.Element => {
+const Vision = ({
+    onAnalysis,
+    isRealtimeConnected,
+}: VisionProps): React.JSX.Element => {
     const [description, setDescription] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const bobIp = useAppSelector(selectBobIp);
-    const { data: captureData } = useCaptureQuery(undefined, {
-        skip: !bobIp,
-    });
+    const {
+        refetch: refetchCapture,
+        isFetching,
+        data: captureData,
+    } = useCaptureQuery(undefined, {});
 
     const convertBlobToBase64 = async (blob: Blob): Promise<string> => {
         return new Promise<string>((resolve, reject) => {
@@ -38,8 +41,8 @@ const Vision = ({ onAnalysis }: VisionProps): React.JSX.Element => {
     };
 
     const analyzeImage = async (): Promise<void> => {
-        if (!captureData || !process.env.OPENAI_API_KEY) {
-            setError('No image available or API key missing');
+        if (!process.env.OPENAI_API_KEY) {
+            setError('API key missing');
             return;
         }
 
@@ -47,7 +50,13 @@ const Vision = ({ onAnalysis }: VisionProps): React.JSX.Element => {
         setError('');
 
         try {
+            await refetchCapture();
+            if (!captureData) {
+                setError('No image to analyze');
+                return;
+            }
             const captureDataResponse = await fetch(captureData);
+            console.log(captureDataResponse);
             const blob = await captureDataResponse.blob();
             const base64Image = await convertBlobToBase64(blob);
 
@@ -96,15 +105,20 @@ const Vision = ({ onAnalysis }: VisionProps): React.JSX.Element => {
     return (
         <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Button
-                disabled={isLoading || !captureData}
+                disabled={isLoading || !isRealtimeConnected}
                 onClick={() => void analyzeImage()}
+                sx={{ minWidth: 200 }}
                 variant="contained"
             >
-                {isLoading ? 'Analyzing...' : 'Analyze Latest Image'}
+                {isFetching ? (
+                    <CircularProgress size={24} />
+                ) : (
+                    'Analyze Latest Image'
+                )}
             </Button>
 
             {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
-            {description && !IS_DEBUG && (
+            {description && IS_DEBUG && (
                 <Typography
                     sx={{
                         mt: 2,

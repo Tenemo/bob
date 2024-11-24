@@ -128,6 +128,7 @@ export const bobApi = createApi({
                 responseHandler: (response) => response.blob(),
             }),
             transformResponse: (blob: Blob) => URL.createObjectURL(blob),
+            forceRefetch: () => true,
         }),
         /**
          * Upload and play audio mutation.

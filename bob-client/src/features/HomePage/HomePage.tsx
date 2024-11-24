@@ -54,6 +54,7 @@ const HomePage = (): React.JSX.Element => {
             </Helmet>
             <BobActions />
             <Vision
+                isRealtimeConnected={isRealtimeConnected}
                 onAnalysis={(description: string) => {
                     if (isRealtimeConnected) {
                         sendToRealtime(description);

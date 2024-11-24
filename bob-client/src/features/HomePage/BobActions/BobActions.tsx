@@ -7,11 +7,12 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-import { useAppSelector } from 'app/hooks';
+import { useAppSelector, useAppDispatch } from 'app/hooks';
 import { setIp, selectBobIp } from 'features/Bob/bobSlice';
 import { useHealthcheckQuery, useCaptureQuery } from 'features/BobApi/bobApi';
 
 const BobActions = (): React.JSX.Element => {
+    const dispatch = useAppDispatch();
     const {
         data: healthcheckData,
         refetch: refetchHealthcheck,
@@ -40,7 +41,7 @@ const BobActions = (): React.JSX.Element => {
                     fullWidth
                     label="Bob's IP Address"
                     onChange={(e) => {
-                        setIp(e.target.value);
+                        dispatch(setIp(e.target.value));
                     }}
                     value={bobIp}
                     variant="outlined"

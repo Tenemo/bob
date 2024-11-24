@@ -7,6 +7,25 @@ TwoWire servoWire = TwoWire(1);
 Adafruit_PWMServoDriver servoDriver =
     Adafruit_PWMServoDriver(SERVO_DRIVER_ADDR, servoWire);
 
+// Bottom rotors
+#define FRONT_RIGHT_BOTTOM 0
+#define MIDDLE_RIGHT_BOTTOM 1
+#define BACK_RIGHT_BOTTOM 2
+#define BACK_LEFT_BOTTOM 3
+#define MIDDLE_LEFT_BOTTOM 4
+#define FRONT_LEFT_BOTTOM 5
+// Top rotors
+#define FRONT_RIGHT_TOP 6
+#define MIDDLE_RIGHT_TOP 7
+#define BACK_RIGHT_TOP 8
+#define BACK_LEFT_TOP 9
+#define MIDDLE_LEFT_TOP 10
+#define FRONT_LEFT_TOP 11
+
+#define MAX_RANGE_FOR_TOP_SERVOS 20
+#define BASE_ANGLE_FOR_BOTTOM_SERVOS 110
+#define BASE_ANGLE_FOR_TOP_SERVOS 90
+
 bool initializeServos() {
     // This line fixes everything.
     // Without it, both camera and servos will not work,
@@ -26,9 +45,7 @@ bool initializeServos() {
                    "degrees, neutral position.");
 
     // Move all servos to neutral position
-    for (int motorIndex = 0; motorIndex < 16; motorIndex++) {
-        rotateServo(motorIndex, 90);
-    }
+    resetServos();
     return true;
 }
 
@@ -43,6 +60,20 @@ void rotateServo(int motorIndex, int degrees) {
         return;
     }
 
+    if (motorIndex >= FRONT_RIGHT_TOP && motorIndex <= FRONT_LEFT_TOP &&
+        (degrees > 90 + MAX_RANGE_FOR_TOP_SERVOS ||
+         degrees < 90 - MAX_RANGE_FOR_TOP_SERVOS)) {
+        logger.println("Top servos can only rotate up to " +
+                       String(MAX_RANGE_FOR_TOP_SERVOS) + " degrees.");
+        return;
+    }
+
+    // Left side servos are mirrored
+    if ((motorIndex >= 3 && motorIndex <= 5) ||
+        (motorIndex >= 9 && motorIndex <= 11)) {
+        degrees = 180 - degrees;
+    }
+
     // Map degrees to pulse length value
     int pulselen = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
 
@@ -53,6 +84,44 @@ void rotateServo(int motorIndex, int degrees) {
     } else {
         logger.println("FAILURE to move servo " + String(motorIndex));
     }
+}
+
+void resetServos() {
+    for (int motorIndex = 0; motorIndex < 16; motorIndex++) {
+        if (motorIndex >= FRONT_RIGHT_TOP && motorIndex <= FRONT_LEFT_TOP) {
+            rotateServo(motorIndex, BASE_ANGLE_FOR_TOP_SERVOS);
+        } else {
+            rotateServo(motorIndex, BASE_ANGLE_FOR_BOTTOM_SERVOS);
+        }
+        delay(100);
+    }
+}
+
+void processMoveRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
+    if (!doc["type"]) {
+        req->send(400, "application/json",
+                  "{\"error\":\"Missing motorIndex or degrees\"}");
+        return;
+    }
+
+    String type = doc["type"];
+
+    if (type == "reset") {
+        resetServos();
+    } else {
+        req->send(400, "application/json",
+                  "{\"error\":\"Invalid type. Must be 'reset'\"}");
+        return;
+    }
+
+    // Prepare response
+    JsonDocument responseDoc;
+    responseDoc["status"] = "success";
+    responseDoc["type"] = type;
+
+    String response;
+    serializeJson(responseDoc, response);
+    req->send(200, "application/json", response);
 }
 
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {

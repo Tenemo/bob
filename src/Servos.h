@@ -36,6 +36,7 @@ bool initializeServos();
  * @param degrees    Target angle in degrees (0-180).
  */
 void rotateServo(int motorIndex, int degrees);
+void resetServos();
 
 /**
  * @brief Processes servo rotation requests by validating input and performing
@@ -50,5 +51,19 @@ void rotateServo(int motorIndex, int degrees);
  * @param doc  Reference to the JsonDocument containing request data.
  */
 void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc);
+
+/**
+ * @brief Processes servo rotation requests by validating input and performing
+ * the rotation.
+ *
+ * Handles HTTP POST requests to rotate a servo. Validates the provided motor
+ * index and degrees, performs the rotation, and sends a JSON response
+ * indicating success or failure.
+ *
+ * @param req  Pointer to the AsyncWebServerRequest object representing the
+ * incoming request.
+ * @param doc  Reference to the JsonDocument containing request data.
+ */
+void processMoveRequest(AsyncWebServerRequest *req, const JsonDocument &doc);
 
 #endif // SERVOS_H

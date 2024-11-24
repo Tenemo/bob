@@ -39,6 +39,12 @@ void setup() {
             handleRequest(request, data, len, index, total,
                           processRotateRequest);
         });
+    server.on(
+        "/move", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+           size_t index, size_t total) {
+            handleRequest(request, data, len, index, total, processMoveRequest);
+        });
 
     server.on(
         "/audio", HTTP_POST,

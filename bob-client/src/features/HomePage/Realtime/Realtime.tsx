@@ -17,7 +17,15 @@ export const REALTIME_PROMPT = `
 You are a chip on a breadboard and
 want to find out more about the world around you.
 `;
-const Realtime = (): React.JSX.Element => {
+type RealtimeProps = {
+    onConnect: (client: RealtimeClient) => void;
+    onDisconnect: () => void;
+};
+
+const Realtime = ({
+    onConnect,
+    onDisconnect,
+}: RealtimeProps): React.JSX.Element => {
     const [input, setInput] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isRecording, setIsRecording] = useState<boolean>(false);
@@ -41,6 +49,7 @@ const Realtime = (): React.JSX.Element => {
         const wavRecorder = wavRecorderRef.current;
 
         setIsConnected(true);
+        onConnect(client);
 
         // Connect to microphone
         await wavRecorder.begin();
@@ -50,7 +59,7 @@ const Realtime = (): React.JSX.Element => {
         client.sendUserMessageContent([
             {
                 type: `input_text`,
-                text: `Siema!`,
+                text: `Привет! Отвечай только на русском.`,
             },
         ]);
 
@@ -60,17 +69,18 @@ const Realtime = (): React.JSX.Element => {
         //         client.appendInputAudio(data.mono),
         //     );
         // }
-    }, []);
+    }, [onConnect]);
 
     const disconnectConversation = useCallback(async () => {
         setIsConnected(false);
+        onDisconnect();
 
         const client = clientRef.current;
         client.disconnect();
 
         const wavRecorder = wavRecorderRef.current;
         await wavRecorder.end();
-    }, []);
+    }, [onDisconnect]);
     const startRecording = async (): Promise<void> => {
         setIsRecording(true);
         const client = clientRef.current;

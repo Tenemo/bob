@@ -11,7 +11,15 @@ Describe what you see on the image in minute detail.
 Especially note distances to objects, as this is from a perspective of a movable camera.
 Another system will use your prompt to navigate and respond questions about the world.`;
 
-const Vision = (): React.JSX.Element => {
+type VisionProps = {
+    isRealtimeConnected: boolean;
+    onAnalysis: (description: string) => void;
+};
+
+const Vision = ({
+    isRealtimeConnected,
+    onAnalysis,
+}: VisionProps): React.JSX.Element => {
     const [description, setDescription] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +60,7 @@ const Vision = (): React.JSX.Element => {
             });
 
             const response = await client.chat.completions.create({
-                model: 'gpt-4o-mini',
+                model: 'gpt-4o-2024-11-20',
                 messages: [
                     {
                         role: 'user',
@@ -74,7 +82,11 @@ const Vision = (): React.JSX.Element => {
                 max_tokens: 500,
             });
 
-            setDescription(response.choices[0].message.content ?? '');
+            const analysisText = response.choices[0].message.content ?? '';
+            setDescription(analysisText);
+
+            // Send to realtime if connected
+            onAnalysis(analysisText);
         } catch (err) {
             setError(
                 err instanceof Error ? err.message : 'Failed to analyze image',
@@ -109,6 +121,13 @@ const Vision = (): React.JSX.Element => {
             )}
 
             {error && <Typography color="error">Error: {error}</Typography>}
+
+            {isRealtimeConnected && (
+                <Typography color="text.secondary" variant="caption">
+                    Analysis results will be automatically sent to the realtime
+                    API
+                </Typography>
+            )}
         </Box>
     );
 };

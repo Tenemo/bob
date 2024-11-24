@@ -211,17 +211,20 @@ const Realtime = ({
             >
                 {isConnected ? 'disconnect' : 'connect'}
             </Button>
+            {process.env.IS_DEBUG === 'true' && (
+                <>
+                    {audioUrl && (
+                        <Box sx={{ mt: 2 }}>
+                            <audio controls ref={audioRef} src={audioUrl} />
+                        </Box>
+                    )}
 
-            {audioUrl && (
-                <Box sx={{ mt: 2 }}>
-                    <audio controls ref={audioRef} src={audioUrl} />
-                </Box>
-            )}
-
-            {lastTranscript && (
-                <Typography>
-                    Last response: {lastTranscript[0].transcript}
-                </Typography>
+                    {lastTranscript && (
+                        <Typography>
+                            Last response: {lastTranscript[0].transcript}
+                        </Typography>
+                    )}
+                </>
             )}
 
             {error && <Typography color="error">Error: {error}</Typography>}

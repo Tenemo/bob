@@ -66,22 +66,24 @@ const BobActions = (): React.JSX.Element => {
                 )}
             </Box>
 
-            {isBobUp && !isHealthcheckLoading && (
-                <Box sx={{ mt: 4 }}>
-                    <Button
-                        color="secondary"
-                        disabled={isCaptureLoading}
-                        onClick={() => void refetchCapture()}
-                        variant="contained"
-                    >
-                        {isCaptureLoading ? (
-                            <CircularProgress size={24} />
-                        ) : (
-                            'Take Photo'
-                        )}
-                    </Button>
-                </Box>
-            )}
+            {isBobUp &&
+                !isHealthcheckLoading &&
+                process.env.IS_DEBUG === 'true' && (
+                    <Box sx={{ mt: 4 }}>
+                        <Button
+                            color="secondary"
+                            disabled={isCaptureLoading}
+                            onClick={() => void refetchCapture()}
+                            variant="contained"
+                        >
+                            {isCaptureLoading ? (
+                                <CircularProgress size={24} />
+                            ) : (
+                                'Take Photo'
+                            )}
+                        </Button>
+                    </Box>
+                )}
             {captureData && (
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
                     <img

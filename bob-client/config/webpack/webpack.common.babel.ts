@@ -20,6 +20,7 @@ export const commonConfig: Configuration = {
             NODE_ENV: 'production',
             PORT: 3000,
             ANALYZE: false,
+            IS_DEBUG: false,
             BUILD_DATE: JSON.stringify(new Date().toISOString().split('T')[0]),
         }),
         new DotenvPlugin({

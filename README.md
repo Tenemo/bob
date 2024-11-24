@@ -1,177 +1,223 @@
-# bob
+# Bob: Embedded system project
 
-An embedded system project using ESP32-S3 for controlling camera, servo motors, and audio playback with a web-based API interface.
+A full-stack robotics project featuring an ESP32-S3 based hexapod robot with camera vision, servo control, and real-time communication capabilities.
 
-## Hardware
+## Overview
+
+Bob is a hexapod robot project that combines:
+
+- ESP32-S3 microcontroller for core functionality
+- React-based web client for control interface
+- Express.js server for API routing and coordination
+- Real-time video streaming and analysis
+- OpenAI integration for vision processing
+- Servo control for movement and positioning
+- Audio playback capabilities
+
+## System architecture
+
+### Hardware components
 
 - FireBeetle 2 board ESP32-S3-U (N16R8)
 - OV2640 camera module
-- MAX98357A decoder stereo DAC with a built-in class D amplifier
-- Step-Down voltage regulator D24V90F5 - 5V 9A - Pololu 2866 (dedicated 5V power for servos)
+- MAX98357A decoder stereo DAC with built-in class D amplifier
+- Step-Down voltage regulator D24V90F5 - 5V 9A (Pololu 2866)
 - PCA9685 PWM controller
-- SG90 Servo motors
+- 12x SG90 Servo motors
+- TFT display for status information
 
-## Pin configuration
+### Software components
 
-### I2S audio pins
+#### Client (bob-client)
 
-```
-BCK   -> GPIO 12
-WS    -> GPIO 13
-DATA  -> GPIO 14
-```
+- React-based web interface
+- Redux for state management
+- Material-UI components
+- Real-time video display
+- Interactive controls for robot movement
+- OpenAI vision analysis display
 
-### Status LED
+#### Server (bob-server)
 
-```
-LED   -> GPIO 10
-```
+- Express.js based API server
+- CORS support
+- Request logging and error handling
+- API routing for robot control
+- File system operations for audio management
+
+#### Embedded (ESP32)
+
+- FreeRTOS based multitasking
+- SPIFFS file system for storage
+- Async web server for API endpoints
+- I2C communication for peripherals
+- PWM servo control
+- I2S audio output
+
+## Getting started
+
+### Prerequisites
+
+1. Development tools:
+
+   - Visual Studio Code with PlatformIO extension
+   - Node.js 18+ and npm
+   - Git
+
+2. Hardware setup:
+   - ESP32-S3 development board
+   - Configured peripherals (camera, servos, etc.)
+   - USB connection for programming
+
+### Installation
+
+1. Clone the repository with submodules:
+
+   ```bash
+   git clone --recursive https://github.com/yourusername/bob.git
+   cd bob
+   ```
+
+2. Set up the client:
+
+   ```bash
+   cd bob-client
+   npm install
+   cp .env.example .env
+   ```
+
+3. Set up the server:
+
+   ```bash
+   cd ../bob-server
+   npm install
+   cp .env.example .env
+   ```
+
+4. Configure the ESP32:
+   - Copy `include/Env.sample` to `include/Env.h`
+   - Update WiFi credentials in `Env.h`:
+     ```cpp
+     #define WIFI_SSID "your_wifi_ssid"
+     #define WIFI_PASSWORD "your_wifi_password"
+     ```
+
+### Building and deploying
+
+1. ESP32 firmware:
+
+   ```bash
+   # Using PlatformIO CLI
+   pio run -t upload
+   # Upload SPIFFS
+   pio run -t uploadfs
+   ```
+
+2. Start the client:
+
+   ```bash
+   cd bob-client
+   npm start
+   ```
+
+3. Start the server:
+   ```bash
+   cd bob-server
+   npm run dev
+   ```
 
 ## API documentation
 
-### Health check
+### ESP32 endpoints
 
-#### GET /health-check
+#### Health check
 
-Verifies the operational status of all subsystems.
+- `GET /health-check` - System status check
+- Response: `{"status": "OK", "message": "Server is running"}`
 
-**Response 200 OK**
+#### Camera control
 
-```json
-{
-  "status": "OK"
-}
+- `GET /capture` - Capture photo
+- Returns: JPEG image
+
+#### Servo control
+
+- `POST /rotate` - Control servo position
+  ```json
+  {
+    "motorIndex": 0,
+    "degrees": 90
+  }
+  ```
+- `POST /move` - Predefined movement patterns
+  ```json
+  {
+    "type": "reset"
+  }
+  ```
+
+#### Audio management
+
+- `POST /audio` - Upload and play audio file
+  - Max file size: 8MB
+  - Format: WAV only
+  - Content-Type: multipart/form-data
+
+#### File system
+
+- `GET /file-list` - List stored files
+- Response: List of files with sizes
+
+### Web server endpoints
+
+The Express.js server provides additional endpoints for:
+
+- Robot control coordination
+
+## Development
+
+### Project structure
+
+```
+bob/
+├── bob-client/          # React web interface
+│   ├── src/
+│   │   ├── app/        # Core application setup
+│   │   ├── features/   # Feature modules
+│   │   └── components/ # Reusable components
+│   └── public/         # Static assets
+├── bob-server/         # Express.js server
+│   └── src/
+│       ├── routes/    # API routes
+│       └── config.ts  # Server configuration
+└── include/           # ESP32 header files
+    ├── Camera.h      # Camera functionality
+    ├── Servos.h     # Servo control
+    └── audio/       # Audio processing
 ```
 
-### File management
+### Code style
 
-#### GET /file-list
+- C++: Follow Arduino style guide
+- TypeScript: ESLint with provided config
+- React: Function components with hooks
+- Formatting: Prettier for web code
 
-Retrieves a list of all files stored in the SPIFFS filesystem.
+## Performance considerations
 
-**Response 200 OK**
+1. Memory management:
 
-```json
-{
-  "files": [
-    {
-      "name": "/sample_music.wav",
-      "size": 1048576,
-      "humanReadableSize": "1.0 MB"
-    },
-    {
-      "name": "/uploaded_audio.wav",
-      "size": 524288,
-      "humanReadableSize": "512.0 KB"
-    }
-  ]
-}
-```
+   - ESP32 PSRAM usage for image buffering
+   - Audio buffer size limitations
+   - React component optimization
 
-### Camera control
+2. Real-time operations:
 
-#### GET /capture
+   - Servo movement coordination
+   - Video streaming optimization
+   - Audio playback timing
 
-Captures a photo using the OV2640 camera module.
-
-**Parameters**
-
-- None required
-
-**Headers**
-
-- Response includes `Content-Disposition: inline; filename=capture.jpg`
-
-**Response 200 OK**
-
-- Returns JPEG image binary data
-- Content-Type: image/jpeg
-
-### Servo control
-
-#### POST /rotate
-
-Controls servo motor position.
-
-**Request body parameters**
-
-```json
-{
-  "motorIndex": 0, // Required, Integer (0-15)
-  "degrees": 90 // Required, Integer (0-180)
-}
-```
-
-**Response 200 OK**
-
-```json
-{
-  "status": "success",
-  "motorIndex": 0,
-  "degrees": 90
-}
-```
-
-### Audio management
-
-#### POST /audio
-
-Uploads and plays a WAV audio file.
-
-**Request parameters**
-
-- Content-Type: multipart/form-data
-- Maximum file size: 8MB (limited by PSRAM)
-- Supported format: WAV files only
-- File field name: "file"
-
-**Response 200 OK**
-
-```json
-{
-  "status": "Upload successful",
-  "size": 1048576
-}
-```
-
-## Setup instructions
-
-### Development environment
-
-1. Install Visual Studio Code
-2. Install PlatformIO IDE extension in VSCode
-3. Clone the repository
-4. Open the project folder in VSCode
-5. Wait for PlatformIO to initialize and install dependencies
-
-### Project configuration
-
-1. Create an `include/Env.h` file with your WiFi credentials:
-
-   ```cpp
-   #define WIFI_SSID "your_ssid"
-   #define WIFI_PASSWORD "your_password"
-   ```
-
-2. Install required libraries (automatically handled by PlatformIO)
-
-### Building and uploading
-
-1. Connect your ESP32-S3 via USB
-2. Click the PlatformIO icon in the VSCode sidebar
-3. Upload filesystem:
-   - Build Filesystem Image
-   - Upload Filesystem Image
-4. Upload program:
-   - Click Upload under General tasks
-5. Monitor serial output:
-   - Click Monitor under General tasks
-   - Note the device's IP address for API access
-
-## Initialization sequence
-
-1. SPIFFS mounting
-2. WiFi connection
-3. Web server startup
-4. Camera initialization
-5. Servo system initialization
+3. Network efficiency:
+   - WebSocket for real-time data
+   - Image compression settings
+   - Request batching where appropriate

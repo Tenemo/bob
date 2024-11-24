@@ -39,7 +39,7 @@ bool initializeCamera() {
     config.pin_sccb_scl = SIOC_GPIO_NUM;
     config.pin_pwdn = PWDN_GPIO_NUM;
     config.pin_reset = RESET_GPIO_NUM;
-    config.xclk_freq_hz = 20 * 1000 * 1000;
+    config.xclk_freq_hz = 10 * 1000 * 1000;
     config.pixel_format = PIXFORMAT_JPEG;
     config.fb_location = CAMERA_FB_IN_PSRAM;
 
@@ -48,7 +48,7 @@ bool initializeCamera() {
         Serial.printf("Total PSRAM Size: %u bytes\n", ESP.getPsramSize());
         Serial.printf("Free PSRAM: %u bytes\n", ESP.getFreePsram());
         config.frame_size = FRAMESIZE_UXGA;
-        config.jpeg_quality = 10; // 0-63 lower number means higher quality
+        config.jpeg_quality = 12; // 0-63 lower number means higher quality
         config.fb_count = 2;
         config.grab_mode = CAMERA_GRAB_LATEST;
     } else {

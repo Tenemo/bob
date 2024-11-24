@@ -11,6 +11,7 @@ import {
 import { WavPacker } from './wav_packer';
 import { WavRecorder } from './wav_recorder';
 
+import { IS_DEBUG } from 'app/config';
 import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
 export const REALTIME_PROMPT = `
@@ -211,7 +212,8 @@ const Realtime = ({
             >
                 {isConnected ? 'disconnect' : 'connect'}
             </Button>
-            {process.env.IS_DEBUG === 'true' && (
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
+            {IS_DEBUG && (
                 <>
                     {audioUrl && (
                         <Box sx={{ mt: 2 }}>

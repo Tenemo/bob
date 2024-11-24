@@ -2,6 +2,7 @@ import { Box, Button, Typography } from '@mui/material';
 import { OpenAI } from 'openai';
 import React, { useState } from 'react';
 
+import { IS_DEBUG } from 'app/config';
 import { useAppSelector } from 'app/hooks';
 import { selectBobIp } from 'features/Bob/bobSlice';
 import { useCaptureQuery } from 'features/BobApi/bobApi';
@@ -12,14 +13,10 @@ Especially note distances to objects, as this is from a perspective of a movable
 Another system will use your prompt to navigate and respond questions about the world.`;
 
 type VisionProps = {
-    isRealtimeConnected: boolean;
     onAnalysis: (description: string) => void;
 };
 
-const Vision = ({
-    isRealtimeConnected,
-    onAnalysis,
-}: VisionProps): React.JSX.Element => {
+const Vision = ({ onAnalysis }: VisionProps): React.JSX.Element => {
     const [description, setDescription] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -106,7 +103,8 @@ const Vision = ({
                 {isLoading ? 'Analyzing...' : 'Analyze Latest Image'}
             </Button>
 
-            {description && (
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
+            {description && !IS_DEBUG && (
                 <Typography
                     sx={{
                         mt: 2,
@@ -121,13 +119,6 @@ const Vision = ({
             )}
 
             {error && <Typography color="error">Error: {error}</Typography>}
-
-            {isRealtimeConnected && (
-                <Typography color="text.secondary" variant="caption">
-                    Analysis results will be automatically sent to the realtime
-                    API
-                </Typography>
-            )}
         </Box>
     );
 };

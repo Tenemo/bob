@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 
+import { IS_DEBUG } from 'app/config';
 import { useAppSelector, useAppDispatch } from 'app/hooks';
 import { setIp, selectBobIp } from 'features/Bob/bobSlice';
 import { useHealthcheckQuery, useCaptureQuery } from 'features/BobApi/bobApi';
@@ -66,24 +67,23 @@ const BobActions = (): React.JSX.Element => {
                 )}
             </Box>
 
-            {isBobUp &&
-                !isHealthcheckLoading &&
-                process.env.IS_DEBUG === 'true' && (
-                    <Box sx={{ mt: 4 }}>
-                        <Button
-                            color="secondary"
-                            disabled={isCaptureLoading}
-                            onClick={() => void refetchCapture()}
-                            variant="contained"
-                        >
-                            {isCaptureLoading ? (
-                                <CircularProgress size={24} />
-                            ) : (
-                                'Take Photo'
-                            )}
-                        </Button>
-                    </Box>
-                )}
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
+            {isBobUp && !isHealthcheckLoading && IS_DEBUG && (
+                <Box sx={{ mt: 4 }}>
+                    <Button
+                        color="secondary"
+                        disabled={isCaptureLoading}
+                        onClick={() => void refetchCapture()}
+                        variant="contained"
+                    >
+                        {isCaptureLoading ? (
+                            <CircularProgress size={24} />
+                        ) : (
+                            'Take Photo'
+                        )}
+                    </Button>
+                </Box>
+            )}
             {captureData && (
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
                     <img

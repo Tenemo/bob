@@ -165,8 +165,8 @@ const walk = async (): Promise<void> => {
 };
 
 const execute = async (): Promise<void> => {
-    // await move({ type: 'reset' });
-    await standUp();
+    await move({ type: 'reset' });
+    // await standUp();
     // await moveLegForward({ topMotorIndex: 6 });
     // await moveLegForward({ topMotorIndex: 8 });
     // await moveLegForward({ topMotorIndex: 10 });

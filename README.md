@@ -47,10 +47,10 @@ Bob is a hexapod robot project that combines:
 
 #### Embedded (ESP32)
 
-- FreeRTOS based multitasking
-- SPIFFS file system for storage
 - Async web server for API endpoints
 - I2C communication for peripherals
+- SPIFFS file system for storage
+- PSRAM audio caching
 - PWM servo control
 - I2S audio output
 

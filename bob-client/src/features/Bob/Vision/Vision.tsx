@@ -1,3 +1,4 @@
+// Bob\Vision\Vision.tsx
 import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import { OpenAI } from 'openai';
 import { zodResponseFormat } from 'openai/helpers/zod';
@@ -37,6 +38,7 @@ const Vision = ({
     const [description, setDescription] = useState<ImageObject[]>([]);
     const [error, setError] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [capturedImage, setCapturedImage] = useState<string>('');
 
     const [triggerCapture, { isFetching }] = useLazyCaptureQuery();
 
@@ -106,8 +108,10 @@ const Vision = ({
         try {
             const parsedObjects = JSON.parse(analysisText) as ImageObject[];
             setDescription(parsedObjects);
+            setCapturedImage(result.data);
         } catch (err) {
-            throw new Error('Failed to parse vision response', err);
+            console.error(err);
+            throw new Error('Failed to parse vision response');
         }
         setIsLoading(false);
         return analysisText;
@@ -138,6 +142,7 @@ const Vision = ({
                     flexDirection: 'column',
                     gap: 2,
                     width: '100%',
+                    alignItems: 'flex-start',
                 }}
             >
                 <Button
@@ -152,7 +157,15 @@ const Vision = ({
                         'Share picture'
                     )}
                 </Button>
-
+                {process.env.IS_DEBUG === 'true' && capturedImage && (
+                    <Box sx={{ mt: 2, textAlign: 'center' }}>
+                        <img
+                            alt="Captured by Bob"
+                            src={capturedImage}
+                            style={{ maxWidth: '60%' }}
+                        />
+                    </Box>
+                )}
                 {process.env.IS_DEBUG === 'true' && description.length > 0 && (
                     <Box
                         sx={{

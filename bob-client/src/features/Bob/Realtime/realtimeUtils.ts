@@ -40,8 +40,9 @@ export const playAndUploadAudio = async (
     source.start();
 
     try {
-        // To skip playback via the breadboard
-        // return;
+        if (process.env.AUDIO_SPEAKER_PLAYBACK !== 'true') {
+            return;
+        }
         await uploadAudio(audioData);
     } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to upload audio');

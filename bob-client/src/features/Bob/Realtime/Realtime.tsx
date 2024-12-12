@@ -181,7 +181,15 @@ const Realtime = ({
     const showSpinner = isConnectInProgress || isVisionLoading;
 
     return (
-        <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box
+            sx={{
+                mt: 4,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+                alignItems: 'flex-start',
+            }}
+        >
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 {process.env.IS_DEBUG === 'true' && (
                     <>

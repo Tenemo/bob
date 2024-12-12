@@ -25,10 +25,8 @@ const BobActions = (): React.JSX.Element => {
     const isBobUp = healthcheckData?.status === 'OK';
     const bobIp = useAppSelector(selectBobIp);
 
-    const [
-        triggerCapture,
-        { isFetching: isCaptureLoading, data: captureData },
-    ] = useLazyCaptureQuery();
+    const [triggerCapture, { isFetching: isCaptureLoading }] =
+        useLazyCaptureQuery();
 
     const handleConnect = (): void => {
         void refetchHealthcheck();
@@ -40,7 +38,7 @@ const BobActions = (): React.JSX.Element => {
                 <TextField
                     fullWidth
                     label="Bob's IP Address"
-                    onChange={(e) => {
+                    onChange={(e): void => {
                         dispatch(setIp(e.target.value));
                     }}
                     value={bobIp}
@@ -86,15 +84,6 @@ const BobActions = (): React.JSX.Element => {
                         </Button>
                     </Box>
                 )}
-            {captureData && process.env.IS_DEBUG && (
-                <Box sx={{ mt: 2, textAlign: 'center' }}>
-                    <img
-                        alt="Captured by Bob"
-                        src={captureData}
-                        style={{ maxWidth: '60%' }}
-                    />
-                </Box>
-            )}
         </>
     );
 };

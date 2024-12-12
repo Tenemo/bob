@@ -9,7 +9,10 @@ import React from 'react';
 
 import { useAppSelector, useAppDispatch } from 'app/hooks';
 import { setIp, selectBobIp } from 'features/Bob/bobSlice';
-import { useHealthcheckQuery, useCaptureQuery } from 'features/BobApi/bobApi';
+import {
+    useHealthcheckQuery,
+    useLazyCaptureQuery,
+} from 'features/BobApi/bobApi';
 
 const BobActions = (): React.JSX.Element => {
     const dispatch = useAppDispatch();
@@ -22,13 +25,10 @@ const BobActions = (): React.JSX.Element => {
     const isBobUp = healthcheckData?.status === 'OK';
     const bobIp = useAppSelector(selectBobIp);
 
-    const {
-        refetch: refetchCapture,
-        isFetching: isCaptureLoading,
-        data: captureData,
-    } = useCaptureQuery(undefined, {
-        skip: !isBobUp,
-    });
+    const [
+        triggerCapture,
+        { isFetching: isCaptureLoading, data: captureData },
+    ] = useLazyCaptureQuery();
 
     const handleConnect = (): void => {
         void refetchHealthcheck();
@@ -75,7 +75,7 @@ const BobActions = (): React.JSX.Element => {
                         <Button
                             color="secondary"
                             disabled={isCaptureLoading}
-                            onClick={() => void refetchCapture()}
+                            onClick={() => void triggerCapture()}
                             variant="contained"
                         >
                             {isCaptureLoading ? (

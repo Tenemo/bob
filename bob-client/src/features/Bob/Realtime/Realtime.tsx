@@ -20,8 +20,8 @@ import { WavRecorder } from './wav_recorder';
 import { getPrompt } from 'features/Bob/getPrompt';
 import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
-const INITIAL_PROMPT: string = getPrompt('Initial');
-const VISION_GUIDANCE_PROMPT: string = getPrompt('Vision guidance');
+const INITIAL_PROMPT: string = getPrompt('initial');
+const VISION_GUIDANCE_PROMPT: string = getPrompt('vision');
 
 type RealtimeProps = {
     onConnect: (client: RealtimeClient) => void;

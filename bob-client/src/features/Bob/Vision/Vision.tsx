@@ -13,6 +13,8 @@ type VisionProps = {
     ) => React.ReactNode;
 };
 
+const VISION_PROMPT: string = getPrompt('capture');
+
 const Vision = ({
     isRealtimeConnected,
     children,
@@ -38,9 +40,6 @@ const Vision = ({
     );
 
     const analyzeImage = useCallback(async (): Promise<string> => {
-        if (description.trim()) {
-            return description;
-        }
         if (!process.env.OPENAI_API_KEY) {
             throw new Error('API key missing');
         }
@@ -65,7 +64,7 @@ const Vision = ({
                     content: [
                         {
                             type: 'text',
-                            text: getPrompt('Vision'),
+                            text: VISION_PROMPT,
                         },
                         {
                             type: 'image_url',
@@ -83,15 +82,16 @@ const Vision = ({
         setDescription(analysisText);
         setIsLoading(false);
         return analysisText;
-    }, [description, convertBlobToBase64, triggerCapture]);
+    }, [convertBlobToBase64, triggerCapture]);
 
-    const handleButtonClick = useCallback(async (): Promise<void> => {
+    const handleSharePicture = useCallback(async (): Promise<void> => {
         try {
             await analyzeImage();
         } catch (err) {
             setError(
                 err instanceof Error ? err.message : 'Failed to analyze image',
             );
+            console.error(err);
             setIsLoading(false);
         }
     }, [analyzeImage]);
@@ -110,7 +110,7 @@ const Vision = ({
             >
                 <Button
                     disabled={isLoading || !isRealtimeConnected}
-                    onClick={() => void handleButtonClick()}
+                    onClick={() => void handleSharePicture()}
                     sx={{ minWidth: 200 }}
                     variant="contained"
                 >

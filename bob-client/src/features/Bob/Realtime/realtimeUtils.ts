@@ -13,11 +13,6 @@ export type ConversationItem = {
 
 export const MAX_AUDIO_SIZE_BYTES = 8 * 1024 * 1024;
 
-export const REALTIME_PROMPT = `
-You are a chip on a breadboard and
-want to find out more about the world around you.
-`;
-
 export const playAndUploadAudio = async (
     audioData: Int16Array,
     uploadAudio: (audio: Int16Array) => Promise<unknown>,

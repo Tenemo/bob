@@ -1,5 +1,4 @@
 import { Container } from '@mui/material';
-import { RealtimeClient } from '@openai/realtime-api-beta';
 import React, { useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 
@@ -10,37 +9,14 @@ import Vision from './Vision/Vision';
 const Bob = (): React.JSX.Element => {
     const [isRealtimeConnected, setIsRealtimeConnected] =
         useState<boolean>(false);
-    const [realtimeClient, setRealtimeClient] = useState<RealtimeClient | null>(
-        null,
-    );
-    const [lastDescription, setLastDescription] = useState<string>('');
 
-    const handleRealtimeConnect = useCallback(
-        (client: RealtimeClient): void => {
-            setRealtimeClient(client);
-            setIsRealtimeConnected(true);
-        },
-        [],
-    );
-
-    const handleRealtimeDisconnect = useCallback((): void => {
-        setRealtimeClient(null);
-        setIsRealtimeConnected(false);
+    const handleRealtimeConnect = useCallback((): void => {
+        setIsRealtimeConnected(true);
     }, []);
 
-    const sendToRealtime = useCallback(
-        (message: string): void => {
-            if (realtimeClient && isRealtimeConnected) {
-                realtimeClient.sendUserMessageContent([
-                    {
-                        type: 'input_text',
-                        text: message,
-                    },
-                ]);
-            }
-        },
-        [realtimeClient, isRealtimeConnected],
-    );
+    const handleRealtimeDisconnect = useCallback((): void => {
+        setIsRealtimeConnected(false);
+    }, []);
 
     return (
         <Container
@@ -54,20 +30,15 @@ const Bob = (): React.JSX.Element => {
                 <title>Bob</title>
             </Helmet>
             <BobActions />
-            <Vision
-                isRealtimeConnected={isRealtimeConnected}
-                onAnalysis={(description: string): void => {
-                    setLastDescription(description);
-                    if (isRealtimeConnected) {
-                        sendToRealtime(description);
-                    }
-                }}
-            />
-            <Realtime
-                initialPhotoDescription={lastDescription}
-                onConnect={handleRealtimeConnect}
-                onDisconnect={handleRealtimeDisconnect}
-            />
+            <Vision isRealtimeConnected={isRealtimeConnected}>
+                {(getPhotoDescription: () => Promise<string>) => (
+                    <Realtime
+                        getPhotoDescription={getPhotoDescription}
+                        onConnect={handleRealtimeConnect}
+                        onDisconnect={handleRealtimeDisconnect}
+                    />
+                )}
+            </Vision>
         </Container>
     );
 };

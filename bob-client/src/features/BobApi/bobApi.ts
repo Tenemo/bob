@@ -155,5 +155,9 @@ export const bobApi = createApi({
     }),
 });
 
-export const { useHealthcheckQuery, useCaptureQuery, useUploadAudioMutation } =
-    bobApi;
+export const {
+    useHealthcheckQuery,
+    useCaptureQuery,
+    useUploadAudioMutation,
+    useLazyCaptureQuery,
+} = bobApi;

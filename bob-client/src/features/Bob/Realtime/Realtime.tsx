@@ -20,13 +20,13 @@ const VISION_GUIDANCE_PROMPT: string = getPrompt('Vision guidance');
 type RealtimeProps = {
     onConnect: (client: RealtimeClient) => void;
     onDisconnect: () => void;
-    initialPhotoDescription: string;
+    getPhotoDescription: () => Promise<string>;
 };
 
 const Realtime = ({
     onConnect,
     onDisconnect,
-    initialPhotoDescription,
+    getPhotoDescription,
 }: RealtimeProps): React.JSX.Element => {
     const [input, setInput] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -46,20 +46,23 @@ const Realtime = ({
     );
     const [isConnected, setIsConnected] = useState<boolean>(false);
 
-    const connectConversation = useCallback(async (): Promise<void> => {
-        const client = clientRef.current;
-        const wavRecorder = wavRecorderRef.current;
-        setIsConnected(true);
-        onConnect(client);
-        await wavRecorder.begin();
-        await client.connect();
-        client.sendUserMessageContent([
-            {
-                type: `input_text`,
-                text: `\n${INITIAL_PROMPT}${initialPhotoDescription}\n${VISION_GUIDANCE_PROMPT}`,
-            },
-        ]);
-    }, [onConnect, initialPhotoDescription]);
+    const connectConversation = useCallback(
+        async (photoDescription: string): Promise<void> => {
+            const client = clientRef.current;
+            const wavRecorder = wavRecorderRef.current;
+            setIsConnected(true);
+            onConnect(client);
+            await wavRecorder.begin();
+            await client.connect();
+            client.sendUserMessageContent([
+                {
+                    type: `input_text`,
+                    text: `\n${INITIAL_PROMPT}${photoDescription}\n${VISION_GUIDANCE_PROMPT}`,
+                },
+            ]);
+        },
+        [onConnect],
+    );
 
     const disconnectConversation = useCallback(async (): Promise<void> => {
         setIsConnected(false);
@@ -140,6 +143,28 @@ const Realtime = ({
         }
     }, [lastTranscript]);
 
+    const handleConnectClick = useCallback(async (): Promise<void> => {
+        if (isConnected) {
+            await disconnectConversation();
+            return;
+        }
+        try {
+            const photoDescription = await getPhotoDescription();
+            await connectConversation(photoDescription);
+        } catch (connectError) {
+            setError(
+                connectError instanceof Error
+                    ? connectError.message
+                    : 'Analysis failed',
+            );
+        }
+    }, [
+        isConnected,
+        disconnectConversation,
+        getPhotoDescription,
+        connectConversation,
+    ]);
+
     return (
         <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -184,12 +209,7 @@ const Realtime = ({
             </Box>
             <Button
                 onClick={(): void => {
-                    if (isConnected) {
-                        void disconnectConversation();
-                        return;
-                    } else {
-                        void connectConversation();
-                    }
+                    void handleConnectClick();
                 }}
                 variant="contained"
             >

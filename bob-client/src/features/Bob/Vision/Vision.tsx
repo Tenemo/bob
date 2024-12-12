@@ -33,10 +33,7 @@ type ImageObject = z.infer<typeof ImageObjectSchema>;
 
 const VISION_PROMPT: string = getPrompt('capture');
 
-const Vision = ({
-    isRealtimeConnected,
-    children,
-}: VisionProps): React.JSX.Element => {
+const Vision = ({ children }: VisionProps): React.JSX.Element => {
     const [description, setDescription] = useState<ImageObject[]>([]);
     const [error, setError] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);

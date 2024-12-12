@@ -7,7 +7,10 @@ import { useLazyCaptureQuery } from 'features/BobApi/bobApi';
 
 type VisionProps = {
     isRealtimeConnected: boolean;
-    children?: (getDescription: () => Promise<string>) => React.ReactNode;
+    children?: (
+        getDescription: () => Promise<string>,
+        isLoading: boolean,
+    ) => React.ReactNode;
 };
 
 const Vision = ({
@@ -132,7 +135,9 @@ const Vision = ({
                 )}
                 {error && <Typography color="error">Error: {error}</Typography>}
             </Box>
-            {typeof children === 'function' ? children(getDescription) : null}
+            {typeof children === 'function'
+                ? children(getDescription, isLoading || isFetching)
+                : null}
         </>
     );
 };

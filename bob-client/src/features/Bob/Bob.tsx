@@ -31,9 +31,13 @@ const Bob = (): React.JSX.Element => {
             </Helmet>
             <BobActions />
             <Vision isRealtimeConnected={isRealtimeConnected}>
-                {(getPhotoDescription: () => Promise<string>) => (
+                {(
+                    getPhotoDescription: () => Promise<string>,
+                    isLoading: boolean,
+                ): React.ReactNode => (
                     <Realtime
                         getPhotoDescription={getPhotoDescription}
+                        isVisionLoading={isLoading}
                         onConnect={handleRealtimeConnect}
                         onDisconnect={handleRealtimeDisconnect}
                     />

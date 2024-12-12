@@ -21,10 +21,11 @@ Bob is a hexapod robot project that combines:
 - FireBeetle 2 board ESP32-S3-U (N16R8)
 - OV2640 camera module
 - MAX98357A decoder stereo DAC with built-in class D amplifier
-- Step-Down voltage regulator D24V90F5 - 5V 9A (Pololu 2866)
+- Step-down voltage regulator D24V90F5 - 5V 9A (Pololu 2866)
 - PCA9685 PWM controller
 - 12x SG90 Servo motors
-- TFT display for status information
+- TFT 1.8" 128x160px SPI display
+- 2220 mAh 7.4 volt Li-pol battery
 
 ### Software components
 

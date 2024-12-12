@@ -1,4 +1,10 @@
-import { Box, TextField, Button, Typography } from '@mui/material';
+import {
+    Box,
+    TextField,
+    Button,
+    Typography,
+    CircularProgress,
+} from '@mui/material';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
@@ -21,12 +27,14 @@ type RealtimeProps = {
     onConnect: (client: RealtimeClient) => void;
     onDisconnect: () => void;
     getPhotoDescription: () => Promise<string>;
+    isVisionLoading: boolean;
 };
 
 const Realtime = ({
     onConnect,
     onDisconnect,
     getPhotoDescription,
+    isVisionLoading,
 }: RealtimeProps): React.JSX.Element => {
     const [input, setInput] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -45,6 +53,8 @@ const Realtime = ({
         }),
     );
     const [isConnected, setIsConnected] = useState<boolean>(false);
+    const [isConnectInProgress, setIsConnectInProgress] =
+        useState<boolean>(false);
 
     const connectConversation = useCallback(
         async (photoDescription: string): Promise<void> => {
@@ -127,8 +137,7 @@ const Realtime = ({
     };
 
     useEffect((): void => {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (lastTranscript && clientRef.current) {
+        if (lastTranscript) {
             const item = clientRef.current.conversation.getItems().slice(-1)[0];
             if (item.formatted.audio) {
                 const wavPacker = new WavPacker();
@@ -145,9 +154,12 @@ const Realtime = ({
 
     const handleConnectClick = useCallback(async (): Promise<void> => {
         if (isConnected) {
+            setIsConnectInProgress(true);
             await disconnectConversation();
+            setIsConnectInProgress(false);
             return;
         }
+        setIsConnectInProgress(true);
         try {
             const photoDescription = await getPhotoDescription();
             await connectConversation(photoDescription);
@@ -158,12 +170,15 @@ const Realtime = ({
                     : 'Analysis failed',
             );
         }
+        setIsConnectInProgress(false);
     }, [
         isConnected,
         disconnectConversation,
         getPhotoDescription,
         connectConversation,
     ]);
+
+    const showSpinner = isConnectInProgress || isVisionLoading;
 
     return (
         <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -208,12 +223,19 @@ const Realtime = ({
                 <div className="spacer" />
             </Box>
             <Button
+                disabled={showSpinner}
                 onClick={(): void => {
                     void handleConnectClick();
                 }}
                 variant="contained"
             >
-                {isConnected ? 'disconnect from voice' : 'connect to voice'}
+                {showSpinner ? (
+                    <CircularProgress size={24} />
+                ) : isConnected ? (
+                    'disconnect from voice'
+                ) : (
+                    'connect to voice'
+                )}
             </Button>
             {process.env.IS_DEBUG === 'true' && (
                 <>

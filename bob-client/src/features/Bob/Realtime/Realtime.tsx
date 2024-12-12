@@ -20,8 +20,9 @@ import { WavRecorder } from './wav_recorder';
 import { getPrompt } from 'features/Bob/getPrompt';
 import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
-const INITIAL_PROMPT: string = getPrompt('initial');
-const VISION_GUIDANCE_PROMPT: string = getPrompt('vision');
+const INITIAL_PROMPT: string = getPrompt('initial-start');
+const VISION_GUIDANCE_PROMPT: string = getPrompt('initial-vision');
+const NEW_PHOTO_PROMPT: string = getPrompt('new-photo');
 
 type RealtimeProps = {
     onConnect: (client: RealtimeClient) => void;
@@ -178,6 +179,22 @@ const Realtime = ({
         connectConversation,
     ]);
 
+    const handleSharePictureClick = useCallback(async (): Promise<void> => {
+        try {
+            const description = await getPhotoDescription();
+            clientRef.current.sendUserMessageContent([
+                {
+                    type: 'input_text',
+                    text: `${NEW_PHOTO_PROMPT}\n${description}`,
+                },
+            ]);
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : 'Failed to share picture',
+            );
+        }
+    }, [getPhotoDescription]);
+
     const showSpinner = isConnectInProgress || isVisionLoading;
 
     return (
@@ -190,6 +207,15 @@ const Realtime = ({
                 alignItems: 'flex-start',
             }}
         >
+            <Button
+                disabled={!isConnected}
+                onClick={(): void => {
+                    void handleSharePictureClick();
+                }}
+                variant="contained"
+            >
+                Share picture
+            </Button>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 {process.env.IS_DEBUG === 'true' && (
                     <>

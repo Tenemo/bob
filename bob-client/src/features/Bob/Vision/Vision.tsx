@@ -137,18 +137,6 @@ const Vision = ({
         }
     }, [triggerCapture]);
 
-    const handleSharePicture = useCallback(async (): Promise<void> => {
-        try {
-            await analyzeImage();
-        } catch (err) {
-            setError(
-                err instanceof Error ? err.message : 'Failed to analyze image',
-            );
-            console.error(err);
-            setIsLoading(false);
-        }
-    }, [analyzeImage]);
-
     const getDescription = useCallback(async (): Promise<string> => {
         return analyzeImage();
     }, [analyzeImage]);
@@ -181,18 +169,7 @@ const Vision = ({
                             )}
                         </Button>
                     )}
-                <Button
-                    disabled={isLoading || !isRealtimeConnected}
-                    onClick={(): void => void handleSharePicture()}
-                    sx={{ minWidth: 200 }}
-                    variant="contained"
-                >
-                    {isCaptureLoading ? (
-                        <CircularProgress size={24} />
-                    ) : (
-                        'Share picture'
-                    )}
-                </Button>
+
                 {capturedImage && (
                     <Box sx={{ mt: 2, textAlign: 'center' }}>
                         <img

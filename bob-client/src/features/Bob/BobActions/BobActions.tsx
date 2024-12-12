@@ -9,10 +9,7 @@ import React from 'react';
 
 import { useAppSelector, useAppDispatch } from 'app/hooks';
 import { setIp, selectBobIp } from 'features/Bob/bobSlice';
-import {
-    useHealthcheckQuery,
-    useLazyCaptureQuery,
-} from 'features/BobApi/bobApi';
+import { useHealthcheckQuery } from 'features/BobApi/bobApi';
 
 const BobActions = (): React.JSX.Element => {
     const dispatch = useAppDispatch();
@@ -24,9 +21,6 @@ const BobActions = (): React.JSX.Element => {
 
     const isBobUp = healthcheckData?.status === 'OK';
     const bobIp = useAppSelector(selectBobIp);
-
-    const [triggerCapture, { isFetching: isCaptureLoading }] =
-        useLazyCaptureQuery();
 
     const handleConnect = (): void => {
         void refetchHealthcheck();
@@ -65,25 +59,6 @@ const BobActions = (): React.JSX.Element => {
                     </Typography>
                 )}
             </Box>
-
-            {isBobUp &&
-                !isHealthcheckLoading &&
-                process.env.IS_DEBUG === 'true' && (
-                    <Box sx={{ mt: 4 }}>
-                        <Button
-                            color="secondary"
-                            disabled={isCaptureLoading}
-                            onClick={() => void triggerCapture()}
-                            variant="contained"
-                        >
-                            {isCaptureLoading ? (
-                                <CircularProgress size={24} />
-                            ) : (
-                                'Take Photo'
-                            )}
-                        </Button>
-                    </Box>
-                )}
         </>
     );
 };

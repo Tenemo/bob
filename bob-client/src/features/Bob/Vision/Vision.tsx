@@ -1,4 +1,3 @@
-// Bob\Vision\Vision.tsx
 import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import { OpenAI } from 'openai';
 import { zodResponseFormat } from 'openai/helpers/zod';
@@ -6,7 +5,10 @@ import React, { useState, useCallback } from 'react';
 import { z } from 'zod';
 
 import { getPrompt } from 'features/Bob/getPrompt';
-import { useLazyCaptureQuery } from 'features/BobApi/bobApi';
+import {
+    useLazyCaptureQuery,
+    useHealthcheckQuery,
+} from 'features/BobApi/bobApi';
 
 type VisionProps = {
     isRealtimeConnected: boolean;
@@ -40,7 +42,12 @@ const Vision = ({
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [capturedImage, setCapturedImage] = useState<string>('');
 
-    const [triggerCapture, { isFetching }] = useLazyCaptureQuery();
+    const [triggerCapture, { isFetching: isCaptureLoading }] =
+        useLazyCaptureQuery();
+    const { data: healthcheckData, isFetching: isHealthcheckLoading } =
+        useHealthcheckQuery(undefined);
+
+    const isBobUp: boolean = healthcheckData?.status === 'OK';
 
     const convertBlobToBase64 = useCallback(
         async (blob: Blob): Promise<string> =>
@@ -145,19 +152,35 @@ const Vision = ({
                     alignItems: 'flex-start',
                 }}
             >
+                {isBobUp &&
+                    !isHealthcheckLoading &&
+                    process.env.IS_DEBUG === 'true' && (
+                        <Button
+                            color="secondary"
+                            disabled={isCaptureLoading}
+                            onClick={() => void triggerCapture()}
+                            variant="contained"
+                        >
+                            {isCaptureLoading ? (
+                                <CircularProgress size={24} />
+                            ) : (
+                                'Take Photo'
+                            )}
+                        </Button>
+                    )}
                 <Button
                     disabled={isLoading || !isRealtimeConnected}
                     onClick={(): void => void handleSharePicture()}
                     sx={{ minWidth: 200 }}
                     variant="contained"
                 >
-                    {isFetching ? (
+                    {isCaptureLoading ? (
                         <CircularProgress size={24} />
                     ) : (
                         'Share picture'
                     )}
                 </Button>
-                {process.env.IS_DEBUG === 'true' && capturedImage && (
+                {capturedImage && (
                     <Box sx={{ mt: 2, textAlign: 'center' }}>
                         <img
                             alt="Captured by Bob"
@@ -189,7 +212,7 @@ const Vision = ({
                 {error && <Typography color="error">Error: {error}</Typography>}
             </Box>
             {typeof children === 'function'
-                ? children(getDescription, isLoading || isFetching)
+                ? children(getDescription, isLoading || isCaptureLoading)
                 : null}
         </>
     );

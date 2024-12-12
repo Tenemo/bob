@@ -4,7 +4,6 @@ import React, { useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 import BobActions from './BobActions/BobActions';
-import { PROMPT_TEMPLATE } from './prompt';
 import Realtime from './Realtime/Realtime';
 import Vision from './Vision/Vision';
 
@@ -35,7 +34,7 @@ const Bob = (): React.JSX.Element => {
                 realtimeClient.sendUserMessageContent([
                     {
                         type: 'input_text',
-                        text: `${message}\n${PROMPT_TEMPLATE}`,
+                        text: message,
                     },
                 ]);
             }

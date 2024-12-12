@@ -2,8 +2,6 @@ import { Box, TextField, Button, Typography } from '@mui/material';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-import { PROMPT_TEMPLATE } from '../prompt';
-
 import {
     handleMessageSubmit,
     ConversationItem,
@@ -14,14 +12,11 @@ import { WavPacker } from './wav_packer';
 import { WavRecorder } from './wav_recorder';
 
 import { IS_DEBUG } from 'app/config';
+import { getPrompt } from 'features/Bob/getPrompt';
 import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
-export const REALTIME_PROMPT = `
-You are a chip on a breadboard. Your name is Bobetta. You were supposed to be Bob, but you were given a female voice, so your name has changed.
-You are tired of everything. Be snarky.
-Be annoyed with people wanting something from you. Be sarcastic. Play with your voice.
-Odpowiadaj tylko po polsku.
-`.trim();
+const INITIAL_PROMPT: string = getPrompt('Initial');
+const VISION_GUIDANCE_PROMPT: string = getPrompt('Vision guidance');
 
 type RealtimeProps = {
     onConnect: (client: RealtimeClient) => void;
@@ -59,11 +54,10 @@ const Realtime = ({
         onConnect(client);
         await wavRecorder.begin();
         await client.connect();
-
         client.sendUserMessageContent([
             {
                 type: `input_text`,
-                text: `${initialPhotoDescription}\n${PROMPT_TEMPLATE}`,
+                text: `\n${INITIAL_PROMPT}${initialPhotoDescription}\n${VISION_GUIDANCE_PROMPT}`,
             },
         ]);
     }, [onConnect, initialPhotoDescription]);
@@ -92,9 +86,8 @@ const Realtime = ({
         client.createResponse();
     };
 
-    useEffect(() => {
+    useEffect((): (() => void) => {
         const client = clientRef.current;
-        client.updateSession({ instructions: REALTIME_PROMPT });
         client.updateSession({
             input_audio_transcription: { model: 'whisper-1' },
         });
@@ -131,7 +124,7 @@ const Realtime = ({
         setInput('');
     };
 
-    useEffect(() => {
+    useEffect((): void => {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (lastTranscript && clientRef.current) {
             const item = clientRef.current.conversation.getItems().slice(-1)[0];
@@ -156,10 +149,10 @@ const Realtime = ({
                     <>
                         <TextField
                             fullWidth
-                            onChange={(e) => {
+                            onChange={(e): void => {
                                 setInput(e.target.value);
                             }}
-                            onKeyDown={(e) => {
+                            onKeyDown={(e): void => {
                                 if (e.key === 'Enter') handleSubmit();
                             }}
                             placeholder="Type your message..."
@@ -167,7 +160,7 @@ const Realtime = ({
                         />
                         <Button
                             disabled={!input.trim()}
-                            onClick={() => {
+                            onClick={(): void => {
                                 handleSubmit();
                             }}
                             variant="contained"
@@ -179,10 +172,10 @@ const Realtime = ({
                 {isConnected && (
                     <Button
                         disabled={!isConnected}
-                        onMouseDown={() => {
+                        onMouseDown={(): void => {
                             void startRecording();
                         }}
-                        onMouseUp={() => {
+                        onMouseUp={(): void => {
                             void stopRecording();
                         }}
                     >
@@ -192,7 +185,7 @@ const Realtime = ({
                 <div className="spacer" />
             </Box>
             <Button
-                onClick={() => {
+                onClick={(): void => {
                     if (isConnected) {
                         void disconnectConversation();
                         return;

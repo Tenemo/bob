@@ -3,12 +3,8 @@ import { OpenAI } from 'openai';
 import React, { useState } from 'react';
 
 import { IS_DEBUG } from 'app/config';
+import { getPrompt } from 'features/Bob/getPrompt';
 import { useCaptureQuery } from 'features/BobApi/bobApi';
-
-const VISION_PROMPT = `
-Describe what you see on the image in minute detail. 
-Especially note distances to objects, as this is from a perspective of a movable camera.
-Another system will use your prompt to navigate and respond questions about the world.`;
 
 type VisionProps = {
     onAnalysis: (description: string) => void;
@@ -73,7 +69,7 @@ const Vision = ({
                         content: [
                             {
                                 type: 'text',
-                                text: VISION_PROMPT,
+                                text: getPrompt('Vision'),
                             },
                             {
                                 type: 'image_url',

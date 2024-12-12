@@ -32,4 +32,20 @@ export const commonConfig: Configuration = {
     performance: {
         hints: false,
     },
+    module: {
+        rules: [
+            {
+                test: /\.md$/,
+                use: [
+                    {
+                        loader: 'html-loader',
+                    },
+                    {
+                        loader: 'remark-loader',
+                    },
+                ],
+            },
+            // other rules unchanged
+        ],
+    },
 };

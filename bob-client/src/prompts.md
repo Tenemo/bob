@@ -39,4 +39,5 @@ description: "A blue box containing smaller blue packets. Looks like 5 cm tall a
 }
 ]
 
-do not prepend it with ```json, output just the contents, ready to be saved as a JSON file
+Do not prepend it with ```json, output just the contents, ready to be saved as a JSON file.
+Output as many items and background items as possible. Pay close attention to the surroundings.

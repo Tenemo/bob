@@ -1,6 +1,8 @@
 # Bob: Embedded system project
 
-A full-stack robotics project featuring an ESP32-S3 based hexapod robot with camera vision, servo control, and real-time communication capabilities.
+A full-stack robotics project featuring an ESP32-S3 based hexapod robot with camera vision.
+
+Uses OpenAI Realtime and Structured Outputs APIs to process visual data and talk to the user in real time with an incredibly realistic voice.
 
 ## Overview
 

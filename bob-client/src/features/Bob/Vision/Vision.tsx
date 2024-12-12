@@ -1,6 +1,8 @@
 import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import { OpenAI } from 'openai';
+import { zodResponseFormat } from 'openai/helpers/zod';
 import React, { useState, useCallback } from 'react';
+import { z } from 'zod';
 
 import { getPrompt } from 'features/Bob/getPrompt';
 import { useLazyCaptureQuery } from 'features/BobApi/bobApi';
@@ -13,13 +15,26 @@ type VisionProps = {
     ) => React.ReactNode;
 };
 
+const ImageObjectSchema = z.object({
+    objectName: z.string(),
+    relativePosition: z.string(),
+    distance: z.string(),
+    description: z.string(),
+});
+
+const ImageAnalysisSchema = z.object({
+    objects: z.array(ImageObjectSchema),
+});
+
+type ImageObject = z.infer<typeof ImageObjectSchema>;
+
 const VISION_PROMPT: string = getPrompt('capture');
 
 const Vision = ({
     isRealtimeConnected,
     children,
 }: VisionProps): React.JSX.Element => {
-    const [description, setDescription] = useState<string>('');
+    const [description, setDescription] = useState<ImageObject[]>([]);
     const [error, setError] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -29,7 +44,7 @@ const Vision = ({
         async (blob: Blob): Promise<string> =>
             new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onloadend = () => {
+                reader.onloadend = (): void => {
                     const base64String = reader.result as string;
                     resolve(base64String.split(',')[1]);
                 };
@@ -56,7 +71,8 @@ const Vision = ({
             apiKey: process.env.OPENAI_API_KEY,
             dangerouslyAllowBrowser: true,
         });
-        const response = await client.chat.completions.create({
+
+        const completion = await client.beta.chat.completions.parse({
             model: 'gpt-4o-2024-11-20',
             messages: [
                 {
@@ -64,7 +80,9 @@ const Vision = ({
                     content: [
                         {
                             type: 'text',
-                            text: VISION_PROMPT,
+                            text:
+                                VISION_PROMPT +
+                                "\nPlease wrap the array in an 'objects' property of a JSON object.",
                         },
                         {
                             type: 'image_url',
@@ -76,10 +94,21 @@ const Vision = ({
                     ],
                 },
             ],
-            max_tokens: 4096,
+            response_format: zodResponseFormat(
+                ImageAnalysisSchema,
+                'image_analysis',
+            ),
         });
-        const analysisText = response.choices[0].message.content ?? '';
-        setDescription(analysisText);
+
+        const analysisText = JSON.stringify(
+            completion.choices[0].message.parsed?.objects,
+        );
+        try {
+            const parsedObjects = JSON.parse(analysisText) as ImageObject[];
+            setDescription(parsedObjects);
+        } catch (err) {
+            throw new Error('Failed to parse vision response', err);
+        }
         setIsLoading(false);
         return analysisText;
     }, [convertBlobToBase64, triggerCapture]);
@@ -113,7 +142,7 @@ const Vision = ({
             >
                 <Button
                     disabled={isLoading || !isRealtimeConnected}
-                    onClick={() => void handleSharePicture()}
+                    onClick={(): void => void handleSharePicture()}
                     sx={{ minWidth: 200 }}
                     variant="contained"
                 >
@@ -123,7 +152,8 @@ const Vision = ({
                         'Share picture'
                     )}
                 </Button>
-                {process.env.IS_DEBUG === 'true' && description && (
+
+                {process.env.IS_DEBUG === 'true' && description.length > 0 && (
                     <Box
                         sx={{
                             width: '100%',
@@ -139,13 +169,7 @@ const Vision = ({
                                 overflow: 'auto',
                             }}
                         >
-                            <pre>
-                                {JSON.stringify(
-                                    JSON.parse(description),
-                                    null,
-                                    2,
-                                )}
-                            </pre>
+                            <pre>{JSON.stringify(description, null, 2)}</pre>
                         </Box>
                     </Box>
                 )}

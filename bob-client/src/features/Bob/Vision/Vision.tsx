@@ -90,9 +90,7 @@ const Vision = ({
                     content: [
                         {
                             type: 'text',
-                            text:
-                                VISION_PROMPT +
-                                "\nPlease wrap the array in an 'objects' property of a JSON object.",
+                            text: VISION_PROMPT,
                         },
                         {
                             type: 'image_url',

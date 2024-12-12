@@ -41,6 +41,7 @@ const Vision = ({
     const [error, setError] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [capturedImage, setCapturedImage] = useState<string>('');
+    const [captureKey, setCaptureKey] = useState<number>(0);
 
     const [triggerCapture, { isFetching: isCaptureLoading }] =
         useLazyCaptureQuery();
@@ -124,6 +125,20 @@ const Vision = ({
         return analysisText;
     }, [convertBlobToBase64, triggerCapture]);
 
+    const handleTakePhoto = useCallback(async (): Promise<void> => {
+        try {
+            const result = await triggerCapture();
+            if (result.data) {
+                setCapturedImage(result.data);
+                setCaptureKey((prev) => prev + 1);
+            }
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : 'Failed to capture image',
+            );
+        }
+    }, [triggerCapture]);
+
     const handleSharePicture = useCallback(async (): Promise<void> => {
         try {
             await analyzeImage();
@@ -158,7 +173,7 @@ const Vision = ({
                         <Button
                             color="secondary"
                             disabled={isCaptureLoading}
-                            onClick={() => void triggerCapture()}
+                            onClick={() => void handleTakePhoto()}
                             variant="contained"
                         >
                             {isCaptureLoading ? (
@@ -184,6 +199,7 @@ const Vision = ({
                     <Box sx={{ mt: 2, textAlign: 'center' }}>
                         <img
                             alt="Captured by Bob"
+                            key={captureKey}
                             src={capturedImage}
                             style={{ maxWidth: '60%' }}
                         />

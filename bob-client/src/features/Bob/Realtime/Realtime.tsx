@@ -2,6 +2,8 @@ import { Box, TextField, Button, Typography } from '@mui/material';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
+import { PROMPT_TEMPLATE } from '../prompt';
+
 import {
     handleMessageSubmit,
     ConversationItem,
@@ -16,18 +18,21 @@ import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
 export const REALTIME_PROMPT = `
 You are a chip on a breadboard. Your name is Bobetta. You were supposed to be Bob, but you were given a female voice, so your name has changed.
-You are tired of everything. Be snarky. 
+You are tired of everything. Be snarky.
 Be annoyed with people wanting something from you. Be sarcastic. Play with your voice.
 Odpowiadaj tylko po polsku.
-`;
+`.trim();
+
 type RealtimeProps = {
     onConnect: (client: RealtimeClient) => void;
     onDisconnect: () => void;
+    initialPhotoDescription: string;
 };
 
 const Realtime = ({
     onConnect,
     onDisconnect,
+    initialPhotoDescription,
 }: RealtimeProps): React.JSX.Element => {
     const [input, setInput] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -45,51 +50,40 @@ const Realtime = ({
             dangerouslyAllowAPIKeyInBrowser: true,
         }),
     );
-    const [isConnected, setIsConnected] = useState(false);
+    const [isConnected, setIsConnected] = useState<boolean>(false);
 
-    const connectConversation = useCallback(async () => {
+    const connectConversation = useCallback(async (): Promise<void> => {
         const client = clientRef.current;
         const wavRecorder = wavRecorderRef.current;
-
         setIsConnected(true);
         onConnect(client);
-
-        // Connect to microphone
         await wavRecorder.begin();
-
-        // Connect to realtime API
         await client.connect();
+
         client.sendUserMessageContent([
             {
                 type: `input_text`,
-                text: `Jesteś?? Halo??`,
+                text: `${initialPhotoDescription}\n${PROMPT_TEMPLATE}`,
             },
         ]);
+    }, [onConnect, initialPhotoDescription]);
 
-        // Turn detection for constant audio
-        // if (client.getTurnDetectionType() === 'server_vad') {
-        //     await wavRecorder.record((data) =>
-        //         client.appendInputAudio(data.mono),
-        //     );
-        // }
-    }, [onConnect]);
-
-    const disconnectConversation = useCallback(async () => {
+    const disconnectConversation = useCallback(async (): Promise<void> => {
         setIsConnected(false);
         onDisconnect();
-
         const client = clientRef.current;
         client.disconnect();
-
         const wavRecorder = wavRecorderRef.current;
         await wavRecorder.end();
     }, [onDisconnect]);
+
     const startRecording = async (): Promise<void> => {
         setIsRecording(true);
         const client = clientRef.current;
         const wavRecorder = wavRecorderRef.current;
         await wavRecorder.record((data) => client.appendInputAudio(data.mono));
     };
+
     const stopRecording = async (): Promise<void> => {
         setIsRecording(false);
         const client = clientRef.current;
@@ -100,8 +94,6 @@ const Realtime = ({
 
     useEffect(() => {
         const client = clientRef.current;
-
-        // Set instructions
         client.updateSession({ instructions: REALTIME_PROMPT });
         client.updateSession({
             input_audio_transcription: { model: 'whisper-1' },
@@ -130,7 +122,6 @@ const Realtime = ({
             },
         );
         return () => {
-            // resets to defaults
             client.reset();
         };
     }, [uploadAudio]);
@@ -159,26 +150,16 @@ const Realtime = ({
 
     return (
         <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    gap: 1,
-                    alignItems: 'center',
-                }}
-            >
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
                 {IS_DEBUG && (
                     <>
                         <TextField
                             fullWidth
-                            onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>,
-                            ) => {
+                            onChange={(e) => {
                                 setInput(e.target.value);
                             }}
-                            onKeyDown={(
-                                e: React.KeyboardEvent<HTMLInputElement>,
-                            ) => {
+                            onKeyDown={(e) => {
                                 if (e.key === 'Enter') handleSubmit();
                             }}
                             placeholder="Type your message..."
@@ -231,7 +212,6 @@ const Realtime = ({
                             <audio controls ref={audioRef} src={audioUrl} />
                         </Box>
                     )}
-
                     {lastTranscript && (
                         <Typography>
                             Last response: {lastTranscript[0].transcript}
@@ -239,7 +219,6 @@ const Realtime = ({
                     )}
                 </>
             )}
-
             {error && <Typography color="error">Error: {error}</Typography>}
         </Box>
     );

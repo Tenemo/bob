@@ -10,9 +10,9 @@ import { Route, Routes } from 'react-router-dom';
 
 import * as styles from './app.scss';
 
+import Header from 'components/Header/Header';
 import NotFound from 'components/NotFound/NotFound';
-import Header from 'features/Header/Header';
-import HomePage from 'features/HomePage/HomePage';
+import Bob from 'features/Bob/Bob';
 
 const App = (): React.JSX.Element => {
     return (
@@ -32,7 +32,7 @@ const App = (): React.JSX.Element => {
             >
                 <Header />
                 <Routes>
-                    <Route element={<HomePage />} path="/" />
+                    <Route element={<Bob />} path="/" />
                     <Route element={<NotFound />} path="*" />
                 </Routes>
             </ErrorBoundary>

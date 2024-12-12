@@ -1,12 +1,12 @@
 import React from 'react';
 
-import HomePage from './HomePage';
+import Bob from './Bob';
 
 import { renderWithProviders } from 'utils/test-utils';
 
-describe('HomePage', () => {
+describe('Bob', () => {
     it('displays articles when data is available', () => {
-        renderWithProviders(<HomePage />);
+        renderWithProviders(<Bob />);
         expect(true).toBe(true);
     });
 });

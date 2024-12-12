@@ -8,6 +8,6 @@ export const getPrompt = (heading: string): string => {
         console.error(`Prompt with heading "${heading}" not found`);
         return '';
     }
-
+    // console.log(`Prompt with heading "${heading}":`, match[1].trim());
     return match[1].trim();
 };

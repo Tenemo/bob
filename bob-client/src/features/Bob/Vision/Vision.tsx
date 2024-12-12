@@ -76,7 +76,7 @@ const Vision = ({
                     ],
                 },
             ],
-            max_tokens: 500,
+            max_tokens: 4096,
         });
         const analysisText = response.choices[0].message.content ?? '';
         setDescription(analysisText);
@@ -97,16 +97,19 @@ const Vision = ({
     }, [analyzeImage]);
 
     const getDescription = useCallback(async (): Promise<string> => {
-        if (description.trim()) {
-            return description;
-        }
         return analyzeImage();
-    }, [description, analyzeImage]);
+    }, [analyzeImage]);
 
     return (
         <>
             <Box
-                sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}
+                sx={{
+                    mt: 4,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                    width: '100%',
+                }}
             >
                 <Button
                     disabled={isLoading || !isRealtimeConnected}
@@ -121,17 +124,30 @@ const Vision = ({
                     )}
                 </Button>
                 {process.env.IS_DEBUG === 'true' && description && (
-                    <Typography
+                    <Box
                         sx={{
+                            width: '100%',
                             mt: 2,
                             p: 2,
-                            bgcolor: 'background.paper',
-                            borderRadius: 1,
                         }}
-                        variant="body1"
                     >
-                        {description}
-                    </Typography>
+                        <Typography>Photo description:</Typography>
+                        <Box
+                            sx={{
+                                maxHeight: '400px',
+                                width: '100%',
+                                overflow: 'auto',
+                            }}
+                        >
+                            <pre>
+                                {JSON.stringify(
+                                    JSON.parse(description),
+                                    null,
+                                    2,
+                                )}
+                            </pre>
+                        </Box>
+                    </Box>
                 )}
                 {error && <Typography color="error">Error: {error}</Typography>}
             </Box>

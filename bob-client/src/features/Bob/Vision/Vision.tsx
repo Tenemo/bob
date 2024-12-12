@@ -2,7 +2,6 @@ import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import { OpenAI } from 'openai';
 import React, { useState } from 'react';
 
-import { IS_DEBUG } from 'app/config';
 import { getPrompt } from 'features/Bob/getPrompt';
 import { useCaptureQuery } from 'features/BobApi/bobApi';
 
@@ -109,8 +108,7 @@ const Vision = ({
                 {isFetching ? <CircularProgress size={24} /> : 'Share picture'}
             </Button>
 
-            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
-            {description && IS_DEBUG && (
+            {description && process.env.IS_DEBUG === 'true' && (
                 <Typography
                     sx={{
                         mt: 2,

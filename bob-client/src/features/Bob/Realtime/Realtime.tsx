@@ -11,7 +11,6 @@ import {
 import { WavPacker } from './wav_packer';
 import { WavRecorder } from './wav_recorder';
 
-import { IS_DEBUG } from 'app/config';
 import { getPrompt } from 'features/Bob/getPrompt';
 import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
@@ -144,8 +143,7 @@ const Realtime = ({
     return (
         <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
-                {IS_DEBUG && (
+                {process.env.IS_DEBUG === 'true' && (
                     <>
                         <TextField
                             fullWidth
@@ -197,8 +195,7 @@ const Realtime = ({
             >
                 {isConnected ? 'disconnect from voice' : 'connect to voice'}
             </Button>
-            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
-            {IS_DEBUG && (
+            {process.env.IS_DEBUG === 'true' && (
                 <>
                     {audioUrl && (
                         <Box sx={{ mt: 2 }}>

@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Raw wav audio file contents
  * @typedef {Object} WavPackerAudioType

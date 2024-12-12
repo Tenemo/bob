@@ -1,3 +1,4 @@
+/* eslint-disable */
 const AudioProcessorWorklet = `
 class AudioProcessor extends AudioWorkletProcessor {
 

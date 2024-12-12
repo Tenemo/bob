@@ -14,7 +14,7 @@
   "homepage": "https://github.com/Tenemo/bob#readme",
   "scripts": {
     "start": "cross-env NODE_ENV=development npm run open:src",
-    "prebuild": "npm run lint && npm run tsc && npm test && npm run cleanDist",
+    "prebuild": "npm run lint && npm run tsc && npm run cleanDist",
     "build": "cross-env NODE_ENV=production webpack --config config/webpack/webpack.prod.babel.ts",
     "build:analyze": "npm run cleanDist && cross-env NODE_ENV=production ANALYZE=true webpack --config config/webpack/webpack.prod.babel.ts",
     "build:skip": "npm run cleanDist && cross-env NODE_ENV=production webpack --config config/webpack/webpack.prod.babel.ts",

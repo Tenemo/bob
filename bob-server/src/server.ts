@@ -80,7 +80,7 @@ const rotate = async ({
             throw new Error('motorIndex is required');
         }
         console.log(`Rotating motor: ${motorIndex} to ${degrees}`);
-        const response = await axios.post('http://192.168.139.215/rotate/', {
+        const response = await axios.post('http://192.168.212.23/rotate/', {
             motorIndex: motorIndex?.toString(),
             degrees,
         });

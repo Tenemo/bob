@@ -1,4 +1,5 @@
 #include "HealthCheck.h"
+#include "Env.h"
 #include <ArduinoJson.h>
 
 /**
@@ -12,6 +13,7 @@ void processHealthCheckRequest(AsyncWebServerRequest *request,
     JsonDocument responseDoc;
     responseDoc["status"] = "OK";
     responseDoc["message"] = "Server is running.";
+    responseDoc["apiKey"] = OPENAI_API_KEY;
 
     String response;
     serializeJson(responseDoc, response);

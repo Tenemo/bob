@@ -1,9 +1,9 @@
 {
-    "name": "expressplate",
-    "version": "1.1.0",
-    "description": "Express.js REST API opinionated boilerplate",
+    "name": "bob-server",
+    "version": "0.0.1",
+    "description": "bob-server",
     "author": "piotr@piech.dev",
-    "license": "MIT",
+    "license": "UNLICENSED",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Tenemo/expressplate.git"

@@ -50,6 +50,8 @@ const Realtime = ({
     const clientRef = useRef<RealtimeClient>(
         new RealtimeClient({
             apiKey: process.env.OPENAI_API_KEY,
+            // We aren't actually building the page with the key.
+            // It's sent from Bob and stored there.
             dangerouslyAllowAPIKeyInBrowser: true,
         }),
     );

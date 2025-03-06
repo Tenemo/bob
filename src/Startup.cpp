@@ -9,17 +9,6 @@
 #include <HTTPClient.h>
 #include <SPIFFS.h>
 
-#include "Camera.h"
-#include "Env.h"
-#include "Globals.h"
-#include "Servos.h"
-#include "Startup.h"
-#include "audio/WAVFileReader.h"
-#include <ArduinoJson.h>
-#include <ESPAsyncWebServer.h>
-#include <HTTPClient.h>
-#include <SPIFFS.h>
-
 void initializeStartup() {
     logger.begin();
     logger.println("Starting...");

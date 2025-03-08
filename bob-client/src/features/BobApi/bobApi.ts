@@ -10,6 +10,7 @@ import { selectBobIp } from 'features/Bob/bobSlice';
 
 export type HealthcheckResponse = {
     status: string;
+    apiKey: string;
 };
 
 export type AudioUploadResponse = {

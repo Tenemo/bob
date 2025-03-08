@@ -55,7 +55,8 @@ const BobActions = (): React.JSX.Element => {
 
                 {isBobUp && !isHealthcheckLoading && (
                     <Typography color="green" variant="body1">
-                        Bob connected. Status: {healthcheckData.status}
+                        Bob connected. Status: {healthcheckData.status}.{' '}
+                        {healthcheckData.apiKey && 'API key received.'}
                     </Typography>
                 )}
             </Box>

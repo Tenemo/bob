@@ -17,6 +17,8 @@ import {
 import { WavPacker } from './wav_packer';
 import { WavRecorder } from './wav_recorder';
 
+import { useAppSelector } from 'app/hooks';
+import { selectApiKey } from 'features/Bob/bobSlice';
 import { getPrompt } from 'features/Bob/getPrompt';
 import { useUploadAudioMutation } from 'features/BobApi/bobApi';
 
@@ -47,9 +49,10 @@ const Realtime = ({
     const wavRecorderRef = useRef<WavRecorder>(
         new WavRecorder({ sampleRate: 24000 }),
     );
+    const apiKey = useAppSelector(selectApiKey);
     const clientRef = useRef<RealtimeClient>(
         new RealtimeClient({
-            apiKey: process.env.OPENAI_API_KEY,
+            apiKey: apiKey ?? 'MISSING API KEY',
             // We aren't actually building the page with the key.
             // It's sent from Bob and stored there.
             dangerouslyAllowAPIKeyInBrowser: true,
@@ -259,7 +262,7 @@ const Realtime = ({
                 <div className="spacer" />
             </Box>
             <Button
-                disabled={showSpinner}
+                disabled={showSpinner || !apiKey}
                 onClick={(): void => {
                     void handleConnectClick();
                 }}

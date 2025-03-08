@@ -194,15 +194,18 @@ export const bobApi = createApi({
     }),
     // Official documentation states we have to use "any"
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extractRehydrationInfo(action): any {
+    extractRehydrationInfo(action, { reducerPath }): any {
         if (isHydrateAction(action)) {
             // When persisting the api reducer
             if (action.key === 'key used with redux-persist') {
                 return action.payload;
             }
-
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (!action.payload) {
+                return undefined;
+            }
             // When persisting the root reducer
-            return action.payload[bobApi.reducerPath];
+            return action.payload[reducerPath];
         }
     },
 });

@@ -150,6 +150,8 @@ void processMoveRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
         resetServos();
     } else if (type == "standUp") {
         standUp();
+    } else if (type == "sitDown") {
+        sitDown();
     } else if (type == "wiggle") {
         wiggle();
     } else {

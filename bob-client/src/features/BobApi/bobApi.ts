@@ -28,6 +28,14 @@ export type AudioUploadResponse = {
     size: number;
 };
 
+export type MoveCommandRequest = {
+    type: 'reset' | 'standUp' | 'wiggle';
+};
+
+export type MoveCommandResponse = {
+    status: string;
+};
+
 const rawBaseQuery = fetchBaseQuery({
     baseUrl: '',
 });
@@ -163,10 +171,24 @@ export const bobApi = createApi({
                 };
             },
         }),
+        /**
+         * Stop audio mutation.
+         */
         stopAudio: builder.mutation<{ status: string }, void>({
             query: () => ({
                 url: 'stop-audio',
                 method: 'POST',
+            }),
+        }),
+        /**
+         * Move command mutation.
+         * @param command - Object containing the movement type (reset, standUp, wiggle)
+         */
+        moveCommand: builder.mutation<MoveCommandResponse, MoveCommandRequest>({
+            query: (command) => ({
+                url: 'move',
+                method: 'POST',
+                body: command,
             }),
         }),
     }),
@@ -190,6 +212,7 @@ export const {
     useUploadAudioMutation,
     useLazyCaptureQuery,
     useStopAudioMutation,
+    useMoveCommandMutation,
 } = bobApi;
 
 export const useHealthcheckQueryState =

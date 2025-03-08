@@ -4,19 +4,26 @@ import {
     Typography,
     Box,
     CircularProgress,
+    ButtonGroup,
 } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { useAppSelector, useAppDispatch } from 'app/hooks';
-import { selectIsDebug, setIp, selectBobIp } from 'features/Bob/bobSlice';
-import { useLazyHealthcheckQuery } from 'features/BobApi/bobApi';
+import { selectIsDebug, selectBobIp, setIp } from 'features/Bob/bobSlice';
+import {
+    useLazyHealthcheckQuery,
+    useMoveCommandMutation,
+    useHealthcheckQueryState,
+} from 'features/BobApi/bobApi';
 
 const BobActions = (): React.JSX.Element => {
     const dispatch = useAppDispatch();
-    const [
-        triggerHealthcheck,
-        { data: healthcheckData, isFetching: isHealthcheckLoading },
-    ] = useLazyHealthcheckQuery();
+    const [triggerHealthcheck] = useLazyHealthcheckQuery();
+    const { data: healthcheckData, isFetching: isHealthcheckLoading } =
+        useHealthcheckQueryState();
+    const [moveCommand, { isLoading: isMoveLoading }] =
+        useMoveCommandMutation();
+    const [moveError, setMoveError] = useState<string>('');
 
     const isBobUp = healthcheckData?.status === 'OK';
     const bobIp = useAppSelector(selectBobIp);
@@ -24,6 +31,19 @@ const BobActions = (): React.JSX.Element => {
 
     const handleConnect = (): void => {
         void triggerHealthcheck(undefined, false);
+    };
+
+    const handleMoveCommand = (type: 'reset' | 'standUp' | 'wiggle'): void => {
+        setMoveError('');
+        moveCommand({ type })
+            .unwrap()
+            .catch((error: unknown) => {
+                setMoveError(
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to execute move command',
+                );
+            });
     };
 
     return (
@@ -60,6 +80,46 @@ const BobActions = (): React.JSX.Element => {
                         Bob connected. Status: {healthcheckData.status}.{' '}
                         {healthcheckData.apiKey && 'API key received.'}
                     </Typography>
+                )}
+                {isBobUp && !isHealthcheckLoading && (
+                    <Box>
+                        <ButtonGroup
+                            aria-label="Bob movement controls"
+                            disabled={isMoveLoading}
+                            variant="contained"
+                        >
+                            <Button
+                                onClick={() => {
+                                    handleMoveCommand('reset');
+                                }}
+                                sx={{ flex: 1 }}
+                            >
+                                Reset
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    handleMoveCommand('standUp');
+                                }}
+                                sx={{ flex: 1 }}
+                            >
+                                Stand up
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    handleMoveCommand('wiggle');
+                                }}
+                                sx={{ flex: 1 }}
+                            >
+                                Wiggle
+                            </Button>
+                        </ButtonGroup>
+
+                        {moveError && (
+                            <Typography color="error" variant="body2">
+                                {moveError}
+                            </Typography>
+                        )}
+                    </Box>
                 )}
             </Box>
         </>

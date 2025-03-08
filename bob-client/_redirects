@@ -1,1 +1,11 @@
-/*    /index.html   200
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/*"
+  to = "http://192.168.212.23/:splat"
+  status = 200
+  force = true

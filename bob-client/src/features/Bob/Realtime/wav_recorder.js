@@ -323,7 +323,10 @@ export class WavRecorder {
             !navigator.mediaDevices ||
             !('getUserMedia' in navigator.mediaDevices)
         ) {
-            throw new Error('Could not request user media');
+            throw new Error('Could not request user media', 
+                navigator.mediaDevices,
+                navigator.mediaDevices?.getUserMedia,
+            );
         }
         try {
             const config = { audio: true };

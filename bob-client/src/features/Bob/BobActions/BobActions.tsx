@@ -33,7 +33,9 @@ const BobActions = (): React.JSX.Element => {
         void triggerHealthcheck(undefined, false);
     };
 
-    const handleMoveCommand = (type: 'reset' | 'standUp' | 'wiggle'): void => {
+    const handleMoveCommand = (
+        type: 'sitDown' | 'standUp' | 'wiggle',
+    ): void => {
         setMoveError('');
         moveCommand({ type })
             .unwrap()
@@ -90,11 +92,11 @@ const BobActions = (): React.JSX.Element => {
                         >
                             <Button
                                 onClick={() => {
-                                    handleMoveCommand('reset');
+                                    handleMoveCommand('sitDown');
                                 }}
                                 sx={{ flex: 1 }}
                             >
-                                Reset
+                                Sit down
                             </Button>
                             <Button
                                 onClick={() => {

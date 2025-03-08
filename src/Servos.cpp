@@ -76,7 +76,7 @@ void rotateServo(int motorIndex, int degrees) {
 
     // Map degrees to pulse length value
     int pulselen = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
-    delay(200);
+    delay(100);
 
     // Set the PWM signal for the servo
     if (servoDriver.setPWM(motorIndex, 0, pulselen) == 0) {
@@ -94,14 +94,21 @@ void resetServos() {
         } else {
             rotateServo(motorIndex, BASE_ANGLE_FOR_BOTTOM_SERVOS);
         }
-        delay(200);
+        delay(250);
     }
 }
 
 void standUp() {
     for (int motorIndex = 0; motorIndex < 6; motorIndex++) {
         rotateServo(motorIndex, 30);
-        delay(200);
+        delay(250);
+    }
+}
+
+void sitDown() {
+    for (int motorIndex = 0; motorIndex < 6; motorIndex++) {
+        rotateServo(motorIndex, BASE_ANGLE_FOR_BOTTOM_SERVOS);
+        delay(250);
     }
 }
 
@@ -122,11 +129,11 @@ void wiggle() {
                             ? 180 - BASE_ANGLE_FOR_TOP_SERVOS
                             : BASE_ANGLE_FOR_TOP_SERVOS;
         rotateServo(motorIndex, baseAngle - 10);
-        delay(200);
+        delay(25);
         rotateServo(motorIndex, baseAngle + 10);
-        delay(200);
+        delay(25);
         rotateServo(motorIndex, baseAngle);
-        delay(200);
+        delay(25);
     }
 }
 

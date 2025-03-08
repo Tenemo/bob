@@ -51,6 +51,14 @@ void resetServos();
 void standUp();
 
 /**
+ * @brief Sequentially rotates 0 to 5 servos to their neutral position.
+ *
+ * This function rotates servos 0 to 5 one after another to
+ * their neutral position.
+ */
+void sitDown();
+
+/**
  * @brief Sequentially wiggles 6 to 11 servos to -/+ 10 degrees.
  *
  * This function wiggles servos 6 to 11 one after another to the

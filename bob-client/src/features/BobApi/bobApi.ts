@@ -29,7 +29,7 @@ export type AudioUploadResponse = {
 };
 
 export type MoveCommandRequest = {
-    type: 'reset' | 'standUp' | 'wiggle';
+    type: 'reset' | 'standUp' | 'wiggle' | 'sitDown';
 };
 
 export type MoveCommandResponse = {

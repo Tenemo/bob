@@ -12,7 +12,7 @@ import {
     PURGE,
     REGISTER,
 } from 'redux-persist';
-import hardSet from 'redux-persist/lib/stateReconciler/hardSet';
+import autoMergeLevel1 from 'redux-persist/lib/stateReconciler/autoMergeLevel1';
 import storage from 'redux-persist/lib/storage';
 
 import { bobSlice } from 'features/Bob/bobSlice';
@@ -25,8 +25,7 @@ const IS_LOGGING_ENABLED = false;
 const persistConfig = {
     key: 'root',
     storage,
-    stateReconciler: hardSet,
-    blacklist: [bobApi.reducerPath],
+    stateReconciler: autoMergeLevel1,
     version: 1,
 };
 

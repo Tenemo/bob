@@ -4,12 +4,10 @@ import { zodResponseFormat } from 'openai/helpers/zod';
 import React, { useState, useCallback } from 'react';
 import { z } from 'zod';
 
-import { useAppSelector } from 'app/hooks';
-import { selectApiKey } from 'features/Bob/bobSlice';
 import { getPrompt } from 'features/Bob/getPrompt';
 import {
     useLazyCaptureQuery,
-    useHealthcheckQuery,
+    useHealthcheckQueryState,
 } from 'features/BobApi/bobApi';
 
 type VisionProps = {
@@ -45,10 +43,9 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
     const [triggerCapture, { isFetching: isCaptureLoading }] =
         useLazyCaptureQuery();
     const { data: healthcheckData, isFetching: isHealthcheckLoading } =
-        useHealthcheckQuery(undefined);
+        useHealthcheckQueryState(undefined);
 
     const isBobUp: boolean = healthcheckData?.status === 'OK';
-    const apiKey = useAppSelector(selectApiKey);
 
     const convertBlobToBase64 = useCallback(
         async (blob: Blob): Promise<string> =>
@@ -65,7 +62,7 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
     );
 
     const analyzeImage = useCallback(async (): Promise<string> => {
-        if (!apiKey) {
+        if (!healthcheckData?.apiKey) {
             throw new Error('API key missing');
         }
         setIsLoading(true);
@@ -78,7 +75,7 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
         const blob = await captureDataResponse.blob();
         const base64Image = await convertBlobToBase64(blob);
         const client = new OpenAI({
-            apiKey: apiKey,
+            apiKey: healthcheckData.apiKey,
             dangerouslyAllowBrowser: true,
         });
 
@@ -121,7 +118,7 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
         }
         setIsLoading(false);
         return analysisText;
-    }, [convertBlobToBase64, triggerCapture, apiKey]);
+    }, [convertBlobToBase64, triggerCapture, healthcheckData?.apiKey]);
 
     const handleTakePhoto = useCallback(async (): Promise<void> => {
         try {

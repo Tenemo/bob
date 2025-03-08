@@ -17,10 +17,11 @@ import {
 import { WavPacker } from './wav_packer';
 import { WavRecorder } from './wav_recorder';
 
-import { useAppSelector } from 'app/hooks';
-import { selectApiKey } from 'features/Bob/bobSlice';
 import { getPrompt } from 'features/Bob/getPrompt';
-import { useUploadAudioMutation } from 'features/BobApi/bobApi';
+import {
+    useUploadAudioMutation,
+    useHealthcheckQueryState,
+} from 'features/BobApi/bobApi';
 
 const INITIAL_PROMPT: string = getPrompt('initial-start');
 const VISION_GUIDANCE_PROMPT: string = getPrompt('initial-vision');
@@ -49,12 +50,13 @@ const Realtime = ({
     const wavRecorderRef = useRef<WavRecorder>(
         new WavRecorder({ sampleRate: 24000 }),
     );
-    const apiKey = useAppSelector(selectApiKey);
+    const { data: healthcheckData } = useHealthcheckQueryState(undefined);
+
     const clientRef = useRef<RealtimeClient>(
         new RealtimeClient({
-            apiKey: apiKey ?? 'MISSING API KEY',
+            apiKey: healthcheckData?.apiKey ?? 'MISSING API KEY',
             // We aren't actually building the page with the key.
-            // It's sent from Bob and stored there.
+            // It's received from Bob during runtime and stored there.
             dangerouslyAllowAPIKeyInBrowser: true,
         }),
     );
@@ -262,7 +264,7 @@ const Realtime = ({
                 <div className="spacer" />
             </Box>
             <Button
-                disabled={showSpinner || !apiKey}
+                disabled={showSpinner || !healthcheckData?.apiKey}
                 onClick={(): void => {
                     void handleConnectClick();
                 }}

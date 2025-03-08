@@ -1,12 +1,22 @@
+import type { Action } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type {
     BaseQueryFn,
     FetchArgs,
     FetchBaseQueryError,
 } from '@reduxjs/toolkit/query/react';
+import { REHYDRATE } from 'redux-persist';
 
 import type { RootState } from 'app/store';
 import { selectBobIp } from 'features/Bob/bobSlice';
+
+function isHydrateAction(action: Action): action is Action<typeof REHYDRATE> & {
+    key: string;
+    payload: RootState;
+    err: unknown;
+} {
+    return action.type === REHYDRATE;
+}
 
 export type HealthcheckResponse = {
     status: string;
@@ -154,11 +164,30 @@ export const bobApi = createApi({
             },
         }),
     }),
+    // Official documentation states we have to use "any"
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    extractRehydrationInfo(action): any {
+        if (isHydrateAction(action)) {
+            // When persisting the api reducer
+            if (action.key === 'key used with redux-persist') {
+                return action.payload;
+            }
+
+            // When persisting the root reducer
+            return action.payload[bobApi.reducerPath];
+        }
+    },
 });
 
 export const {
     useHealthcheckQuery,
+    useLazyHealthcheckQuery,
     useCaptureQuery,
     useUploadAudioMutation,
     useLazyCaptureQuery,
 } = bobApi;
+
+export const useLazyHealthcheckQuerySubscription =
+    bobApi.endpoints.healthcheck.useLazyQuerySubscription;
+export const useHealthcheckQueryState =
+    bobApi.endpoints.healthcheck.useQueryState;

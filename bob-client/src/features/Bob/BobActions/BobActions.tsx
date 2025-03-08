@@ -9,21 +9,20 @@ import React from 'react';
 
 import { useAppSelector, useAppDispatch } from 'app/hooks';
 import { setIp, selectBobIp } from 'features/Bob/bobSlice';
-import { useHealthcheckQuery } from 'features/BobApi/bobApi';
+import { useLazyHealthcheckQuery } from 'features/BobApi/bobApi';
 
 const BobActions = (): React.JSX.Element => {
     const dispatch = useAppDispatch();
-    const {
-        data: healthcheckData,
-        refetch: refetchHealthcheck,
-        isFetching: isHealthcheckLoading,
-    } = useHealthcheckQuery(undefined);
+    const [
+        triggerHealthcheck,
+        { data: healthcheckData, isFetching: isHealthcheckLoading },
+    ] = useLazyHealthcheckQuery();
 
     const isBobUp = healthcheckData?.status === 'OK';
     const bobIp = useAppSelector(selectBobIp);
 
     const handleConnect = (): void => {
-        void refetchHealthcheck();
+        void triggerHealthcheck(undefined, false);
     };
 
     return (

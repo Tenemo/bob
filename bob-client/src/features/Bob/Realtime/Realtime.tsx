@@ -267,6 +267,7 @@ const Realtime = ({
                     <Button
                         disabled={!isConnected}
                         onMouseDown={(): void => {
+                            stopAudio();
                             void startRecording();
                         }}
                         onMouseUp={(): void => {

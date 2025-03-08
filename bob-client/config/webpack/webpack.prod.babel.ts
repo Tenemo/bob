@@ -76,9 +76,6 @@ export default merge(commonConfig, {
                 use: [
                     MiniCssExtractPluginLoader,
                     {
-                        loader: 'css-modules-typescript-loader',
-                    },
-                    {
                         loader: `css-loader`,
                         options: {
                             modules: {

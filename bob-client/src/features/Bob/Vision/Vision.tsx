@@ -4,6 +4,8 @@ import { zodResponseFormat } from 'openai/helpers/zod';
 import React, { useState, useCallback } from 'react';
 import { z } from 'zod';
 
+import { useAppSelector } from 'app/hooks';
+import { selectIsDebug } from 'features/Bob/bobSlice';
 import { getPrompt } from 'features/Bob/getPrompt';
 import {
     useLazyCaptureQuery,
@@ -39,6 +41,7 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [capturedImage, setCapturedImage] = useState<string>('');
     const [captureKey, setCaptureKey] = useState<number>(0);
+    const isDebug = useAppSelector(selectIsDebug);
 
     const [triggerCapture, { isFetching: isCaptureLoading }] =
         useLazyCaptureQuery();
@@ -150,22 +153,20 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
                     alignItems: 'flex-start',
                 }}
             >
-                {isBobUp &&
-                    !isHealthcheckLoading &&
-                    process.env.IS_DEBUG === 'true' && (
-                        <Button
-                            color="secondary"
-                            disabled={isCaptureLoading}
-                            onClick={() => void handleTakePhoto()}
-                            variant="contained"
-                        >
-                            {isCaptureLoading ? (
-                                <CircularProgress size={24} />
-                            ) : (
-                                'Take Photo'
-                            )}
-                        </Button>
-                    )}
+                {isBobUp && !isHealthcheckLoading && isDebug && (
+                    <Button
+                        color="secondary"
+                        disabled={isCaptureLoading}
+                        onClick={() => void handleTakePhoto()}
+                        variant="contained"
+                    >
+                        {isCaptureLoading ? (
+                            <CircularProgress size={24} />
+                        ) : (
+                            'Take Photo'
+                        )}
+                    </Button>
+                )}
 
                 {capturedImage && (
                     <Box sx={{ mt: 2, textAlign: 'center' }}>
@@ -177,7 +178,7 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
                         />
                     </Box>
                 )}
-                {process.env.IS_DEBUG === 'true' && description.length > 0 && (
+                {isDebug && description.length > 0 && (
                     <Box
                         sx={{
                             width: '100%',

@@ -17,6 +17,8 @@ import {
 import { WavPacker } from './wav_packer';
 import { WavRecorder } from './wav_recorder';
 
+import { useAppSelector } from 'app/hooks';
+import { selectIsDebug } from 'features/Bob/bobSlice';
 import { getPrompt } from 'features/Bob/getPrompt';
 import {
     useUploadAudioMutation,
@@ -51,6 +53,7 @@ const Realtime = ({
         new WavRecorder({ sampleRate: 24000 }),
     );
     const { data: healthcheckData } = useHealthcheckQueryState(undefined);
+    const isDebug = useAppSelector(selectIsDebug);
 
     const clientRef = useRef<RealtimeClient>(
         new RealtimeClient({
@@ -224,7 +227,7 @@ const Realtime = ({
                 Share picture
             </Button>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                {process.env.IS_DEBUG === 'true' && (
+                {isDebug && (
                     <>
                         <TextField
                             fullWidth
@@ -278,7 +281,7 @@ const Realtime = ({
                     'connect to voice'
                 )}
             </Button>
-            {process.env.IS_DEBUG === 'true' && (
+            {isDebug && (
                 <>
                     {audioUrl && (
                         <Box sx={{ mt: 2 }}>

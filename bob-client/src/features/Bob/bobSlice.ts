@@ -3,10 +3,12 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 
 export type BobState = {
     ip: string;
+    isDebug: boolean;
 };
 
 const initialState: BobState = {
     ip: '',
+    isDebug: false,
 };
 
 export const bobSlice = createSlice({
@@ -21,9 +23,19 @@ export const bobSlice = createSlice({
         setIp: (state, action: PayloadAction<string>) => {
             state.ip = action.payload;
         },
+        /**
+         * Sets debug mode.
+         * @param state - Current state.
+         * @param action - Payload containing the debug mode value.
+         */
+        setDebugMode: (state, action: PayloadAction<boolean>) => {
+            state.isDebug = action.payload;
+        },
     },
 });
 
-export const { setIp } = bobSlice.actions;
+export const { setIp, setDebugMode } = bobSlice.actions;
 
 export const selectBobIp = (state: { bob: BobState }): string => state.bob.ip;
+export const selectIsDebug = (state: { bob: BobState }): boolean =>
+    state.bob.isDebug;

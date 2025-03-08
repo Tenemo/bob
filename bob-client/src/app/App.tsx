@@ -10,6 +10,7 @@ import { Route, Routes } from 'react-router-dom';
 
 import * as styles from './app.scss';
 
+import Footer from 'components/Footer/Footer';
 import Header from 'components/Header/Header';
 import NotFound from 'components/NotFound/NotFound';
 import Bob from 'features/Bob/Bob';
@@ -35,6 +36,7 @@ const App = (): React.JSX.Element => {
                     <Route element={<Bob />} path="/" />
                     <Route element={<NotFound />} path="*" />
                 </Routes>
+                <Footer />
             </ErrorBoundary>
         </div>
     );

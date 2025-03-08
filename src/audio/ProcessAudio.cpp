@@ -36,9 +36,18 @@ void ProcessAudioRequest(AsyncWebServerRequest *request,
         request->send(500, "application/json",
                       "{\"error\":\"File write error.\"}");
     } else {
-        request->send(200, "application/json",
-                      "{\"status\":\"Upload complete.\"}");
+        request->send(
+            200, "application/json",
+            "{\"status\":\"success\",\"message\":\"Upload complete.\"}");
     }
+}
+
+void processStopAudioRequest(AsyncWebServerRequest *request,
+                             const JsonDocument &doc) {
+    stopPlayback();
+    request->send(
+        200, "application/json",
+        "{\"status\":\"success\",\"message\":\"Audio playback stopped.\"}");
 }
 
 void handleAudioUpload(AsyncWebServerRequest *request, String filename,

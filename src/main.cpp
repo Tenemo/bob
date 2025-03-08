@@ -53,6 +53,18 @@ void setup() {
         },
         handleAudioUpload);
 
+    server.on(
+        "/stop-audio", HTTP_POST,
+        [](AsyncWebServerRequest *request) {
+            handleRequest(request, nullptr, 0, 0, 0, processStopAudioRequest);
+        },
+        NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+           size_t index, size_t total) {
+            handleRequest(request, data, len, index, total,
+                          processStopAudioRequest);
+        });
+
     initializeStartup();
     // playAudioFile("/sample_music.wav");
     // playAudioFile("/sample_voice.wav");

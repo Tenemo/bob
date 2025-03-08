@@ -21,8 +21,19 @@ extern const char *UPLOAD_PATH;
  * @param request Pointer to the AsyncWebServerRequest object.
  * @param doc Reference to the JsonDocument containing request data.
  */
+
 void ProcessAudioRequest(AsyncWebServerRequest *request,
                          const JsonDocument &doc);
+/**
+ * @brief Processes a request to stop audio playback.
+ *
+ * This function handles requests to stop any currently playing audio.
+ *
+ * @param request Pointer to the AsyncWebServerRequest object.
+ * @param doc Reference to the JsonDocument containing request data.
+ */
+void processStopAudioRequest(AsyncWebServerRequest *request,
+                             const JsonDocument &doc);
 
 /**
  * @brief Handles the file upload process for audio files.

@@ -291,23 +291,23 @@ const Realtime = ({
                 )}
                 <div className="spacer" />
             </Box>
-            <Button
-                disabled={showSpinner || !healthcheckData?.apiKey}
-                onClick={(): void => {
-                    void handleConnectClick();
-                }}
-                variant="outlined"
-            >
-                {showSpinner ? (
-                    <CircularProgress size={24} />
-                ) : isConnected ? (
-                    'disconnect from voice'
-                ) : (
-                    'connect to voice'
-                )}
-            </Button>
             {isDebug && (
                 <>
+                    <Button
+                        disabled={showSpinner || !healthcheckData?.apiKey}
+                        onClick={(): void => {
+                            void handleConnectClick();
+                        }}
+                        variant="outlined"
+                    >
+                        {showSpinner ? (
+                            <CircularProgress size={24} />
+                        ) : isConnected ? (
+                            'Disconnect from voice'
+                        ) : (
+                            'Connect to voice'
+                        )}
+                    </Button>
                     <Button
                         color="error"
                         onClick={() => {

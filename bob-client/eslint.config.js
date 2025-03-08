@@ -177,6 +177,7 @@ export default tseslint.config(
         rules: {
             'prettier/prettier': OFF,
             '@typescript-eslint/consistent-type-definitions': OFF,
+            '@typescript-eslint/no-empty-object-type': OFF,
         },
     },
     {

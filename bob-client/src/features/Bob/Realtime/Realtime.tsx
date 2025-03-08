@@ -18,7 +18,7 @@ import { WavPacker } from './wav_packer';
 import { WavRecorder } from './wav_recorder';
 
 import { useAppSelector } from 'app/hooks';
-import { selectIsDebug } from 'features/Bob/bobSlice';
+import { selectIsDebug, selectUseBobSpeaker } from 'features/Bob/bobSlice';
 import { getPrompt } from 'features/Bob/getPrompt';
 import {
     useUploadAudioMutation,
@@ -54,22 +54,52 @@ const Realtime = ({
     );
     const { data: healthcheckData } = useHealthcheckQueryState(undefined);
     const isDebug = useAppSelector(selectIsDebug);
+    const useBobSpeaker = useAppSelector(selectUseBobSpeaker);
 
-    const clientRef = useRef<RealtimeClient>(
-        new RealtimeClient({
-            apiKey: healthcheckData?.apiKey ?? 'MISSING API KEY',
-            // We aren't actually building the page with the key.
-            // It's received from Bob during runtime and stored there.
-            dangerouslyAllowAPIKeyInBrowser: true,
-        }),
-    );
+    const clientRef = useRef<RealtimeClient | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [isConnectInProgress, setIsConnectInProgress] =
         useState<boolean>(false);
 
     const connectConversation = useCallback(
         async (photoDescription: string): Promise<void> => {
+            if (!healthcheckData?.apiKey) {
+                throw new Error('API key missing');
+            }
+            clientRef.current = new RealtimeClient({
+                apiKey: healthcheckData.apiKey,
+                // We aren't actually building the page with the key.
+                // It's received from Bob during runtime and stored there.
+                dangerouslyAllowAPIKeyInBrowser: true,
+            });
             const client = clientRef.current;
+            client.updateSession({
+                input_audio_transcription: { model: 'whisper-1' },
+            });
+            client.updateSession({ voice: 'shimmer' });
+
+            client.on('error', (event: unknown) => {
+                console.error(event);
+            });
+
+            client.on(
+                'conversation.item.completed',
+                ({ item }: { item: ConversationItem }) => {
+                    if (item.type === 'message' && item.role === 'assistant') {
+                        if (item.content) {
+                            setLastTranscript(item.content);
+                        }
+                        if (item.formatted?.audio) {
+                            void playAndUploadAudio(
+                                item.formatted.audio,
+                                uploadAudio,
+                                setError,
+                                useBobSpeaker,
+                            );
+                        }
+                    }
+                },
+            );
             const wavRecorder = wavRecorderRef.current;
             setIsConnected(true);
             onConnect(client);
@@ -82,14 +112,14 @@ const Realtime = ({
                 },
             ]);
         },
-        [onConnect],
+        [healthcheckData?.apiKey, onConnect, uploadAudio, useBobSpeaker],
     );
 
     const disconnectConversation = useCallback(async (): Promise<void> => {
         setIsConnected(false);
         onDisconnect();
         const client = clientRef.current;
-        client.disconnect();
+        client?.disconnect();
         const wavRecorder = wavRecorderRef.current;
         await wavRecorder.end();
     }, [onDisconnect]);
@@ -98,7 +128,7 @@ const Realtime = ({
         setIsRecording(true);
         const client = clientRef.current;
         const wavRecorder = wavRecorderRef.current;
-        await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+        await wavRecorder.record((data) => client?.appendInputAudio(data.mono));
     };
 
     const stopRecording = async (): Promise<void> => {
@@ -106,41 +136,20 @@ const Realtime = ({
         const client = clientRef.current;
         const wavRecorder = wavRecorderRef.current;
         await wavRecorder.pause();
-        client.createResponse();
+        client?.createResponse();
     };
 
     useEffect((): (() => void) => {
+        if (!clientRef.current)
+            return () => {
+                return;
+            };
+
         const client = clientRef.current;
-        client.updateSession({
-            input_audio_transcription: { model: 'whisper-1' },
-        });
-        client.updateSession({ voice: 'shimmer' });
-
-        client.on('error', (event: unknown) => {
-            console.error(event);
-        });
-
-        client.on(
-            'conversation.item.completed',
-            ({ item }: { item: ConversationItem }) => {
-                if (item.type === 'message' && item.role === 'assistant') {
-                    if (item.content) {
-                        setLastTranscript(item.content);
-                    }
-                    if (item.formatted?.audio) {
-                        void playAndUploadAudio(
-                            item.formatted.audio,
-                            uploadAudio,
-                            setError,
-                        );
-                    }
-                }
-            },
-        );
         return () => {
             client.reset();
         };
-    }, [uploadAudio]);
+    }, [uploadAudio, useBobSpeaker]);
 
     const handleSubmit = (): void => {
         handleMessageSubmit(clientRef.current, input, setError);
@@ -149,8 +158,10 @@ const Realtime = ({
 
     useEffect((): void => {
         if (lastTranscript) {
-            const item = clientRef.current.conversation.getItems().slice(-1)[0];
-            if (item.formatted.audio) {
+            const item = clientRef.current?.conversation
+                .getItems()
+                .slice(-1)[0];
+            if (item?.formatted.audio) {
                 const wavPacker = new WavPacker();
                 const audioBlob = wavPacker.pack(24000, {
                     bitsPerSample: 16,
@@ -192,7 +203,7 @@ const Realtime = ({
     const handleSharePictureClick = useCallback(async (): Promise<void> => {
         try {
             const description = await getPhotoDescription();
-            clientRef.current.sendUserMessageContent([
+            clientRef.current?.sendUserMessageContent([
                 {
                     type: 'input_text',
                     text: `${NEW_PHOTO_PROMPT}\n${description}`,

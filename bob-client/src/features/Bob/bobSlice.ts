@@ -4,11 +4,13 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 export type BobState = {
     ip: string;
     isDebug: boolean;
+    useBobSpeaker: boolean;
 };
 
 const initialState: BobState = {
     ip: '',
     isDebug: false,
+    useBobSpeaker: true,
 };
 
 export const bobSlice = createSlice({
@@ -31,11 +33,21 @@ export const bobSlice = createSlice({
         setDebugMode: (state, action: PayloadAction<boolean>) => {
             state.isDebug = action.payload;
         },
+        /**
+         * Sets speaker mode (Bob's speaker vs device speaker).
+         * @param state - Current state.
+         * @param action - Payload containing the speaker mode value.
+         */
+        setUseBobSpeaker: (state, action: PayloadAction<boolean>) => {
+            state.useBobSpeaker = action.payload;
+        },
     },
 });
 
-export const { setIp, setDebugMode } = bobSlice.actions;
+export const { setIp, setDebugMode, setUseBobSpeaker } = bobSlice.actions;
 
 export const selectBobIp = (state: { bob: BobState }): string => state.bob.ip;
 export const selectIsDebug = (state: { bob: BobState }): boolean =>
     state.bob.isDebug;
+export const selectUseBobSpeaker = (state: { bob: BobState }): boolean =>
+    state.bob.useBobSpeaker;

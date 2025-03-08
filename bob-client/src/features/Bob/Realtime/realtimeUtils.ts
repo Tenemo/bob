@@ -17,6 +17,7 @@ export const playAndUploadAudio = async (
     audioData: Int16Array,
     uploadAudio: (audio: Int16Array) => Promise<unknown>,
     setError: (error: string) => void,
+    useBobSpeaker: boolean,
 ): Promise<void> => {
     const audioSizeBytes = audioData.length * 2;
     if (audioSizeBytes > MAX_AUDIO_SIZE_BYTES) {
@@ -26,24 +27,26 @@ export const playAndUploadAudio = async (
         return;
     }
 
-    const audioContext = new AudioContext();
-    const buffer = audioContext.createBuffer(1, audioData.length, 24000);
-    const channelData = buffer.getChannelData(0);
-
-    for (let i = 0; i < audioData.length; i++) {
-        channelData[i] = audioData[i] / 32768.0;
-    }
-
-    const source = audioContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(audioContext.destination);
-    source.start();
-
     try {
-        if (process.env.AUDIO_SPEAKER_PLAYBACK !== 'true') {
-            return;
+        if (useBobSpeaker) {
+            await uploadAudio(audioData);
+        } else {
+            const audioContext = new AudioContext();
+            const buffer = audioContext.createBuffer(
+                1,
+                audioData.length,
+                24000,
+            );
+            const channelData = buffer.getChannelData(0);
+
+            for (let i = 0; i < audioData.length; i++) {
+                channelData[i] = audioData[i] / 32768.0;
+            }
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start();
         }
-        await uploadAudio(audioData);
     } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to upload audio');
     }

@@ -145,7 +145,6 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
         <>
             <Box
                 sx={{
-                    mt: 4,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 2,

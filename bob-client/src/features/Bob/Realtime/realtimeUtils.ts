@@ -16,7 +16,15 @@ export const MAX_AUDIO_SIZE_BYTES = 8 * 1024 * 1024;
 let activeAudioSource: AudioBufferSourceNode | null = null;
 let activeAudioContext: AudioContext | null = null;
 
-export const stopAudio = (): boolean => {
+export const stopAudio = (
+    stopAudioMutation?: () => Promise<unknown>,
+    useBobSpeaker?: boolean,
+): boolean => {
+    if (useBobSpeaker && stopAudioMutation) {
+        void stopAudioMutation();
+        return true;
+    }
+
     if (activeAudioSource) {
         activeAudioSource.stop();
         activeAudioSource = null;

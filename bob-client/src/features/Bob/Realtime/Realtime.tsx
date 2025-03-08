@@ -24,6 +24,7 @@ import { getPrompt } from 'features/Bob/getPrompt';
 import {
     useUploadAudioMutation,
     useHealthcheckQueryState,
+    useStopAudioMutation,
 } from 'features/BobApi/bobApi';
 
 const INITIAL_PROMPT: string = getPrompt('initial-start');
@@ -50,6 +51,7 @@ const Realtime = ({
     const [lastTranscript, setLastTranscript] = useState<Transcript[]>();
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [uploadAudio] = useUploadAudioMutation();
+    const [stopAudioMutation] = useStopAudioMutation();
     const wavRecorderRef = useRef<WavRecorder>(
         new WavRecorder({ sampleRate: 24000 }),
     );
@@ -267,7 +269,7 @@ const Realtime = ({
                     <Button
                         disabled={!isConnected}
                         onMouseDown={(): void => {
-                            stopAudio();
+                            stopAudio(stopAudioMutation, useBobSpeaker);
                             void startRecording();
                         }}
                         onMouseUp={(): void => {
@@ -299,7 +301,9 @@ const Realtime = ({
                 <>
                     <Button
                         color="error"
-                        onClick={stopAudio}
+                        onClick={() =>
+                            stopAudio(stopAudioMutation, useBobSpeaker)
+                        }
                         variant="outlined"
                     >
                         Stop audio

@@ -163,6 +163,12 @@ export const bobApi = createApi({
                 };
             },
         }),
+        stopAudio: builder.mutation<{ status: string }, void>({
+            query: () => ({
+                url: 'stop-audio',
+                method: 'POST',
+            }),
+        }),
     }),
     // Official documentation states we have to use "any"
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -180,14 +186,11 @@ export const bobApi = createApi({
 });
 
 export const {
-    useHealthcheckQuery,
     useLazyHealthcheckQuery,
-    useCaptureQuery,
     useUploadAudioMutation,
     useLazyCaptureQuery,
+    useStopAudioMutation,
 } = bobApi;
 
-export const useLazyHealthcheckQuerySubscription =
-    bobApi.endpoints.healthcheck.useLazyQuerySubscription;
 export const useHealthcheckQueryState =
     bobApi.endpoints.healthcheck.useQueryState;

@@ -1,4 +1,5 @@
 import { RealtimeClient } from '@openai/realtime-api-beta';
+import { RefObject } from 'react';
 
 export type Transcript = {
     type: string;
@@ -19,12 +20,7 @@ let activeAudioContext: AudioContext | null = null;
 export const stopAudio = (
     stopAudioMutation?: () => Promise<unknown>,
     useBobSpeaker?: boolean,
-): boolean => {
-    if (useBobSpeaker && stopAudioMutation) {
-        void stopAudioMutation();
-        return true;
-    }
-
+): void => {
     if (activeAudioSource) {
         activeAudioSource.stop();
         activeAudioSource = null;
@@ -32,16 +28,17 @@ export const stopAudio = (
             void activeAudioContext.close();
             activeAudioContext = null;
         }
-        return true;
     }
-    return false;
+    if (useBobSpeaker && stopAudioMutation) {
+        void stopAudioMutation();
+    }
 };
 
 export const playAndUploadAudio = async (
     audioData: Int16Array,
     uploadAudio: (audio: Int16Array) => Promise<unknown>,
     setError: (error: string) => void,
-    useBobSpeaker: boolean,
+    useBobSpeakerRef: RefObject<boolean>,
 ): Promise<void> => {
     const audioSizeBytes = audioData.length * 2;
     if (audioSizeBytes > MAX_AUDIO_SIZE_BYTES) {
@@ -52,11 +49,10 @@ export const playAndUploadAudio = async (
     }
 
     try {
-        if (useBobSpeaker) {
+        stopAudio();
+        if (useBobSpeakerRef.current) {
             await uploadAudio(audioData);
         } else {
-            stopAudio();
-
             const audioContext = new AudioContext();
             activeAudioContext = audioContext;
             const buffer = audioContext.createBuffer(

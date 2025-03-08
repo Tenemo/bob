@@ -64,6 +64,14 @@ const Realtime = ({
     const [isConnectInProgress, setIsConnectInProgress] =
         useState<boolean>(false);
 
+    // We need to keep the same reference, because
+    // conversation.item.completed otherwise has a reference
+    // to the old value and a new reference is created for the new value.
+    const useBobSpeakerRef = useRef<boolean>(useBobSpeaker);
+    useEffect(() => {
+        useBobSpeakerRef.current = useBobSpeaker;
+    }, [useBobSpeaker]);
+
     const connectConversation = useCallback(
         async (photoDescription: string): Promise<void> => {
             if (!healthcheckData?.apiKey) {
@@ -97,7 +105,7 @@ const Realtime = ({
                                 item.formatted.audio,
                                 uploadAudio,
                                 setError,
-                                useBobSpeaker,
+                                useBobSpeakerRef,
                             );
                         }
                     }
@@ -115,7 +123,7 @@ const Realtime = ({
                 },
             ]);
         },
-        [healthcheckData?.apiKey, onConnect, uploadAudio, useBobSpeaker],
+        [healthcheckData?.apiKey, onConnect, uploadAudio],
     );
 
     const disconnectConversation = useCallback(async (): Promise<void> => {
@@ -152,7 +160,7 @@ const Realtime = ({
         return () => {
             client.reset();
         };
-    }, [uploadAudio, useBobSpeaker]);
+    }, [uploadAudio]);
 
     const handleSubmit = (): void => {
         handleMessageSubmit(clientRef.current, input, setError);
@@ -257,6 +265,7 @@ const Realtime = ({
                         <Button
                             disabled={!input.trim()}
                             onClick={(): void => {
+                                stopAudio(stopAudioMutation, useBobSpeaker);
                                 handleSubmit();
                             }}
                             variant="outlined"
@@ -301,9 +310,9 @@ const Realtime = ({
                 <>
                     <Button
                         color="error"
-                        onClick={() =>
-                            stopAudio(stopAudioMutation, useBobSpeaker)
-                        }
+                        onClick={() => {
+                            stopAudio(stopAudioMutation, useBobSpeaker);
+                        }}
                         variant="outlined"
                     >
                         Stop audio

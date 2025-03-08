@@ -41,7 +41,7 @@ const BobActions = (): React.JSX.Element => {
                     color="primary"
                     disabled={!bobIp || isHealthcheckLoading}
                     onClick={handleConnect}
-                    variant="contained"
+                    variant={isBobUp ? 'outlined' : 'contained'}
                 >
                     {isHealthcheckLoading ? (
                         <CircularProgress size={24} />

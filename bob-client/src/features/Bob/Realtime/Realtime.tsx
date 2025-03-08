@@ -233,7 +233,7 @@ const Realtime = ({
                 onClick={(): void => {
                     void handleSharePictureClick();
                 }}
-                variant="contained"
+                variant="outlined"
             >
                 Share picture
             </Button>
@@ -256,7 +256,7 @@ const Realtime = ({
                             onClick={(): void => {
                                 handleSubmit();
                             }}
-                            variant="contained"
+                            variant="outlined"
                         >
                             Send
                         </Button>
@@ -271,6 +271,7 @@ const Realtime = ({
                         onMouseUp={(): void => {
                             void stopRecording();
                         }}
+                        variant="contained"
                     >
                         {isRecording ? 'release to send' : 'push to talk'}
                     </Button>
@@ -282,7 +283,7 @@ const Realtime = ({
                 onClick={(): void => {
                     void handleConnectClick();
                 }}
-                variant="contained"
+                variant="outlined"
             >
                 {showSpinner ? (
                     <CircularProgress size={24} />

@@ -153,10 +153,12 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
                     alignItems: 'flex-start',
                 }}
             >
-                {isBobUp && !isHealthcheckLoading && isDebug && (
+                {isDebug && (
                     <Button
                         color="secondary"
-                        disabled={isCaptureLoading}
+                        disabled={
+                            isCaptureLoading || isHealthcheckLoading || !isBobUp
+                        }
                         onClick={() => void handleTakePhoto()}
                         variant="contained"
                     >

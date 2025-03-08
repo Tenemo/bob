@@ -57,7 +57,7 @@ const dynamicBaseQuery: BaseQueryFn<
     }
 
     const urlEnd = typeof args === 'string' ? args : args.url;
-    const adjustedUrl = `http://${ip}/${urlEnd}`;
+    const adjustedUrl = `https://bob.city/${urlEnd}`;
     const adjustedArgs =
         typeof args === 'string' ? adjustedUrl : { ...args, url: adjustedUrl };
 

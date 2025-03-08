@@ -13,6 +13,7 @@ import {
     ConversationItem,
     Transcript,
     playAndUploadAudio,
+    stopAudio,
 } from './realtimeUtils';
 import { WavPacker } from './wav_packer';
 import { WavRecorder } from './wav_recorder';
@@ -295,6 +296,13 @@ const Realtime = ({
             </Button>
             {isDebug && (
                 <>
+                    <Button
+                        color="error"
+                        onClick={stopAudio}
+                        variant="outlined"
+                    >
+                        Stop audio
+                    </Button>
                     {audioUrl && (
                         <Box sx={{ mt: 2 }}>
                             <audio controls ref={audioRef} src={audioUrl} />

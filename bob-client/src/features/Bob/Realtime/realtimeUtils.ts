@@ -13,6 +13,22 @@ export type ConversationItem = {
 
 export const MAX_AUDIO_SIZE_BYTES = 8 * 1024 * 1024;
 
+let activeAudioSource: AudioBufferSourceNode | null = null;
+let activeAudioContext: AudioContext | null = null;
+
+export const stopAudio = (): boolean => {
+    if (activeAudioSource) {
+        activeAudioSource.stop();
+        activeAudioSource = null;
+        if (activeAudioContext) {
+            void activeAudioContext.close();
+            activeAudioContext = null;
+        }
+        return true;
+    }
+    return false;
+};
+
 export const playAndUploadAudio = async (
     audioData: Int16Array,
     uploadAudio: (audio: Int16Array) => Promise<unknown>,
@@ -31,7 +47,10 @@ export const playAndUploadAudio = async (
         if (useBobSpeaker) {
             await uploadAudio(audioData);
         } else {
+            stopAudio();
+
             const audioContext = new AudioContext();
+            activeAudioContext = audioContext;
             const buffer = audioContext.createBuffer(
                 1,
                 audioData.length,
@@ -43,9 +62,16 @@ export const playAndUploadAudio = async (
                 channelData[i] = audioData[i] / 32768.0;
             }
             const source = audioContext.createBufferSource();
+            activeAudioSource = source;
             source.buffer = buffer;
             source.connect(audioContext.destination);
             source.start();
+
+            source.onended = () => {
+                activeAudioSource = null;
+                void audioContext.close();
+                activeAudioContext = null;
+            };
         }
     } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to upload audio');

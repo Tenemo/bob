@@ -1,6 +1,6 @@
 import React from 'react';
 
-import * as styles from './header.scss';
+import styles from './header.scss';
 const Header = (): React.JSX.Element => {
     return (
         <header className={styles.header}>

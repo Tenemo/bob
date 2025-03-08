@@ -8,7 +8,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { Helmet } from 'react-helmet-async';
 import { Route, Routes } from 'react-router-dom';
 
-import * as styles from './app.scss';
+import styles from './app.scss';
 
 import Footer from 'components/Footer/Footer';
 import Header from 'components/Header/Header';

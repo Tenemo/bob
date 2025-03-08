@@ -44,7 +44,7 @@ bool initializeServos() {
     Serial.println("PCA9685 initialization SUCCESSFUL. Moving servos to 90 "
                    "degrees, neutral position.");
 
-    standUp();
+    resetServos();
     wiggle();
     return true;
 }
@@ -94,7 +94,7 @@ void resetServos() {
         } else {
             rotateServo(motorIndex, BASE_ANGLE_FOR_BOTTOM_SERVOS);
         }
-        delay(250);
+        delay(150);
     }
 }
 

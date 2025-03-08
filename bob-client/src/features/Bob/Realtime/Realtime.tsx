@@ -28,8 +28,7 @@ import {
 } from 'features/BobApi/bobApi';
 
 const INITIAL_PROMPT: string = getPrompt('initial-start');
-const VISION_GUIDANCE_PROMPT: string = getPrompt('initial-vision');
-const NEW_PHOTO_PROMPT: string = getPrompt('new-photo');
+const VISION_PROMPT: string = getPrompt('vision');
 
 type RealtimeProps = {
     onConnect: (client: RealtimeClient) => void;
@@ -74,7 +73,7 @@ const Realtime = ({
     }, [useBobSpeaker]);
 
     const connectConversation = useCallback(
-        async (photoDescription: string, apiKey?: string): Promise<void> => {
+        async (apiKey?: string): Promise<void> => {
             if (!healthcheckData?.apiKey && !apiKey) {
                 throw new Error('API key missing');
             }
@@ -120,7 +119,7 @@ const Realtime = ({
             client.sendUserMessageContent([
                 {
                     type: `input_text`,
-                    text: `\n${INITIAL_PROMPT}${photoDescription}\n${VISION_GUIDANCE_PROMPT}`,
+                    text: `\n${INITIAL_PROMPT}`,
                 },
             ]);
         },
@@ -187,6 +186,7 @@ const Realtime = ({
     }, [lastTranscript]);
 
     const handleConnectClick = useCallback(async (): Promise<void> => {
+        setError('');
         if (isConnected) {
             setIsConnectInProgress(true);
             await disconnectConversation();
@@ -203,9 +203,7 @@ const Realtime = ({
                 }
                 apiKey = result.data.apiKey;
             }
-
-            const photoDescription = await getPhotoDescription();
-            await connectConversation(photoDescription, apiKey);
+            await connectConversation(apiKey);
         } catch (connectError) {
             setError(
                 connectError instanceof Error
@@ -218,7 +216,6 @@ const Realtime = ({
         isConnected,
         disconnectConversation,
         healthcheckData?.apiKey,
-        getPhotoDescription,
         connectConversation,
         triggerHealthcheck,
     ]);
@@ -229,7 +226,7 @@ const Realtime = ({
             clientRef.current?.sendUserMessageContent([
                 {
                     type: 'input_text',
-                    text: `${NEW_PHOTO_PROMPT}\n${description}`,
+                    text: `${VISION_PROMPT}\n${description}`,
                 },
             ]);
         } catch (err) {

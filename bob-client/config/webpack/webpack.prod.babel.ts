@@ -8,8 +8,6 @@ import MiniCssExtractPlugin, {
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { merge } from 'webpack-merge';
 
-import packageJSON from '../../package.json';
-
 import { commonConfig } from './webpack.common.babel';
 
 const { ANALYZE } = process.env;
@@ -26,7 +24,7 @@ export default merge(commonConfig, {
     stats: 'normal',
     plugins: [
         new HtmlWebpackPlugin({
-            title: packageJSON.name,
+            title: 'Bob',
             template: `src/index.html`,
             inject: true,
             minify: {

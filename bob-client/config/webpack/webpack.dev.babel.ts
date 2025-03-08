@@ -7,8 +7,6 @@ import { WatchIgnorePlugin, HotModuleReplacementPlugin } from 'webpack';
 import type { Configuration } from 'webpack';
 import { merge } from 'webpack-merge';
 
-import packageJSON from '../../package.json';
-
 import { commonConfig } from './webpack.common.babel';
 
 const localIp = address();
@@ -35,7 +33,7 @@ const developmentConfiguration: Configuration = {
     devtool: `eval-source-map`,
     plugins: [
         new HtmlWebpackPlugin({
-            title: packageJSON.name,
+            title: 'Bob',
             template: `src/index.html`,
             inject: true,
         }),

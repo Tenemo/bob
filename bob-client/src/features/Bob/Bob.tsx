@@ -25,6 +25,7 @@ const Bob = (): React.JSX.Element => {
                 flexDirection: 'column',
                 alignItems: 'flex-start',
                 pb: 4,
+                width: '100%',
             }}
         >
             <Helmet>

@@ -50,9 +50,16 @@ const BobActions = (): React.JSX.Element => {
 
     return (
         <>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                    width: '100%',
+                    alignItems: 'flex-start',
+                }}
+            >
                 <TextField
-                    fullWidth
                     label="Bob's IP Address"
                     onChange={(e): void => {
                         dispatch(setIp(e.target.value));
@@ -83,7 +90,7 @@ const BobActions = (): React.JSX.Element => {
                         {healthcheckData.apiKey && 'API key received.'}
                     </Typography>
                 )}
-                {isBobUp && !isHealthcheckLoading && (
+                {((isBobUp && !isHealthcheckLoading) || isDebug) && (
                     <Box>
                         <ButtonGroup
                             aria-label="Bob movement controls"
@@ -96,7 +103,13 @@ const BobActions = (): React.JSX.Element => {
                                 }}
                                 sx={{ flex: 1 }}
                             >
-                                Sit down
+                                Sit down{' '}
+                                {isMoveLoading && (
+                                    <CircularProgress
+                                        size={20}
+                                        sx={{ ml: 1 }}
+                                    />
+                                )}
                             </Button>
                             <Button
                                 onClick={() => {
@@ -104,7 +117,13 @@ const BobActions = (): React.JSX.Element => {
                                 }}
                                 sx={{ flex: 1 }}
                             >
-                                Stand up
+                                Stand up{' '}
+                                {isMoveLoading && (
+                                    <CircularProgress
+                                        size={20}
+                                        sx={{ ml: 1 }}
+                                    />
+                                )}
                             </Button>
                             <Button
                                 onClick={() => {
@@ -112,7 +131,13 @@ const BobActions = (): React.JSX.Element => {
                                 }}
                                 sx={{ flex: 1 }}
                             >
-                                Wiggle
+                                Wiggle{' '}
+                                {isMoveLoading && (
+                                    <CircularProgress
+                                        size={20}
+                                        sx={{ ml: 1 }}
+                                    />
+                                )}
                             </Button>
                         </ButtonGroup>
 

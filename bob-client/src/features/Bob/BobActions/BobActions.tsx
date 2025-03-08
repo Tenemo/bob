@@ -38,20 +38,22 @@ const BobActions = (): React.JSX.Element => {
                     value={bobIp}
                     variant="outlined"
                 />
-                <Button
-                    color="primary"
-                    disabled={!bobIp || isHealthcheckLoading}
-                    onClick={handleConnect}
-                    variant={isBobUp ? 'outlined' : 'contained'}
-                >
-                    {isHealthcheckLoading ? (
-                        <CircularProgress size={24} />
-                    ) : isBobUp ? (
-                        'Reconnect to Bob'
-                    ) : (
-                        'Connect to Bob'
-                    )}
-                </Button>
+                {isDebug && (
+                    <Button
+                        color="primary"
+                        disabled={!bobIp || isHealthcheckLoading}
+                        onClick={handleConnect}
+                        variant={isBobUp ? 'outlined' : 'contained'}
+                    >
+                        {isHealthcheckLoading ? (
+                            <CircularProgress size={24} />
+                        ) : isBobUp ? (
+                            'Re-healthcheck'
+                        ) : (
+                            'Healthcheck'
+                        )}
+                    </Button>
+                )}
 
                 {isDebug && isBobUp && !isHealthcheckLoading && (
                     <Typography color="green" variant="body1">

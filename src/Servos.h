@@ -36,7 +36,28 @@ bool initializeServos();
  * @param degrees    Target angle in degrees (0-180).
  */
 void rotateServo(int motorIndex, int degrees);
+
+/**
+ * @brief Resets all servos to their neutral positions.
+ */
 void resetServos();
+
+/**
+ * @brief Sequentially rotates 0 to 5 servos to 30 degrees.
+ *
+ * This function rotates servos 0 to 5 one after another to the
+ * 30 degree position.
+ */
+void standUp();
+
+/**
+ * @brief Sequentially wiggles 6 to 11 servos to -/+ 10 degrees.
+ *
+ * This function wiggles servos 6 to 11 one after another to the
+ * from their initial position -10 degrees, to +10 degrees,
+ * and back to their initial position.
+ */
+void wiggle();
 
 /**
  * @brief Processes servo rotation requests by validating input and performing

@@ -9,6 +9,8 @@ import axios from 'axios';
 
 export const app = express();
 
+const BOB_IP = '192.168.212.23';
+
 app.use(cors());
 app.use(express.json());
 app.use(
@@ -80,7 +82,7 @@ const rotate = async ({
             throw new Error('motorIndex is required');
         }
         console.log(`Rotating motor: ${motorIndex} to ${degrees}`);
-        const response = await axios.post('http://192.168.212.23/rotate/', {
+        const response = await axios.post(`http://${BOB_IP}/rotate/`, {
             motorIndex: motorIndex?.toString(),
             degrees,
         });
@@ -97,7 +99,7 @@ const rotate = async ({
 const move = async ({ type }: { type: string }): Promise<void> => {
     try {
         console.log(`Moving: ${type}`);
-        const response = await axios.post('http://192.168.139.215/move/', {
+        const response = await axios.post(`http://${BOB_IP}/move/`, {
             type,
         });
         console.log('Response:', response.data);
@@ -166,7 +168,7 @@ const walk = async (): Promise<void> => {
 
 const execute = async (): Promise<void> => {
     await move({ type: 'reset' });
-    // await standUp();
+    await standUp();
     // await moveLegForward({ topMotorIndex: 6 });
     // await moveLegForward({ topMotorIndex: 8 });
     // await moveLegForward({ topMotorIndex: 10 });

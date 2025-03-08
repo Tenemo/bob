@@ -23,8 +23,8 @@ import { selectIsDebug, selectUseBobSpeaker } from 'features/Bob/bobSlice';
 import { getPrompt } from 'features/Bob/getPrompt';
 import {
     useUploadAudioMutation,
-    useHealthcheckQueryState,
     useStopAudioMutation,
+    useLazyHealthcheckQuery,
 } from 'features/BobApi/bobApi';
 
 const INITIAL_PROMPT: string = getPrompt('initial-start');
@@ -55,7 +55,8 @@ const Realtime = ({
     const wavRecorderRef = useRef<WavRecorder>(
         new WavRecorder({ sampleRate: 24000 }),
     );
-    const { data: healthcheckData } = useHealthcheckQueryState(undefined);
+    const [triggerHealthcheck, { data: healthcheckData }] =
+        useLazyHealthcheckQuery();
     const isDebug = useAppSelector(selectIsDebug);
     const useBobSpeaker = useAppSelector(selectUseBobSpeaker);
 
@@ -73,12 +74,12 @@ const Realtime = ({
     }, [useBobSpeaker]);
 
     const connectConversation = useCallback(
-        async (photoDescription: string): Promise<void> => {
-            if (!healthcheckData?.apiKey) {
+        async (photoDescription: string, apiKey?: string): Promise<void> => {
+            if (!healthcheckData?.apiKey && !apiKey) {
                 throw new Error('API key missing');
             }
             clientRef.current = new RealtimeClient({
-                apiKey: healthcheckData.apiKey,
+                apiKey: healthcheckData?.apiKey ?? apiKey,
                 // We aren't actually building the page with the key.
                 // It's received from Bob during runtime and stored there.
                 dangerouslyAllowAPIKeyInBrowser: true,
@@ -194,8 +195,17 @@ const Realtime = ({
         }
         setIsConnectInProgress(true);
         try {
+            let apiKey = healthcheckData?.apiKey;
+            if (!apiKey) {
+                const result = await triggerHealthcheck();
+                if (!result.data?.apiKey) {
+                    throw new Error('Failed to get API key from healthcheck');
+                }
+                apiKey = result.data.apiKey;
+            }
+
             const photoDescription = await getPhotoDescription();
-            await connectConversation(photoDescription);
+            await connectConversation(photoDescription, apiKey);
         } catch (connectError) {
             setError(
                 connectError instanceof Error
@@ -207,8 +217,10 @@ const Realtime = ({
     }, [
         isConnected,
         disconnectConversation,
+        healthcheckData?.apiKey,
         getPhotoDescription,
         connectConversation,
+        triggerHealthcheck,
     ]);
 
     const handleSharePictureClick = useCallback(async (): Promise<void> => {
@@ -232,22 +244,24 @@ const Realtime = ({
     return (
         <Box
             sx={{
-                mt: 4,
+                mt: 1,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
                 alignItems: 'flex-start',
             }}
         >
-            <Button
-                disabled={!isConnected}
-                onClick={(): void => {
-                    void handleSharePictureClick();
-                }}
-                variant="outlined"
-            >
-                Share picture
-            </Button>
+            {isConnected && (
+                <Button
+                    disabled={!isConnected}
+                    onClick={(): void => {
+                        void handleSharePictureClick();
+                    }}
+                    variant="outlined"
+                >
+                    Share picture
+                </Button>
+            )}
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 {isDebug && (
                     <>
@@ -291,23 +305,23 @@ const Realtime = ({
                 )}
                 <div className="spacer" />
             </Box>
+            <Button
+                disabled={showSpinner}
+                onClick={(): void => {
+                    void handleConnectClick();
+                }}
+                variant="outlined"
+            >
+                {showSpinner ? (
+                    <CircularProgress size={24} />
+                ) : isConnected ? (
+                    'Disconnect'
+                ) : (
+                    'Connect to Bob'
+                )}
+            </Button>
             {isDebug && (
                 <>
-                    <Button
-                        disabled={showSpinner || !healthcheckData?.apiKey}
-                        onClick={(): void => {
-                            void handleConnectClick();
-                        }}
-                        variant="outlined"
-                    >
-                        {showSpinner ? (
-                            <CircularProgress size={24} />
-                        ) : isConnected ? (
-                            'Disconnect from voice'
-                        ) : (
-                            'Connect to voice'
-                        )}
-                    </Button>
                     <Button
                         color="error"
                         onClick={() => {

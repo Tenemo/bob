@@ -15,7 +15,7 @@ import {
 type VisionProps = {
     isRealtimeConnected: boolean;
     children?: (
-        getDescription: () => Promise<string>,
+        getPhotoDescription: () => Promise<string>,
         isLoading: boolean,
     ) => React.ReactNode;
 };
@@ -81,6 +81,7 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
             apiKey: healthcheckData.apiKey,
             dangerouslyAllowBrowser: true,
         });
+        setCapturedImage(result.data);
 
         const completion = await client.beta.chat.completions.parse({
             model: 'gpt-4o-2024-11-20',
@@ -114,7 +115,6 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
         try {
             const parsedObjects = JSON.parse(analysisText) as ImageObject[];
             setDescription(parsedObjects);
-            setCapturedImage(result.data);
         } catch (err) {
             console.error(err);
             throw new Error('Failed to parse vision response');
@@ -137,7 +137,7 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
         }
     }, [triggerCapture]);
 
-    const getDescription = useCallback(async (): Promise<string> => {
+    const getPhotoDescription = useCallback(async (): Promise<string> => {
         return analyzeImage();
     }, [analyzeImage]);
 
@@ -172,12 +172,16 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
 
                 {capturedImage && (
                     <Box sx={{ mt: 2, textAlign: 'center' }}>
-                        <img
-                            alt="Captured by Bob"
-                            key={captureKey}
-                            src={capturedImage}
-                            style={{ maxWidth: '60%' }}
-                        />
+                        {isCaptureLoading ? (
+                            <CircularProgress size={60} />
+                        ) : (
+                            <img
+                                alt="Captured by Bob"
+                                key={captureKey}
+                                src={capturedImage}
+                                style={{ maxWidth: '60%' }}
+                            />
+                        )}
                     </Box>
                 )}
                 {isDebug && description.length > 0 && (
@@ -203,7 +207,7 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
                 {error && <Typography color="error">Error: {error}</Typography>}
             </Box>
             {typeof children === 'function'
-                ? children(getDescription, isLoading || isCaptureLoading)
+                ? children(getPhotoDescription, isLoading || isCaptureLoading)
                 : null}
         </>
     );

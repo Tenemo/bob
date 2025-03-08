@@ -44,8 +44,8 @@ bool initializeServos() {
     Serial.println("PCA9685 initialization SUCCESSFUL. Moving servos to 90 "
                    "degrees, neutral position.");
 
-    // Move all servos to neutral position
-    resetServos();
+    standUp();
+    wiggle();
     return true;
 }
 
@@ -76,6 +76,7 @@ void rotateServo(int motorIndex, int degrees) {
 
     // Map degrees to pulse length value
     int pulselen = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
+    delay(200);
 
     // Set the PWM signal for the servo
     if (servoDriver.setPWM(motorIndex, 0, pulselen) == 0) {
@@ -93,7 +94,39 @@ void resetServos() {
         } else {
             rotateServo(motorIndex, BASE_ANGLE_FOR_BOTTOM_SERVOS);
         }
-        delay(100);
+        delay(200);
+    }
+}
+
+void standUp() {
+    for (int motorIndex = 0; motorIndex < 6; motorIndex++) {
+        rotateServo(motorIndex, 30);
+        delay(200);
+    }
+}
+
+void wiggle() {
+    int originalPositions[6];
+
+    for (int i = 0; i < 6; i++) {
+        int motorIndex = i + FRONT_RIGHT_TOP;
+        if (motorIndex >= 9 && motorIndex <= 11) {
+            originalPositions[i] = 180 - BASE_ANGLE_FOR_TOP_SERVOS;
+        } else {
+            originalPositions[i] = BASE_ANGLE_FOR_TOP_SERVOS;
+        }
+    }
+    for (int i = 0; i < 6; i++) {
+        int motorIndex = i + FRONT_RIGHT_TOP;
+        int baseAngle = motorIndex >= 9 && motorIndex <= 11
+                            ? 180 - BASE_ANGLE_FOR_TOP_SERVOS
+                            : BASE_ANGLE_FOR_TOP_SERVOS;
+        rotateServo(motorIndex, baseAngle - 10);
+        delay(200);
+        rotateServo(motorIndex, baseAngle + 10);
+        delay(200);
+        rotateServo(motorIndex, baseAngle);
+        delay(200);
     }
 }
 
@@ -108,9 +141,12 @@ void processMoveRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
 
     if (type == "reset") {
         resetServos();
+    } else if (type == "standUp") {
+        standUp();
+    } else if (type == "wiggle") {
+        wiggle();
     } else {
-        req->send(400, "application/json",
-                  "{\"error\":\"Invalid type. Must be 'reset'\"}");
+        req->send(400, "application/json", "{\"error\":\"Invalid type.\"}");
         return;
     }
 
@@ -137,17 +173,17 @@ void processRotateRequest(AsyncWebServerRequest *req, const JsonDocument &doc) {
 
     // Validate motorIndex
     if (motorIndex < 0 || motorIndex > 15) {
-        req->send(
-            400, "application/json",
-            "{\"error\":\"Invalid motorIndex. Must be between 0 and 15.\"}");
+        req->send(400, "application/json",
+                  "{\"error\":\"Invalid motorIndex. Must be between 0 "
+                  "and 15.\"}");
         return;
     }
 
     // Validate degrees
     if (degrees < 0 || degrees > 180) {
-        req->send(
-            400, "application/json",
-            "{\"error\":\"Invalid degrees. Must be between 0 and 180.\"}");
+        req->send(400, "application/json",
+                  "{\"error\":\"Invalid degrees. Must be between 0 and "
+                  "180.\"}");
         return;
     }
 

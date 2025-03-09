@@ -1,5 +1,6 @@
 import path from 'path';
 
+import CopyPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin, {
@@ -7,6 +8,7 @@ import MiniCssExtractPlugin, {
 } from 'mini-css-extract-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { merge } from 'webpack-merge';
+import 'dotenv/config';
 
 import { commonConfig } from './webpack.common.babel';
 
@@ -42,6 +44,23 @@ export default merge(commonConfig, {
         new MiniCssExtractPlugin({
             filename: `[name].[contenthash].min.css`,
             chunkFilename: `[id].[contenthash].min.css`,
+        }),
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: 'src/_redirects',
+                    to: '[name][ext]',
+                    transform: (content): Buffer => {
+                        const transformedContent = content
+                            .toString()
+                            .replace(
+                                /\$BOB_IP/g,
+                                process.env.BOB_IP ?? 'IP_NOT_FOUND',
+                            );
+                        return Buffer.from(transformedContent);
+                    },
+                },
+            ],
         }),
         ...(ANALYZE ? [new BundleAnalyzerPlugin()] : []),
     ],

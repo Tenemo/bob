@@ -315,6 +315,7 @@ const Realtime = ({
                 disabled={showSpinner}
                 onClick={(): void => {
                     void handleConnectClick();
+                    stopAudio(stopAudioMutation, useBobSpeaker);
                 }}
                 variant="outlined"
             >

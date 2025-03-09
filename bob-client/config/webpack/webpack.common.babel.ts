@@ -25,6 +25,7 @@ export const commonConfig: Configuration = {
         new DotenvPlugin({
             systemvars: true,
             safe: './.env.sample',
+            defaults: true,
         }),
     ],
     resolve: {

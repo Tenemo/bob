@@ -11,6 +11,7 @@ import {
     PERSIST,
     PURGE,
     REGISTER,
+    createTransform,
 } from 'redux-persist';
 import autoMergeLevel1 from 'redux-persist/lib/stateReconciler/autoMergeLevel1';
 import storage from 'redux-persist/lib/storage';
@@ -22,11 +23,33 @@ export type RootState = ReturnType<typeof rootReducer>;
 
 const IS_LOGGING_ENABLED = false;
 
+const apiTransform = createTransform(
+    (
+        inboundState: { queries?: Record<string, unknown> } & Record<
+            string,
+            unknown
+        >,
+        key,
+    ) => {
+        if (key === bobApi.reducerPath && inboundState.queries) {
+            const queries = { ...inboundState.queries };
+            delete queries['healthcheck(undefined)'];
+            return { ...inboundState, queries };
+        }
+        return inboundState;
+    },
+    (outboundState) => {
+        return outboundState;
+    },
+    { whitelist: [bobApi.reducerPath] },
+);
+
 const persistConfig = {
     key: 'root',
     storage,
     stateReconciler: autoMergeLevel1,
-    version: 3,
+    transforms: [apiTransform],
+    version: 4,
 };
 
 const logger = createLogger({

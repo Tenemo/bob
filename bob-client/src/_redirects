@@ -1,11 +1,2 @@
-[[redirects]]
-  from = "/bob/*"
-  to = "http://$BOB_IP/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
+/bob/*  http://$BOB_IP/:splat  200
+/*      /index.html            200

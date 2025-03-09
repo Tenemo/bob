@@ -26,8 +26,7 @@ const persistConfig = {
     key: 'root',
     storage,
     stateReconciler: autoMergeLevel1,
-    version: 2,
-    blacklist: ['status'],
+    version: 3,
 };
 
 const logger = createLogger({

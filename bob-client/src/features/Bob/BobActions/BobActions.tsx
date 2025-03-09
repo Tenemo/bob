@@ -1,5 +1,4 @@
 import {
-    TextField,
     Button,
     Typography,
     Box,
@@ -8,8 +7,8 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 
-import { useAppSelector, useAppDispatch } from 'app/hooks';
-import { selectIsDebug, selectBobIp, setIp } from 'features/Bob/bobSlice';
+import { useAppSelector } from 'app/hooks';
+import { selectIsDebug } from 'features/Bob/bobSlice';
 import {
     useLazyHealthcheckQuery,
     useMoveCommandMutation,
@@ -17,7 +16,6 @@ import {
 } from 'features/BobApi/bobApi';
 
 const BobActions = (): React.JSX.Element => {
-    const dispatch = useAppDispatch();
     const [triggerHealthcheck] = useLazyHealthcheckQuery();
     const { data: healthcheckData, isFetching: isHealthcheckLoading } =
         useHealthcheckQueryState();
@@ -26,7 +24,6 @@ const BobActions = (): React.JSX.Element => {
     const [moveError, setMoveError] = useState<string>('');
 
     const isBobUp = healthcheckData?.status === 'OK';
-    const bobIp = useAppSelector(selectBobIp);
     const isDebug = useAppSelector(selectIsDebug);
 
     const handleConnect = (): void => {
@@ -59,18 +56,10 @@ const BobActions = (): React.JSX.Element => {
                     alignItems: 'flex-start',
                 }}
             >
-                <TextField
-                    label="Bob's IP Address"
-                    onChange={(e): void => {
-                        dispatch(setIp(e.target.value));
-                    }}
-                    value={bobIp}
-                    variant="outlined"
-                />
                 {isDebug && (
                     <Button
                         color="primary"
-                        disabled={!bobIp || isHealthcheckLoading}
+                        disabled={isHealthcheckLoading}
                         onClick={handleConnect}
                         variant={isBobUp ? 'outlined' : 'contained'}
                     >

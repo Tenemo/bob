@@ -2,13 +2,11 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 export type BobState = {
-    ip: string;
     isDebug: boolean;
     useBobSpeaker: boolean;
 };
 
 const initialState: BobState = {
-    ip: '',
     isDebug: false,
     useBobSpeaker: true,
 };
@@ -17,14 +15,6 @@ export const bobSlice = createSlice({
     name: 'bob',
     initialState,
     reducers: {
-        /**
-         * Sets Bob's IP address.
-         * @param state - Current state.
-         * @param action - Payload containing the IP address.
-         */
-        setIp: (state, action: PayloadAction<string>) => {
-            state.ip = action.payload;
-        },
         /**
          * Sets debug mode.
          * @param state - Current state.
@@ -44,9 +34,8 @@ export const bobSlice = createSlice({
     },
 });
 
-export const { setIp, setDebugMode, setUseBobSpeaker } = bobSlice.actions;
+export const { setDebugMode, setUseBobSpeaker } = bobSlice.actions;
 
-export const selectBobIp = (state: { bob: BobState }): string => state.bob.ip;
 export const selectIsDebug = (state: { bob: BobState }): boolean =>
     state.bob.isDebug;
 export const selectUseBobSpeaker = (state: { bob: BobState }): boolean =>

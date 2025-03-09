@@ -338,7 +338,7 @@ export class WavRecorder {
             throw new Error('Could not start media stream');
         }
 
-        const context = new AudioContext();
+        const context = new AudioContext({ sampleRate: this.sampleRate });
         const source = context.createMediaStreamSource(this.stream);
         // Load and execute the module script.
         try {

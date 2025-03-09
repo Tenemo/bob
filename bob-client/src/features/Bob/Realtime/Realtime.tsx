@@ -295,6 +295,15 @@ const Realtime = ({
                         onMouseUp={(): void => {
                             void stopRecording();
                         }}
+                        onTouchEnd={(e): void => {
+                            e.preventDefault();
+                            void stopRecording();
+                        }}
+                        onTouchStart={(e): void => {
+                            e.preventDefault();
+                            stopAudio(stopAudioMutation, useBobSpeaker);
+                            void startRecording();
+                        }}
                         variant="contained"
                     >
                         {isRecording ? 'release to send' : 'push to talk'}

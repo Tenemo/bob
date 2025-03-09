@@ -6,11 +6,13 @@ import ReactRefreshBabel from 'react-refresh/babel';
 import { WatchIgnorePlugin, HotModuleReplacementPlugin } from 'webpack';
 import type { Configuration } from 'webpack';
 import { merge } from 'webpack-merge';
+import 'dotenv/config';
 
 import { commonConfig } from './webpack.common.babel';
 
 const localIp = address();
 const PORT = process.env.PORT ?? 3000;
+const BOB_LOCAL_IP = process.env.BOB_LOCAL_IP ?? 'MISSING_IP';
 
 const developmentConfiguration: Configuration = {
     mode: `development`,
@@ -25,6 +27,15 @@ const developmentConfiguration: Configuration = {
         headers: {
             'Access-Control-Allow-Origin': `*`,
         },
+        proxy: [
+            {
+                context: ['/bob'],
+                target: `http://${BOB_LOCAL_IP}`,
+                pathRewrite: { '^/bob': '' },
+                changeOrigin: true,
+                secure: false,
+            },
+        ],
     },
     output: {
         filename: `[name].js`,

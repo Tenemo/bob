@@ -13,6 +13,7 @@ import {
     useLazyHealthcheckQuery,
     useMoveCommandMutation,
     useHealthcheckQueryState,
+    MoveCommandRequest,
 } from 'features/BobApi/bobApi';
 
 const BobActions = (): React.JSX.Element => {
@@ -29,9 +30,7 @@ const BobActions = (): React.JSX.Element => {
         void triggerHealthcheck(undefined, false);
     };
 
-    const handleMoveCommand = (
-        type: 'sitDown' | 'standUp' | 'wiggle',
-    ): void => {
+    const handleMoveCommand = (type: MoveCommandRequest['type']): void => {
         void moveCommand({ type });
     };
 

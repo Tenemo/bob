@@ -9,6 +9,10 @@ import {
 import { WavRecorder } from './wav_recorder';
 
 import { getPrompt } from 'features/Bob/getPrompt';
+import {
+    MoveCommandRequest,
+    useMoveCommandMutation,
+} from 'features/BobApi/bobApi';
 
 const INITIAL_PROMPT: string = getPrompt('initial-start');
 
@@ -22,12 +26,6 @@ type UseRealtimeConnectionProps = {
     setError: (error: string) => void;
     setLastTranscript: (transcript?: Transcript[]) => void;
     useBobSpeakerRef: React.RefObject<boolean>;
-};
-
-type CameraTool = {
-    name: string;
-    parameters: Record<string, unknown>;
-    description: string;
 };
 
 type CameraToolCallback = () => Promise<string>;
@@ -58,7 +56,7 @@ export const useRealtimeConnection = ({
         useState<boolean>(false);
 
     const cameraTool = useMemo(() => {
-        const toolConfig: CameraTool = {
+        const toolConfig = {
             name: 'camera_capture',
             parameters: {},
             description: getPrompt('camera'),
@@ -74,8 +72,54 @@ export const useRealtimeConnection = ({
             }
         };
 
-        return [toolConfig, toolCallback] as const; // Use a tuple type
+        return [toolConfig, toolCallback] as const;
     }, [getPhotoDescription]);
+
+    const [moveCommand] = useMoveCommandMutation();
+
+    const moveTool = useMemo(() => {
+        const toolConfig = {
+            name: 'move_tool',
+            parameters: {
+                type: 'object',
+                properties: {
+                    action: {
+                        type: 'string',
+                        enum: ['standUp', 'sitDown', 'wiggle'],
+                        description: 'The type of movement to perform',
+                    },
+                },
+            },
+            description: getPrompt('move'),
+        };
+
+        const toolCallback = async ({
+            action,
+        }: {
+            action: MoveCommandRequest['type'];
+        }): Promise<string> => {
+            try {
+                if (!['standUp', 'sitDown', 'wiggle'].includes(action)) {
+                    throw new Error(`Invalid action: ${action}`);
+                }
+
+                const result = await moveCommand({ type: action });
+
+                if ('error' in result) {
+                    throw new Error(
+                        `Failed to execute move command: ${JSON.stringify(result.error)}`,
+                    );
+                }
+
+                return `Successfully performed action: ${action}. Status: ${result.data.status || 'completed'}`;
+            } catch (error) {
+                console.error('Move tool error:', error);
+                throw error;
+            }
+        };
+
+        return [toolConfig, toolCallback] as const;
+    }, [moveCommand]);
 
     const connectConversation = useCallback(
         async (apiKey?: string): Promise<void> => {
@@ -98,6 +142,7 @@ export const useRealtimeConnection = ({
                 console.error(event);
             });
             client.addTool(...cameraTool);
+            client.addTool(...moveTool);
 
             client.on(
                 'conversation.item.completed',
@@ -132,6 +177,7 @@ export const useRealtimeConnection = ({
         [
             healthcheckData?.apiKey,
             cameraTool,
+            moveTool,
             onConnect,
             setLastTranscript,
             uploadAudio,

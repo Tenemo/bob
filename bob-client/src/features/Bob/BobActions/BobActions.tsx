@@ -5,7 +5,7 @@ import {
     CircularProgress,
     ButtonGroup,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { useAppSelector } from 'app/hooks';
 import { selectIsDebug } from 'features/Bob/bobSlice';
@@ -19,9 +19,8 @@ const BobActions = (): React.JSX.Element => {
     const [triggerHealthcheck] = useLazyHealthcheckQuery();
     const { data: healthcheckData, isFetching: isHealthcheckLoading } =
         useHealthcheckQueryState();
-    const [moveCommand, { isLoading: isMoveLoading }] =
+    const [moveCommand, { isLoading: isMoveLoading, error: moveError }] =
         useMoveCommandMutation();
-    const [moveError, setMoveError] = useState<string>('');
 
     const isBobUp = healthcheckData?.status === 'OK';
     const isDebug = useAppSelector(selectIsDebug);
@@ -33,16 +32,7 @@ const BobActions = (): React.JSX.Element => {
     const handleMoveCommand = (
         type: 'sitDown' | 'standUp' | 'wiggle',
     ): void => {
-        setMoveError('');
-        moveCommand({ type })
-            .unwrap()
-            .catch((error: unknown) => {
-                setMoveError(
-                    error instanceof Error
-                        ? error.message
-                        : 'Failed to execute move command',
-                );
-            });
+        void moveCommand({ type });
     };
 
     return (
@@ -132,7 +122,9 @@ const BobActions = (): React.JSX.Element => {
 
                         {moveError && (
                             <Typography color="error" variant="body2">
-                                {moveError}
+                                {moveError instanceof Error
+                                    ? moveError.message
+                                    : 'Failed to execute move command'}
                             </Typography>
                         )}
                     </Box>

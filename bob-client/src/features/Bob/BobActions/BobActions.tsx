@@ -7,38 +7,30 @@ import {
 } from '@mui/material';
 import React from 'react';
 
+import MovementButton from './MovementButton';
+
 import { useAppSelector } from 'app/hooks';
-import { selectActiveMovement, selectIsDebug } from 'features/Bob/bobSlice';
+import { selectIsDebug } from 'features/Bob/bobSlice';
 import {
     useLazyHealthcheckQuery,
     useMoveCommandMutation,
     useHealthcheckQueryState,
-    MoveCommandRequest,
 } from 'features/BobApi/bobApi';
 
 const BobActions = (): React.JSX.Element => {
     const [triggerHealthcheck] = useLazyHealthcheckQuery();
     const { data: healthcheckData, isFetching: isHealthcheckLoading } =
         useHealthcheckQueryState();
-    const [moveCommand, { isLoading: isMoveLoading, error: moveError }] =
+    const [, { isLoading: isMoveLoading, error: moveError }] =
         useMoveCommandMutation({
             fixedCacheKey: 'moveCommand',
         });
 
     const isBobUp = healthcheckData?.status === 'OK';
     const isDebug = useAppSelector(selectIsDebug);
-    const activeMovement = useAppSelector(selectActiveMovement);
 
     const handleConnect = (): void => {
         void triggerHealthcheck(undefined, false);
-    };
-
-    const handleMoveCommand = (type: MoveCommandRequest['type']): void => {
-        void moveCommand({ type });
-    };
-
-    const isButtonActive = (type: MoveCommandRequest['type']): boolean => {
-        return activeMovement === type;
     };
 
     return (
@@ -82,70 +74,15 @@ const BobActions = (): React.JSX.Element => {
                             disabled={isMoveLoading}
                             variant="contained"
                         >
-                            <Button
-                                color="primary"
-                                onClick={() => {
-                                    handleMoveCommand('sitDown');
-                                }}
-                                sx={{
-                                    '&.Mui-disabled': {
-                                        background: isButtonActive('sitDown')
-                                            ? '#002101'
-                                            : undefined,
-                                    },
-                                    flex: 1,
-                                }}
-                            >
-                                Sit down{' '}
-                                {isMoveLoading && (
-                                    <CircularProgress
-                                        size={20}
-                                        sx={{ ml: 1 }}
-                                    />
-                                )}
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    handleMoveCommand('standUp');
-                                }}
-                                sx={{
-                                    '&.Mui-disabled': {
-                                        background: isButtonActive('standUp')
-                                            ? '#002101'
-                                            : undefined,
-                                    },
-                                    flex: 1,
-                                }}
-                            >
-                                Stand up{' '}
-                                {isMoveLoading && (
-                                    <CircularProgress
-                                        size={20}
-                                        sx={{ ml: 1 }}
-                                    />
-                                )}
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    handleMoveCommand('wiggle');
-                                }}
-                                sx={{
-                                    '&.Mui-disabled': {
-                                        background: isButtonActive('wiggle')
-                                            ? '#002101'
-                                            : undefined,
-                                    },
-                                    flex: 1,
-                                }}
-                            >
-                                Wiggle{' '}
-                                {isMoveLoading && (
-                                    <CircularProgress
-                                        size={20}
-                                        sx={{ ml: 1 }}
-                                    />
-                                )}
-                            </Button>
+                            <MovementButton type="sitDown">
+                                Sit down
+                            </MovementButton>
+                            <MovementButton type="standUp">
+                                Stand up
+                            </MovementButton>
+                            <MovementButton type="wiggle">
+                                Wiggle
+                            </MovementButton>
                         </ButtonGroup>
 
                         {moveError && (

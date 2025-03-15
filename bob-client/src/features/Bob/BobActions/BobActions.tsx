@@ -21,7 +21,9 @@ const BobActions = (): React.JSX.Element => {
     const { data: healthcheckData, isFetching: isHealthcheckLoading } =
         useHealthcheckQueryState();
     const [moveCommand, { isLoading: isMoveLoading, error: moveError }] =
-        useMoveCommandMutation();
+        useMoveCommandMutation({
+            fixedCacheKey: 'moveCommand',
+        });
 
     const isBobUp = healthcheckData?.status === 'OK';
     const isDebug = useAppSelector(selectIsDebug);

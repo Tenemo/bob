@@ -75,7 +75,9 @@ export const useRealtimeConnection = ({
         return [toolConfig, toolCallback] as const;
     }, [getPhotoDescription]);
 
-    const [moveCommand] = useMoveCommandMutation();
+    const [moveCommand] = useMoveCommandMutation({
+        fixedCacheKey: 'moveCommand',
+    });
 
     const moveTool = useMemo(() => {
         const toolConfig = {

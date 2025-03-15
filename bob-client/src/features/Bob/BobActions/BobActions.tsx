@@ -8,7 +8,7 @@ import {
 import React from 'react';
 
 import { useAppSelector } from 'app/hooks';
-import { selectIsDebug } from 'features/Bob/bobSlice';
+import { selectActiveMovement, selectIsDebug } from 'features/Bob/bobSlice';
 import {
     useLazyHealthcheckQuery,
     useMoveCommandMutation,
@@ -27,6 +27,7 @@ const BobActions = (): React.JSX.Element => {
 
     const isBobUp = healthcheckData?.status === 'OK';
     const isDebug = useAppSelector(selectIsDebug);
+    const activeMovement = useAppSelector(selectActiveMovement);
 
     const handleConnect = (): void => {
         void triggerHealthcheck(undefined, false);
@@ -34,6 +35,10 @@ const BobActions = (): React.JSX.Element => {
 
     const handleMoveCommand = (type: MoveCommandRequest['type']): void => {
         void moveCommand({ type });
+    };
+
+    const isButtonActive = (type: MoveCommandRequest['type']): boolean => {
+        return activeMovement === type;
     };
 
     return (
@@ -78,10 +83,18 @@ const BobActions = (): React.JSX.Element => {
                             variant="contained"
                         >
                             <Button
+                                color="primary"
                                 onClick={() => {
                                     handleMoveCommand('sitDown');
                                 }}
-                                sx={{ flex: 1 }}
+                                sx={{
+                                    '&.Mui-disabled': {
+                                        background: isButtonActive('sitDown')
+                                            ? '#002101'
+                                            : undefined,
+                                    },
+                                    flex: 1,
+                                }}
                             >
                                 Sit down{' '}
                                 {isMoveLoading && (
@@ -95,7 +108,14 @@ const BobActions = (): React.JSX.Element => {
                                 onClick={() => {
                                     handleMoveCommand('standUp');
                                 }}
-                                sx={{ flex: 1 }}
+                                sx={{
+                                    '&.Mui-disabled': {
+                                        background: isButtonActive('standUp')
+                                            ? '#002101'
+                                            : undefined,
+                                    },
+                                    flex: 1,
+                                }}
                             >
                                 Stand up{' '}
                                 {isMoveLoading && (
@@ -109,7 +129,14 @@ const BobActions = (): React.JSX.Element => {
                                 onClick={() => {
                                     handleMoveCommand('wiggle');
                                 }}
-                                sx={{ flex: 1 }}
+                                sx={{
+                                    '&.Mui-disabled': {
+                                        background: isButtonActive('wiggle')
+                                            ? '#002101'
+                                            : undefined,
+                                    },
+                                    flex: 1,
+                                }}
                             >
                                 Wiggle{' '}
                                 {isMoveLoading && (

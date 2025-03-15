@@ -5,6 +5,7 @@ import { REHYDRATE } from 'redux-persist';
 import { convertToWav } from './convertToWav';
 
 import type { RootState } from 'app/store';
+import { setActiveMovement } from 'features/Bob/bobSlice';
 
 function isHydrateAction(action: Action): action is Action<typeof REHYDRATE> & {
     key: string;
@@ -96,6 +97,14 @@ export const bobApi = createApi({
                 method: 'POST',
                 body: command,
             }),
+            onQueryStarted: async (command, { dispatch, queryFulfilled }) => {
+                dispatch(setActiveMovement(command.type));
+                try {
+                    await queryFulfilled;
+                } finally {
+                    dispatch(setActiveMovement(null));
+                }
+            },
         }),
     }),
     // Official documentation states we have to use "any"

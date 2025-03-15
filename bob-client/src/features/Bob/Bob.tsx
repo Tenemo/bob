@@ -1,4 +1,4 @@
-import { Container } from '@mui/material';
+import { Box } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 
@@ -19,7 +19,7 @@ const Bob = (): React.JSX.Element => {
     }, []);
 
     return (
-        <Container
+        <Box
             sx={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -45,7 +45,7 @@ const Bob = (): React.JSX.Element => {
                     />
                 )}
             </Vision>
-        </Container>
+        </Box>
     );
 };
 

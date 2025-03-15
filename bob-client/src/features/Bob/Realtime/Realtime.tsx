@@ -111,6 +111,18 @@ const Realtime = ({
                     }
                 },
             );
+            client.addTool(
+                {
+                    name: 'camera_capture',
+                    parameters: {},
+                    description:
+                        'Retrieves a detailed description of what you see. Requires no parameters.',
+                },
+                async () => {
+                    const description = await getPhotoDescription();
+                    return description;
+                },
+            );
             const wavRecorder = wavRecorderRef.current;
             setIsConnected(true);
             onConnect(client);
@@ -123,7 +135,7 @@ const Realtime = ({
                 },
             ]);
         },
-        [healthcheckData?.apiKey, onConnect, uploadAudio],
+        [getPhotoDescription, healthcheckData?.apiKey, onConnect, uploadAudio],
     );
 
     const disconnectConversation = useCallback(async (): Promise<void> => {

@@ -1,5 +1,5 @@
 import { RealtimeClient } from '@openai/realtime-api-beta';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 
 import {
     ConversationItem,
@@ -23,6 +23,14 @@ type UseRealtimeConnectionProps = {
     setLastTranscript: (transcript?: Transcript[]) => void;
     useBobSpeakerRef: React.RefObject<boolean>;
 };
+
+type CameraTool = {
+    name: string;
+    parameters: Record<string, unknown>;
+    description: string;
+};
+
+type CameraToolCallback = () => Promise<string>;
 
 export const useRealtimeConnection = ({
     onConnect,
@@ -49,6 +57,26 @@ export const useRealtimeConnection = ({
     const [isConnectInProgress, setIsConnectInProgress] =
         useState<boolean>(false);
 
+    const cameraTool = useMemo(() => {
+        const toolConfig: CameraTool = {
+            name: 'camera_capture',
+            parameters: {},
+            description: getPrompt('camera'),
+        };
+
+        const toolCallback: CameraToolCallback = async () => {
+            try {
+                const description = await getPhotoDescription();
+                return description;
+            } catch (error) {
+                console.error('Camera capture tool error:', error);
+                throw error;
+            }
+        };
+
+        return [toolConfig, toolCallback] as const; // Use a tuple type
+    }, [getPhotoDescription]);
+
     const connectConversation = useCallback(
         async (apiKey?: string): Promise<void> => {
             if (!healthcheckData?.apiKey && !apiKey) {
@@ -69,22 +97,7 @@ export const useRealtimeConnection = ({
             client.on('error', (event: unknown) => {
                 console.error(event);
             });
-            client.addTool(
-                {
-                    name: 'camera_capture',
-                    parameters: {},
-                    description: getPrompt('camera'),
-                },
-                async () => {
-                    try {
-                        const description = await getPhotoDescription();
-                        return description;
-                    } catch (error) {
-                        console.error('Camera capture tool error:', error);
-                        throw error;
-                    }
-                },
-            );
+            client.addTool(...cameraTool);
 
             client.on(
                 'conversation.item.completed',
@@ -117,11 +130,11 @@ export const useRealtimeConnection = ({
             ]);
         },
         [
-            getPhotoDescription,
             healthcheckData?.apiKey,
+            cameraTool,
             onConnect,
-            uploadAudio,
             setLastTranscript,
+            uploadAudio,
             setError,
             useBobSpeakerRef,
         ],

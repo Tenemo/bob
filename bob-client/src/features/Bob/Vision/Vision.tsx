@@ -1,7 +1,7 @@
 import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import { OpenAI } from 'openai';
 import { zodResponseFormat } from 'openai/helpers/zod';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { z } from 'zod';
 
 import { useAppSelector } from 'app/hooks';
@@ -48,6 +48,12 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
     const { data: healthcheckData, isFetching: isHealthcheckLoading } =
         useHealthcheckQueryState(undefined);
 
+    // Getting stale reference to apiKey when used as a tool otherwise
+    const apiKeyRef = useRef<string | undefined>(healthcheckData?.apiKey);
+    useEffect(() => {
+        apiKeyRef.current = healthcheckData?.apiKey;
+    }, [healthcheckData?.apiKey]);
+
     const isBobUp: boolean = healthcheckData?.status === 'OK';
 
     const convertBlobToBase64 = useCallback(
@@ -64,13 +70,15 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
         [],
     );
 
-    const analyzeImage = useCallback(async (): Promise<string> => {
-        if (!healthcheckData?.apiKey) {
+    const getPhotoDescription = useCallback(async (): Promise<string> => {
+        const currentApiKey = apiKeyRef.current;
+        if (!currentApiKey) {
             throw new Error('API key missing');
         }
         setIsLoading(true);
         setError('');
         const result = await triggerCapture();
+        console.log('triggerCapture fired');
         if (!result.data) {
             throw new Error('No image to analyze');
         }
@@ -78,7 +86,9 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
         const blob = await captureDataResponse.blob();
         const base64Image = await convertBlobToBase64(blob);
         const client = new OpenAI({
-            apiKey: healthcheckData.apiKey,
+            // We aren't actually building the page with the key.
+            // It's received from Bob during runtime and stored there.
+            apiKey: currentApiKey,
             dangerouslyAllowBrowser: true,
         });
         setCapturedImage(result.data);
@@ -121,7 +131,7 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
         }
         setIsLoading(false);
         return analysisText;
-    }, [convertBlobToBase64, triggerCapture, healthcheckData?.apiKey]);
+    }, [convertBlobToBase64, triggerCapture]);
 
     const handleTakePhoto = useCallback(async (): Promise<void> => {
         try {
@@ -136,10 +146,6 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
             );
         }
     }, [triggerCapture]);
-
-    const getPhotoDescription = useCallback(async (): Promise<string> => {
-        return analyzeImage();
-    }, [analyzeImage]);
 
     return (
         <>

@@ -1,34 +1,22 @@
-import {
-    Box,
-    TextField,
-    Button,
-    Typography,
-    CircularProgress,
-} from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { RealtimeClient } from '@openai/realtime-api-beta';
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-import {
-    handleMessageSubmit,
-    ConversationItem,
-    Transcript,
-    playAndUploadAudio,
-    stopAudio,
-} from './realtimeUtils';
+import AudioRecording from './AudioRecording';
+import ConnectionButton from './ConnectionButton';
+import DebugControls from './DebugControls';
+import { Transcript } from './realtimeUtils';
+import SharePictureButton from './SharePictureButton';
+import { useRealtimeConnection } from './useRealtimeConnection';
 import { WavPacker } from './wav_packer';
-import { WavRecorder } from './wav_recorder';
 
 import { useAppSelector } from 'app/hooks';
 import { selectIsDebug, selectUseBobSpeaker } from 'features/Bob/bobSlice';
-import { getPrompt } from 'features/Bob/getPrompt';
 import {
     useUploadAudioMutation,
     useStopAudioMutation,
     useLazyHealthcheckQuery,
 } from 'features/BobApi/bobApi';
-
-const INITIAL_PROMPT: string = getPrompt('initial-start');
-const VISION_PROMPT: string = getPrompt('vision');
 
 type RealtimeProps = {
     onConnect: (client: RealtimeClient) => void;
@@ -43,26 +31,16 @@ const Realtime = ({
     getPhotoDescription,
     isVisionLoading,
 }: RealtimeProps): React.JSX.Element => {
-    const [input, setInput] = useState<string>('');
     const [error, setError] = useState<string>('');
-    const [isRecording, setIsRecording] = useState<boolean>(false);
     const [audioUrl, setAudioUrl] = useState<string>('');
     const [lastTranscript, setLastTranscript] = useState<Transcript[]>();
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [uploadAudio] = useUploadAudioMutation();
     const [stopAudioMutation] = useStopAudioMutation();
-    const wavRecorderRef = useRef<WavRecorder>(
-        new WavRecorder({ sampleRate: 24000 }),
-    );
     const [triggerHealthcheck, { data: healthcheckData }] =
         useLazyHealthcheckQuery();
     const isDebug = useAppSelector(selectIsDebug);
     const useBobSpeaker = useAppSelector(selectUseBobSpeaker);
-
-    const clientRef = useRef<RealtimeClient | null>(null);
-    const [isConnected, setIsConnected] = useState<boolean>(false);
-    const [isConnectInProgress, setIsConnectInProgress] =
-        useState<boolean>(false);
 
     // We need to keep the same reference, because
     // conversation.item.completed otherwise has a reference
@@ -72,112 +50,23 @@ const Realtime = ({
         useBobSpeakerRef.current = useBobSpeaker;
     }, [useBobSpeaker]);
 
-    const connectConversation = useCallback(
-        async (apiKey?: string): Promise<void> => {
-            if (!healthcheckData?.apiKey && !apiKey) {
-                throw new Error('API key missing');
-            }
-            clientRef.current = new RealtimeClient({
-                apiKey: healthcheckData?.apiKey ?? apiKey,
-                // We aren't actually building the page with the key.
-                // It's received from Bob during runtime and stored there.
-                dangerouslyAllowAPIKeyInBrowser: true,
-            });
-            const client = clientRef.current;
-            client.updateSession({
-                input_audio_transcription: { model: 'whisper-1' },
-            });
-            client.updateSession({ voice: 'shimmer' });
-
-            client.on('error', (event: unknown) => {
-                console.error(event);
-            });
-
-            client.on(
-                'conversation.item.completed',
-                ({ item }: { item: ConversationItem }) => {
-                    if (item.type === 'message' && item.role === 'assistant') {
-                        if (item.content) {
-                            setLastTranscript(item.content);
-                        }
-                        if (item.formatted?.audio) {
-                            void playAndUploadAudio(
-                                item.formatted.audio,
-                                uploadAudio,
-                                setError,
-                                useBobSpeakerRef,
-                            );
-                        }
-                    }
-                },
-            );
-            client.addTool(
-                {
-                    name: 'camera_capture',
-                    parameters: {},
-                    description:
-                        'Retrieves a detailed description of what you see. Requires no parameters.',
-                },
-                async () => {
-                    const description = await getPhotoDescription();
-                    return description;
-                },
-            );
-            const wavRecorder = wavRecorderRef.current;
-            setIsConnected(true);
-            onConnect(client);
-            await wavRecorder.begin();
-            await client.connect();
-            client.sendUserMessageContent([
-                {
-                    type: `input_text`,
-                    text: `\n${INITIAL_PROMPT}`,
-                },
-            ]);
-        },
-        [getPhotoDescription, healthcheckData?.apiKey, onConnect, uploadAudio],
-    );
-
-    const disconnectConversation = useCallback(async (): Promise<void> => {
-        setIsConnected(false);
-        onDisconnect();
-        const client = clientRef.current;
-        client?.disconnect();
-        const wavRecorder = wavRecorderRef.current;
-        await wavRecorder.end();
-    }, [onDisconnect]);
-
-    const startRecording = async (): Promise<void> => {
-        setIsRecording(true);
-        const client = clientRef.current;
-        const wavRecorder = wavRecorderRef.current;
-        await wavRecorder.record((data) => client?.appendInputAudio(data.mono));
-    };
-
-    const stopRecording = async (): Promise<void> => {
-        setIsRecording(false);
-        const client = clientRef.current;
-        const wavRecorder = wavRecorderRef.current;
-        await wavRecorder.pause();
-        client?.createResponse();
-    };
-
-    useEffect((): (() => void) => {
-        if (!clientRef.current)
-            return () => {
-                return;
-            };
-
-        const client = clientRef.current;
-        return () => {
-            client.reset();
-        };
-    }, [uploadAudio]);
-
-    const handleSubmit = (): void => {
-        handleMessageSubmit(clientRef.current, input, setError);
-        setInput('');
-    };
+    const {
+        clientRef,
+        wavRecorderRef,
+        isConnected,
+        isConnectInProgress,
+        handleConnectClick,
+    } = useRealtimeConnection({
+        onConnect,
+        onDisconnect,
+        getPhotoDescription,
+        uploadAudio,
+        triggerHealthcheck,
+        healthcheckData,
+        setError,
+        setLastTranscript,
+        useBobSpeakerRef,
+    });
 
     useEffect((): void => {
         if (lastTranscript) {
@@ -195,60 +84,7 @@ const Realtime = ({
                 setAudioUrl(url);
             }
         }
-    }, [lastTranscript]);
-
-    const handleConnectClick = useCallback(async (): Promise<void> => {
-        setError('');
-        if (isConnected) {
-            setIsConnectInProgress(true);
-            await disconnectConversation();
-            setIsConnectInProgress(false);
-            return;
-        }
-        setIsConnectInProgress(true);
-        try {
-            let apiKey = healthcheckData?.apiKey;
-            if (!apiKey) {
-                const result = await triggerHealthcheck();
-                if (!result.data?.apiKey) {
-                    throw new Error('Failed to get API key from healthcheck');
-                }
-                apiKey = result.data.apiKey;
-            }
-            await connectConversation(apiKey);
-        } catch (connectError) {
-            setError(
-                connectError instanceof Error
-                    ? connectError.message
-                    : 'Analysis failed',
-            );
-        }
-        setIsConnectInProgress(false);
-    }, [
-        isConnected,
-        disconnectConversation,
-        healthcheckData?.apiKey,
-        connectConversation,
-        triggerHealthcheck,
-    ]);
-
-    const handleSharePictureClick = useCallback(async (): Promise<void> => {
-        try {
-            const description = await getPhotoDescription();
-            clientRef.current?.sendUserMessageContent([
-                {
-                    type: 'input_text',
-                    text: `${VISION_PROMPT}\n${description}`,
-                },
-            ]);
-        } catch (err) {
-            setError(
-                err instanceof Error ? err.message : 'Failed to share picture',
-            );
-        }
-    }, [getPhotoDescription]);
-
-    const showSpinner = isConnectInProgress || isVisionLoading;
+    }, [clientRef, lastTranscript]);
 
     return (
         <Box
@@ -260,108 +96,43 @@ const Realtime = ({
                 alignItems: 'flex-start',
             }}
         >
+            <SharePictureButton
+                client={clientRef.current}
+                getPhotoDescription={getPhotoDescription}
+                isConnected={isConnected}
+                setError={setError}
+            />
+
+            <DebugControls
+                audioRef={audioRef}
+                audioUrl={audioUrl}
+                client={clientRef.current}
+                isDebug={isDebug}
+                lastTranscript={lastTranscript}
+                setError={setError}
+                stopAudioMutation={stopAudioMutation}
+                useBobSpeaker={useBobSpeaker}
+            />
+
             {isConnected && (
-                <Button
-                    disabled={!isConnected}
-                    onClick={(): void => {
-                        void handleSharePictureClick();
-                    }}
-                    variant="outlined"
-                >
-                    Share picture
-                </Button>
+                <AudioRecording
+                    client={clientRef.current}
+                    isConnected={isConnected}
+                    stopAudioMutation={stopAudioMutation}
+                    useBobSpeaker={useBobSpeaker}
+                    wavRecorderRef={wavRecorderRef}
+                />
             )}
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                {isDebug && (
-                    <>
-                        <TextField
-                            fullWidth
-                            onChange={(e): void => {
-                                setInput(e.target.value);
-                            }}
-                            onKeyDown={(e): void => {
-                                if (e.key === 'Enter') handleSubmit();
-                            }}
-                            placeholder="Type your message..."
-                            value={input}
-                        />
-                        <Button
-                            disabled={!input.trim()}
-                            onClick={(): void => {
-                                stopAudio(stopAudioMutation, useBobSpeaker);
-                                handleSubmit();
-                            }}
-                            variant="outlined"
-                        >
-                            Send
-                        </Button>
-                    </>
-                )}
-                {isConnected && (
-                    <Button
-                        disabled={!isConnected}
-                        onMouseDown={(): void => {
-                            stopAudio(stopAudioMutation, useBobSpeaker);
-                            void startRecording();
-                        }}
-                        onMouseUp={(): void => {
-                            void stopRecording();
-                        }}
-                        onTouchEnd={(e): void => {
-                            e.preventDefault();
-                            void stopRecording();
-                        }}
-                        onTouchStart={(e): void => {
-                            e.preventDefault();
-                            stopAudio(stopAudioMutation, useBobSpeaker);
-                            void startRecording();
-                        }}
-                        variant="contained"
-                    >
-                        {isRecording ? 'release to send' : 'push to talk'}
-                    </Button>
-                )}
-                <div className="spacer" />
-            </Box>
-            <Button
-                disabled={showSpinner}
-                onClick={(): void => {
-                    void handleConnectClick();
-                    stopAudio(stopAudioMutation, useBobSpeaker);
-                }}
-                variant="outlined"
-            >
-                {showSpinner ? (
-                    <CircularProgress size={24} />
-                ) : isConnected ? (
-                    'Disconnect'
-                ) : (
-                    'Connect to Bob'
-                )}
-            </Button>
-            {isDebug && (
-                <>
-                    <Button
-                        color="error"
-                        onClick={() => {
-                            stopAudio(stopAudioMutation, useBobSpeaker);
-                        }}
-                        variant="outlined"
-                    >
-                        Stop audio
-                    </Button>
-                    {audioUrl && (
-                        <Box sx={{ mt: 2 }}>
-                            <audio controls ref={audioRef} src={audioUrl} />
-                        </Box>
-                    )}
-                    {lastTranscript && (
-                        <Typography>
-                            Last response: {lastTranscript[0].transcript}
-                        </Typography>
-                    )}
-                </>
-            )}
+
+            <ConnectionButton
+                handleConnectClick={handleConnectClick}
+                isConnectInProgress={isConnectInProgress}
+                isConnected={isConnected}
+                isVisionLoading={isVisionLoading}
+                stopAudioMutation={stopAudioMutation}
+                useBobSpeaker={useBobSpeaker}
+            />
+
             {error && <Typography color="error">Error: {error}</Typography>}
         </Box>
     );

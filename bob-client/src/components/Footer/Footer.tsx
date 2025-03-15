@@ -46,6 +46,8 @@ const Footer = (): React.JSX.Element => {
                     label="Debug mode"
                 />
             </div>
+
+            {isDebug && `v${process.env.APP_VERSION ?? ''}`}
         </footer>
     );
 };

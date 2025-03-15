@@ -21,6 +21,7 @@ export const commonConfig: Configuration = {
             PORT: 3000,
             ANALYZE: false,
             BUILD_DATE: JSON.stringify(new Date().toISOString().split('T')[0]),
+            APP_VERSION: packageJSON.version,
         }),
         new DotenvPlugin({
             systemvars: true,

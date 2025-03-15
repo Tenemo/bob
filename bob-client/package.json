@@ -1,6 +1,6 @@
 {
   "name": "bob-client",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Piotr Piech <piotr@piech.dev>",
   "license": "MIT",
   "description": "Client application for bob",

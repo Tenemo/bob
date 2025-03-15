@@ -78,7 +78,6 @@ const Vision = ({ children }: VisionProps): React.JSX.Element => {
         setIsLoading(true);
         setError('');
         const result = await triggerCapture();
-        console.log('triggerCapture fired');
         if (!result.data) {
             throw new Error('No image to analyze');
         }

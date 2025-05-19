@@ -200,29 +200,3 @@ bob/
     ├── Servos.h     # Servo control
     └── audio/       # Audio processing
 ```
-
-### Code style
-
-- C++: Follow Arduino style guide
-- TypeScript: ESLint with provided config
-- React: Function components with hooks
-- Formatting: Prettier for web code
-
-## Performance considerations
-
-1. Memory management:
-
-   - ESP32 PSRAM usage for image buffering
-   - Audio buffer size limitations
-   - React component optimization
-
-2. Real-time operations:
-
-   - Servo movement coordination
-   - Video streaming optimization
-   - Audio playback timing
-
-3. Network efficiency:
-   - WebSocket for real-time data
-   - Image compression settings
-   - Request batching where appropriate

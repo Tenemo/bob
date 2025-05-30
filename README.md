@@ -6,13 +6,23 @@ An ESP32-S3-based hexapod robot with a voice, camera vision, and with autonomous
 
 Uses OpenAI Realtime and Structured Outputs APIs to process visual data and talk to the user in real time with a realistic voice.
 
-## Overview
+## Demo
+
+Demo (with sound) of the robot booting up, speaking, moving and seeing.
 
 https://github.com/user-attachments/assets/bbba81ba-5eeb-43fc-8d48-552be9b4c37b
 
-Bob is a hexapod robot project that can:
+Note that the Realtime API calls appropriate "tools" itself, I don't explicitly tell it to use the camera or the movement methods.
 
-- ...
+## Overview
+
+Bob is a hexapod robot controlled by a web app that can:
+- Talk to you in many different languages. It uses the latest (as of March 2025) OpenAI Realtime API version to do that.
+- See what's in front of it using a wide-angle camera module. The Realtime API doesn't support images, so the image first is described into JSON using an OpenAI old-school text API with Structured Output. The output is then passed to the Realtime API.
+- Autonomously, based on what you tell it do to, decide what it wants to use, camera or movement capabilities.
+- Stand up, sit down, and wiggle - unfortunately I couldn't get it to walk properly, the servomotors used ended up being too weak, mostly due to the battery weight.
+- Stay powered using its onboard 2220 mAH power supply.
+- Output logs to the onboard LCD display.
 
 ## Components
 

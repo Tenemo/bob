@@ -2,7 +2,7 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/064eb119-d22e-4a70-9b0b-50c7c18712ab/deploy-status)](https://app.netlify.com/sites/bob-client/deploys)
 
-An ESP32-S3-based hexapod robot with a voice, camera vision, and with autonomous usage of available "tools": basic movement and seeing.
+ESP32-S3-based hexapod robot with a voice, camera vision, and with autonomous usage of available "tools": basic movement and seeing.
 
 Uses OpenAI Realtime and Structured Outputs APIs to process visual data and talk to the user in real time with a realistic voice.
 

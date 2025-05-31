@@ -22,6 +22,11 @@ Bob is a hexapod robot controlled by a web app that can:
 - Stay powered using its onboard 2220 mAH power supply.
 - Output logs to the onboard LCD display.
 
+![bob_camera](https://github.com/user-attachments/assets/d629813a-951a-4147-8271-3bfea1b55f13)
+![bob_top](https://github.com/user-attachments/assets/c647f8c9-22f2-4072-9830-78c0b706d7cf)
+![bob_underside](https://github.com/user-attachments/assets/38bd589b-22ac-4261-b01d-05b78a0e3a40)
+
+
 ## Components
 
 ### Hardware
